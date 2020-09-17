@@ -94,6 +94,9 @@ set(SOURCES
     src/physics/pcylinder.cpp
     src/physics/pbox.cpp
     src/physics/pray.cpp
+    src/speed_estimator.cpp
+    src/config.cpp
+    src/robot.cpp
     src/world.cpp
     src/main.cpp
 )
@@ -107,13 +110,15 @@ set(HEADERS
     src/physics/pcylinder.h
     src/physics/pbox.h
     src/physics/pray.h
+    src/speed_estimator.h
+    src/config.h
+    src/robot.h
     src/world.h
     src/main.h
 )
 
 # files to be compiled
 set(srcs
-    ${CONFIG_FILES}
     ${HEADERS}
     ${SOURCES}
 )
