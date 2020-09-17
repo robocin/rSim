@@ -38,7 +38,7 @@ class RoboCupSSLServer
 {
 friend class MultiStackRoboCupSSL;
 public:
-    explicit RoboCupSSLServer(QObject *parent=nullptr,
+    explicit RoboCupSSLServer(
                      const quint16 &port=10002,
                      const string &net_address="224.5.23.2",
                      const string &net_interface="");

@@ -24,8 +24,8 @@
 
 using namespace std;
 
-RoboCupSSLServer::RoboCupSSLServer(QObject *parent, const quint16 &port, const string &net_address, const string &net_interface) :
-    _socket(new QUdpSocket(parent)),
+RoboCupSSLServer::RoboCupSSLServer(const quint16 &port, const string &net_address, const string &net_interface) :
+    _socket(new QUdpSocket(nullptr)),
     _port(port),
     _net_address(new QHostAddress(QString(net_address.c_str()))),
     _net_interface(new QNetworkInterface(QNetworkInterface::interfaceFromName(QString(net_interface.c_str()))))
