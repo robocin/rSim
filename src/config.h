@@ -80,7 +80,7 @@ namespace Config
     class Communication
     {
     private:
-        char *VisionMulticastAddr = "224.0.0.1";
+        std::string VisionMulticastAddr = "224.0.0.1";
         int VisionMulticastPort = 10020;
         int CommandListenPort = 20011;
         int BlueStatusSendPort = 30011;
@@ -89,7 +89,7 @@ namespace Config
         int sendGeometryEvery = 120;
 
     public:
-        char *getVisionMulticastAddr() { return this->VisionMulticastAddr; }
+        std::string getVisionMulticastAddr() { return this->VisionMulticastAddr; }
         int getVisionMulticastPort() { return this->VisionMulticastPort; }
         int getCommandListenPort() { return this->CommandListenPort; }
         int getBlueStatusSendPort() { return this->BlueStatusSendPort; }
@@ -115,13 +115,13 @@ namespace Config
 
     class Vanishing
     {
-    public:
+    private:
         bool vanishing = false;
         int blueTeamVanishing = 0;
         int yellowTeamVanishing = 0;
         int ballVanishing = 0;
 
-    private:
+    public:
         bool getVanishing() { return this->vanishing; };
         int getBlueTeamVanishing() { return this->blueTeamVanishing; };
         int getYellowTeamVanishing() { return this->yellowTeamVanishing; };

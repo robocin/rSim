@@ -100,6 +100,6 @@ public:
     PWorld *getWorld();
 };
 
-#define ROBOT_START_Z() (Config::Robot.getHeight() * 0.5 + Config::Robot.getWheelRadius() * 1 + Config::Robot.getBottomHeight())
+#define ROBOT_START_Z() (Config::Robot().getHeight() * 0.5 + Config::Robot().getWheelRadius() * 1 + Config::Robot().getBottomHeight())
 
 #endif // ROBOT_H

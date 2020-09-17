@@ -22,12 +22,9 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <QtGlobal>
 #include <QtNetwork>
 
-#include <QDebug>
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
-
-#include "logger.h"
 
 #include "command.pb.h"
 #include "packet.pb.h"
@@ -120,7 +117,7 @@ bool rayCallback(dGeomID o1, dGeomID o2, PSurface *surface, int robots_count)
     return false;
 }
 
-bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *s, int /*robots_count*/)
+bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     if (_world->ball->tag != -1) //spinner adjusting
     {
@@ -143,15 +140,14 @@ World::World(RobotsFormation *form)
 {
     steps_super = 0;
     steps_fault = 0;
-    isGLEnabled = true;
     customDT = -1;
     _world = this;
     show3DCursor = false;
     updatedCursor = false;
     frame_num = 0;
     last_dt = -1;
-    p = new PWorld(0.05, 9.81f, g, Config::Field().getRobotCount());
-    ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass(), 1, 0.7, 0);
+    physics = new PWorld(0.05, 9.81f, Config::Field().getRobotsCount());
+    ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
 
     ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
                          Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
@@ -181,84 +177,84 @@ World::World(RobotsFormation *form)
 
     for (auto &w : walls)
         w = new PFixedBox(thick / 2, pos_y, pos_z,
-                          siz_x, thick, siz_z,
-                          tone, tone, tone);
+                          siz_x, thick, siz_z
+                          );
 
     walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
-                             siz_x, thick, siz_z,
-                             tone, tone, tone);
+                             siz_x, thick, siz_z
+                             );
 
     walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
-                             siz_x, thick, siz_z,
-                             tone, tone, tone);
+                             siz_x, thick, siz_z
+                             );
 
     walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z,
-                             tone, tone, tone);
+                             thick, (siz_y - gsiz_y) / 2, siz_z
+                             );
 
     walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z,
-                              tone, tone, tone);
+                              thick, (siz_y - gsiz_y) / 2, siz_z
+                              );
 
     walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z,
-                             tone, tone, tone);
+                             thick, (siz_y - gsiz_y) / 2, siz_z
+                             );
 
     walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z,
-                              tone, tone, tone);
+                              thick, (siz_y - gsiz_y) / 2, siz_z
+                              );
 
     // Goal walls
     walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z,
-                             1, 1, 0);
+                             gthick, gsiz_y, gsiz_z
+                             );
 
     walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z,
-                             1, 1, 0);
+                             gsiz_x, gthick, gsiz_z
+                             );
 
     walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z,
-                             1, 1, 0);
+                             gsiz_x, gthick, gsiz_z
+                             );
 
     walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z,
-                             0, 0, 1);
+                             gthick, gsiz_y, gsiz_z
+                             );
 
     walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z,
-                             0, 0, 1);
+                             gsiz_x, gthick, gsiz_z
+                             );
 
     walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z,
-                             0, 0, 1);
+                             gsiz_x, gthick, gsiz_z
+                             );
 
     // Corner Wall
     walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z,
-                              tone, tone, tone);
+                              gsiz_x, gthick, gsiz_z
+                              );
     walls[12]->setRotation(0, 0, 1, M_PI / 4);
 
     walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z,
-                              tone, tone, tone);
+                              gsiz_x, gthick, gsiz_z
+                              );
     walls[13]->setRotation(0, 0, 1, -M_PI / 4);
 
     walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z,
-                              tone, tone, tone);
+                              gsiz_x, gthick, gsiz_z
+                              );
     walls[14]->setRotation(0, 0, 1, M_PI / 4);
 
     walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z,
-                              tone, tone, tone);
+                              gsiz_x, gthick, gsiz_z
+                              );
     walls[15]->setRotation(0, 0, 1, -M_PI / 4);
 
-    p->addObject(ground);
-    p->addObject(ball);
-    p->addObject(ray);
+    physics->addObject(ground);
+    physics->addObject(ball);
+    physics->addObject(ray);
     for (auto &wall : walls)
-        p->addObject(wall);
+        physics->addObject(wall);
     const int wheeltexid = 4 * Config::Field().getRobotsCount() + 12 + 1; //37 for 6 robots
     srand(static_cast<unsigned>(time(0)));
 
@@ -284,20 +280,20 @@ World::World(RobotsFormation *form)
         x = (k % Config::Field().getRobotsCount() < 3) ? x : 3.0;
         y = (k % Config::Field().getRobotsCount() < 3) ? y : 3.0;
         robots[k] = new CRobot(
-            p, ball, x, y, ROBOT_START_Z(),
+            physics, ball, x, y, ROBOT_START_Z(),
             k + 1, wheeltexid, dir, turn_on);
     }
 
-    p->initAllObjects();
+    physics->initAllObjects();
 
     //Surfaces
 
-    p->createSurface(ray, ground)->callback = rayCallback;
-    p->createSurface(ray, ball)->callback = rayCallback;
+    physics->createSurface(ray, ground)->callback = rayCallback;
+    physics->createSurface(ray, ball)->callback = rayCallback;
     for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
     {
-        p->createSurface(ray, robots[k]->chassis)->callback = rayCallback;
-        p->createSurface(ray, robots[k]->dummy)->callback = rayCallback;
+        physics->createSurface(ray, robots[k]->chassis)->callback = rayCallback;
+        physics->createSurface(ray, robots[k]->dummy)->callback = rayCallback;
     }
     PSurface ballwithwall;
     ballwithwall.surface.mode = dContactBounce | dContactApprox1; // | dContactSlip1;
@@ -307,32 +303,32 @@ World::World(RobotsFormation *form)
     ballwithwall.surface.slip1 = 0; //cfg->ballslip();
 
     PSurface wheelswithground;
-    PSurface *ball_ground = p->createSurface(ball, ground);
+    PSurface *ball_ground = physics->createSurface(ball, ground);
     ball_ground->surface = ballwithwall.surface;
     ball_ground->callback = ballCallBack;
 
     for (auto &wall : walls)
-        p->createSurface(ball, wall)->surface = ballwithwall.surface;
+        physics->createSurface(ball, wall)->surface = ballwithwall.surface;
 
     for (int k = 0; k < 2 * Config::Field().getRobotsCount(); k++)
     {
-        p->createSurface(robots[k]->chassis, ground);
+        physics->createSurface(robots[k]->chassis, ground);
         for (auto &wall : walls)
-            p->createSurface(robots[k]->chassis, wall);
-        p->createSurface(robots[k]->dummy, ball);
-        //p->createSurface(robots[k]->chassis,ball);
+            physics->createSurface(robots[k]->chassis, wall);
+        physics->createSurface(robots[k]->dummy, ball);
+        //physics->createSurface(robots[k]->chassis,ball);
         for (auto &wheel : robots[k]->wheels)
         {
-            p->createSurface(wheel->cyl, ball);
-            PSurface *w_g = p->createSurface(wheel->cyl, ground);
+            physics->createSurface(wheel->cyl, ball);
+            PSurface *w_g = physics->createSurface(wheel->cyl, ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
         }
         for (auto &b : robots[k]->balls)
         {
-            //            p->createSurface(b->pBall,ball);
-            PSurface *w_g = p->createSurface(b->pBall, ground);
+            //            physics->createSurface(b->pBall,ball);
+            PSurface *w_g = physics->createSurface(b->pBall, ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
@@ -341,7 +337,7 @@ World::World(RobotsFormation *form)
         {
             if (k != j)
             {
-                p->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
     }
@@ -374,7 +370,7 @@ int World::robotIndex(unsigned int robot, int team)
 
 World::~World()
 {
-    delete p;
+    delete physics;
 }
 
 void World::step(dReal dt)
@@ -418,7 +414,7 @@ void World::step(dReal dt)
         else
             last_dt = dt;
 
-        p->step(dt * 0.2, fullSpeed);
+        physics->step(dt * 0.2, fullSpeed);
     }
 
     steps_super++;
@@ -516,9 +512,9 @@ Environment *World::generatePacket()
     //ball_speed_estimator->estimateSpeed((double)(t), ball_pose, ball_vel);
     ball_vel = dBodyGetLinearVel(ball->body);
     //Ball speed stored in vall_vel. Remember that the sign for linear speed is changed.
-    dReal dev_x = Config::Noise().getnoiseDeviationX();
-    dReal dev_y = Config::Noise().getnoiseDeviationY();
-    dReal dev_a = Config::Noise().getnoiseDeviationAngle();
+    dReal dev_x = Config::Noise().getNoiseDeviationX();
+    dReal dev_y = Config::Noise().getNoiseDeviationY();
+    dReal dev_a = Config::Noise().getNoiseDeviationAngle();
     if (!Config::Noise().getNoise())
     {
         dev_x = 0;
@@ -572,7 +568,7 @@ Environment *World::generatePacket()
             }
             //Robot speed stored in robot_vel. Remember that the sign for linear speed is changed.
             // reset when the robot has turned over
-            if (Config::world().getResetTurnOver() && k < 0.9)
+            if (Config::World().getResetTurnOver() && k < 0.9)
             {
                 robots[i]->resetRobot();
             }

@@ -26,8 +26,6 @@
 #include <QObject>
 #include <QtNetwork>
 #include <iostream>
-
-#include "logger.h"
 #include "packet.pb.h"
 
 using namespace std;

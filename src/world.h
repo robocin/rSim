@@ -36,6 +36,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "speed_estimator.h"
 #define WALL_COUNT 16
+#define MAX_ROBOT_COUNT 12 //don't change
+#define TEAM_COUNT 2
 
 class RobotsFormation;
 class SendingPacket {
@@ -45,7 +47,7 @@ class SendingPacket {
     int t;
 };
 
-class World:
+class World
 {
 private:
     int frame_num;
@@ -63,7 +65,7 @@ public:
     int goals_yellow = 0;
     int goals_blue = 0;
     World(RobotsFormation *form);
-    ~World() override;
+    ~World();
     void simStep(dReal dt=-1);
     void step(dReal dt=-1);
     void posProcess();

@@ -33,7 +33,7 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2, int wheeltex
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
     dReal centerz = z - Config::Robot().getRadius() * 0.5 + Config::Robot().getWheelRadius() - Config::Robot().getBottomHeight();
-    cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass(), 0.9, 0.9, 0.9, wheeltexid);
+    cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass(), wheeltexid);
     cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
@@ -75,15 +75,15 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
     dReal centerz = z - Config::Robot().getRadius() * 0.5 + Config::World().getBallRadius() - Config::Robot().getBottomHeight();
-    pBall = new PBall(centerx, centery, centerz, Config::World().getBallRadius(), Config::World().getBallMass(), 1, 0, 0);
+    pBall = new PBall(centerx, centery, centerz, Config::World().getBallRadius(), Config::World().getBallMass());
     pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     pBall->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
     pBall->space = rob->space;
 
-    rob->w->addObject(pBall);
+    rob->physics->addObject(pBall);
 
-    joint = dJointCreateHinge(rob->w->world, nullptr);
+    joint = dJointCreateHinge(rob->physics->world, nullptr);
 
     dJointAttach(joint, rob->chassis->body, pBall->body);
     const dReal *a = dBodyGetPosition(pBall->body);
@@ -99,21 +99,20 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     m_x = x;
     m_y = y;
     m_z = z;
-    w = world;
+    physics = world;
     m_ball = ball;
     m_dir = dir;
     m_rob_id = rob_id;
 
-    space = w->space;
+    space = physics->space;
 
-    chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, r, g, b, rob_id, true);
+    chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
     chassis->space = space;
-    w->addObject(chassis);
+    physics->addObject(chassis);
 
-    dummy = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, r, g, b, rob_id, true);
-    dummy->setVisibility(false);
+    dummy = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
     dummy->space = space;
-    w->addObject(dummy);
+    physics->addObject(dummy);
 
     dummy_to_chassis = dJointCreateFixed(world->world, nullptr);
     dJointAttach(dummy_to_chassis, chassis->body, dummy->body);
@@ -135,7 +134,7 @@ PBall *CRobot::getBall()
 
 PWorld *CRobot::getWorld()
 {
-    return w;
+    return physics;
 }
 
 int CRobot::getID()
