@@ -16,7 +16,7 @@ standard_paths(${PROJECT_SOURCE_DIR} bin lib)
 set(app ${CMAKE_PROJECT_NAME})
 # create the target before the sources list is known so that we can call
 # add_dependencies(<target> external_proj)
-add_executable(${app} "" src/main.cpp)
+add_executable(${app} "" src/simulator.cpp)
 
 # definitions for knowing the OS from the code
 if(MSVC)
@@ -113,7 +113,7 @@ set(SOURCES
     src/config.cpp
     src/robot.cpp
     src/world.cpp
-    src/main.cpp
+    src/simulator.cpp
 )
 
 set(HEADERS
@@ -131,7 +131,7 @@ set(HEADERS
     src/config.h
     src/robot.h
     src/world.h
-    src/main.h
+    src/simulator.h
 )
 
 # files to be compiled
