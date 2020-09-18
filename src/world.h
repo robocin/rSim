@@ -19,10 +19,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #ifndef WORLD_H
 #define WORLD_H
 
-
 #include <QUdpSocket>
 #include <QList>
-
 
 #include "physics/pworld.h"
 #include "physics/pball.h"
@@ -40,10 +38,11 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #define TEAM_COUNT 2
 
 class RobotsFormation;
-class SendingPacket {
-    public:
-    SendingPacket(fira_message::sim_to_ref::Environment* _packet,int _t);
-    fira_message::sim_to_ref::Environment* packet;
+class SendingPacket
+{
+public:
+    SendingPacket(fira_message::sim_to_ref::Environment *_packet, int _t);
+    fira_message::sim_to_ref::Environment *packet;
     int t;
 };
 
@@ -52,7 +51,7 @@ class World
 private:
     int frame_num;
     dReal last_dt;
-    QList<SendingPacket*> sendQueue;
+    QList<SendingPacket *> sendQueue;
     char *in_buffer;
     bool lastInfraredState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
     int steps_super, steps_fault;
@@ -60,40 +59,40 @@ private:
 
     void getValidPosition(dReal &x, dReal &y, uint32_t max);
 
-public:    
+public:
     dReal customDT;
     int goals_yellow = 0;
     int goals_blue = 0;
     World(RobotsFormation *form);
     ~World();
-    void simStep(dReal dt=-1);
-    void step(dReal dt=-1);
+    void simStep(dReal dt = -1);
+    void step(dReal dt = -1);
     void posProcess();
-    fira_message::sim_to_ref::Environment* generatePacket();
+    fira_message::sim_to_ref::Environment *generatePacket();
     void sendVisionBuffer();
-    int  robotIndex(unsigned int robot, int team);
-    const dReal* ball_vel;
-    const dReal* robot_vel;
-    const dReal* robot_angular_vel;
+    int robotIndex(unsigned int robot, int team);
+    const dReal *ball_vel;
+    const dReal *robot_vel;
+    const dReal *robot_angular_vel;
 
-    PWorld* physics;
-    PBall* ball;
-    speedEstimator* ball_speed_estimator;
-    speedEstimator* blue_speed_estimator [MAX_ROBOT_COUNT];
-    speedEstimator* yellow_speed_estimator [MAX_ROBOT_COUNT];
-    PGround* ground;
-    PRay* ray;
-    PFixedBox* walls[WALL_COUNT]{};
+    PWorld *physics;
+    PBall *ball;
+    speedEstimator *ball_speed_estimator;
+    speedEstimator *blue_speed_estimator[MAX_ROBOT_COUNT];
+    speedEstimator *yellow_speed_estimator[MAX_ROBOT_COUNT];
+    PGround *ground;
+    PRay *ray;
+    PFixedBox *walls[WALL_COUNT]{};
     int selected{};
     bool show3DCursor;
-    dReal cursor_x{},cursor_y{},cursor_z{};
+    dReal cursor_x{}, cursor_y{}, cursor_z{};
     dReal cursor_radius{};
     RoboCupSSLServer *visionServer{};
     QUdpSocket *commandSocket{};
     bool updatedCursor;
     bool withGoalKick = false;
     bool randomStart = false;
-    CRobot* robots[MAX_ROBOT_COUNT*2]{};
+    CRobot *robots[MAX_ROBOT_COUNT * 2]{};
     QElapsedTimer *timer, *timer_fault;
     bool received = true;
     bool fullSpeed = false;
@@ -102,17 +101,17 @@ public:
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
 public slots:
     void recvActions();
-
 };
 
-class RobotsFormation {
-    public:
-        dReal x[MAX_ROBOT_COUNT]{};
-        dReal y[MAX_ROBOT_COUNT]{};
-        RobotsFormation(int type);
-        void setAll(const dReal *xx,const dReal *yy);
-        void loadFromFile(const QString& filename);
-        void resetRobots(CRobot** r,int team);
+class RobotsFormation
+{
+public:
+    dReal x[MAX_ROBOT_COUNT]{};
+    dReal y[MAX_ROBOT_COUNT]{};
+    RobotsFormation(int type);
+    void setAll(const dReal *xx, const dReal *yy);
+    void loadFromFile(const QString &filename);
+    void resetRobots(CRobot **r, int team);
 };
 
 dReal fric(dReal f);

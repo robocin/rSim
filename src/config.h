@@ -80,9 +80,9 @@ namespace Config
     class Communication
     {
     private:
-        std::string VisionMulticastAddr = "224.0.0.1";
+        std::string VisionMulticastAddr = "127.0.0.1";
         int VisionMulticastPort = 10020;
-        int CommandListenPort = 20011;
+        int CommandListenPort = 10021;
         int BlueStatusSendPort = 30011;
         int YellowStatusSendPort = 30012;
         int sendDelay = 0;
@@ -153,29 +153,30 @@ namespace Config
         double WheelTangentFriction = 0.8;
         double WheelPerpendicularFriction = 1;
         double WheelMotorFMax = 0.2;
+
     public:
-        double getCenterFromKicker(){return this->CenterFromKicker;}
-        double getRadius(){return this->Radius;}
-        double getHeight(){return this->Height;}
-        double getBottomHeight(){return this->BottomHeight;}
-        double getKickerZValue(){return this->KickerZValue;}
-        double getKickerThickness(){return this->KickerThickness;}
-        double getKickerWidth(){return this->KickerWidth;}
-        double getKickerHeight(){return this->KickerHeight;}
-        double getWheelRadius(){return this->WheelRadius;}
-        double getWheelThickness(){return this->WheelThickness;}
-        int getWheel1Angle(){return this->Wheel1Angle;}
-        int getWheel2Angle(){return this->Wheel2Angle;}
-        double getBodyMass(){return this->BodyMass;}
-        double getWheelMass(){return this->WheelMass;}
-        double getKickerMass(){return this->KickerMass;}
-        double getKickerDampFactor(){return this->KickerDampFactor;}
-        double getRollerTorqueFactor(){return this->RollerTorqueFactor;}
-        double getRollerPerpendicularTorqueFactor(){return this->RollerPerpendicularTorqueFactor;}
-        double getKickerFriction(){return this->KickerFriction;}
-        double getWheelTangentFriction(){return this->WheelTangentFriction;}
-        double getWheelPerpendicularFriction(){return this->WheelPerpendicularFriction;}
-        double getWheelMotorFMax(){return this->WheelMotorFMax;}
+        double getCenterFromKicker() { return this->CenterFromKicker; }
+        double getRadius() { return this->Radius; }
+        double getHeight() { return this->Height; }
+        double getBottomHeight() { return this->BottomHeight; }
+        double getKickerZValue() { return this->KickerZValue; }
+        double getKickerThickness() { return this->KickerThickness; }
+        double getKickerWidth() { return this->KickerWidth; }
+        double getKickerHeight() { return this->KickerHeight; }
+        double getWheelRadius() { return this->WheelRadius; }
+        double getWheelThickness() { return this->WheelThickness; }
+        int getWheel1Angle() { return this->Wheel1Angle; }
+        int getWheel2Angle() { return this->Wheel2Angle; }
+        double getBodyMass() { return this->BodyMass; }
+        double getWheelMass() { return this->WheelMass; }
+        double getKickerMass() { return this->KickerMass; }
+        double getKickerDampFactor() { return this->KickerDampFactor; }
+        double getRollerTorqueFactor() { return this->RollerTorqueFactor; }
+        double getRollerPerpendicularTorqueFactor() { return this->RollerPerpendicularTorqueFactor; }
+        double getKickerFriction() { return this->KickerFriction; }
+        double getWheelTangentFriction() { return this->WheelTangentFriction; }
+        double getWheelPerpendicularFriction() { return this->WheelPerpendicularFriction; }
+        double getWheelMotorFMax() { return this->WheelMotorFMax; }
     };
 
 } // namespace Config

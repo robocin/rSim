@@ -4,7 +4,6 @@
 
 bool step(World *world)
 {
-
     world->step(Config::World().getDeltaTime());
 }
 
@@ -21,6 +20,9 @@ int main()
     visionServer->change_port(Config::Communication().getVisionMulticastPort());
     world->visionServer = visionServer;
     world->commandSocket = commandSocket;
-    world->step(0.016);
+    while (true)
+    {
+        step(world);
+    }
     return 0;
 }

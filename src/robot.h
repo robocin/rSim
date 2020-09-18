@@ -80,7 +80,7 @@ public:
         CRobot *rob;
     } * balls[2]{};
 
-    CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z, 
+    CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
            int rob_id, int wheeltexid, int dir, bool turn_on);
     ~CRobot();
     void step();

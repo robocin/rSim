@@ -177,77 +177,60 @@ World::World(RobotsFormation *form)
 
     for (auto &w : walls)
         w = new PFixedBox(thick / 2, pos_y, pos_z,
-                          siz_x, thick, siz_z
-                          );
+                          siz_x, thick, siz_z);
 
     walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
-                             siz_x, thick, siz_z
-                             );
+                             siz_x, thick, siz_z);
 
     walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
-                             siz_x, thick, siz_z
-                             );
+                             siz_x, thick, siz_z);
 
     walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z
-                             );
+                             thick, (siz_y - gsiz_y) / 2, siz_z);
 
     walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z
-                              );
+                              thick, (siz_y - gsiz_y) / 2, siz_z);
 
     walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z
-                             );
+                             thick, (siz_y - gsiz_y) / 2, siz_z);
 
     walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z
-                              );
+                              thick, (siz_y - gsiz_y) / 2, siz_z);
 
     // Goal walls
     walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z
-                             );
+                             gthick, gsiz_y, gsiz_z);
 
     walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z
-                             );
+                             gsiz_x, gthick, gsiz_z);
 
     walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z
-                             );
+                             gsiz_x, gthick, gsiz_z);
 
     walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z
-                             );
+                             gthick, gsiz_y, gsiz_z);
 
     walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z
-                             );
+                             gsiz_x, gthick, gsiz_z);
 
     walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z
-                             );
+                             gsiz_x, gthick, gsiz_z);
 
     // Corner Wall
     walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z
-                              );
+                              gsiz_x, gthick, gsiz_z);
     walls[12]->setRotation(0, 0, 1, M_PI / 4);
 
     walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z
-                              );
+                              gsiz_x, gthick, gsiz_z);
     walls[13]->setRotation(0, 0, 1, -M_PI / 4);
 
     walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z
-                              );
+                              gsiz_x, gthick, gsiz_z);
     walls[14]->setRotation(0, 0, 1, M_PI / 4);
 
     walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z
-                              );
+                              gsiz_x, gthick, gsiz_z);
     walls[15]->setRotation(0, 0, 1, -M_PI / 4);
 
     physics->addObject(ground);

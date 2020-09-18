@@ -93,7 +93,7 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     speed = 0;
 }
 
-CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z, 
+CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
                int rob_id, int wheeltexid, int dir, bool turn_on)
 {
     m_x = x;
