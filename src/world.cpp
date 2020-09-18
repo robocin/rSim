@@ -136,7 +136,7 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(RobotsFormation *form)
+World::World()
 {
     steps_super = 0;
     steps_fault = 0;

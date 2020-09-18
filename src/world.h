@@ -63,7 +63,7 @@ public:
     dReal customDT;
     int goals_yellow = 0;
     int goals_blue = 0;
-    World(RobotsFormation *form);
+    World();
     ~World();
     void simStep(dReal dt = -1);
     void step(dReal dt = -1);

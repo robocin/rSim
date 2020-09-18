@@ -9,8 +9,7 @@ bool step(World *world)
 
 int main()
 {
-    RobotsFormation *forms = new RobotsFormation(-2);
-    World *world = new World(forms);
+    World *world = new World();
     RoboCupSSLServer *visionServer = nullptr;
     QUdpSocket *commandSocket = nullptr;
     commandSocket = new QUdpSocket(nullptr);
