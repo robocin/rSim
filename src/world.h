@@ -29,7 +29,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "robot.h"
 
-#include "speed_estimator.h"
 #define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
 #define TEAM_COUNT 2
@@ -38,7 +37,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 class World
 {
 private:
-    char *in_buffer;
     bool lastInfraredState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
     int episodeSteps, faultSteps;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
@@ -58,9 +56,6 @@ public:
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
     PWorld *physics;
     PBall *ball;
-    speedEstimator *ball_speed_estimator;
-    speedEstimator *blue_speed_estimator[MAX_ROBOT_COUNT];
-    speedEstimator *yellow_speed_estimator[MAX_ROBOT_COUNT];
     PGround *ground;
     PFixedBox *walls[WALL_COUNT]{};
     dReal cursor_x{}, cursor_y{}, cursor_z{};

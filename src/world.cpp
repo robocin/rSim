@@ -277,14 +277,6 @@ World::World()
         }
     }
 
-    in_buffer = new char[65536];
-    ball_speed_estimator = new speedEstimator(false, 0.95, 100000);
-    for (int i = 0; i < Config::Field().getRobotsCount(); i++)
-    {
-        blue_speed_estimator[i] = new speedEstimator(true, 0.95, 100000);
-        yellow_speed_estimator[i] = new speedEstimator(true, 0.95, 100000);
-    }
-
     // initialize robot state
     for (int team = 0; team < TEAM_COUNT; ++team)
     {
