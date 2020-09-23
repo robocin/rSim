@@ -1,9 +1,11 @@
 #include "simulator.h"
 #include "world.h"
 #include "config.h"
+#include <chrono> 
 
 bool step(World *world)
 {
+    world->recvActions();
     world->step(Config::World().getDeltaTime());
 }
 
