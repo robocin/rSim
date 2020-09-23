@@ -134,7 +134,6 @@ World::World()
 {
     this->episodeSteps = 0;
     steps_fault = 0;
-    customDT = -1;
     _world = this;
     show3DCursor = false;
     updatedCursor = false;
@@ -350,10 +349,9 @@ World::~World()
     delete physics;
 }
 
-void World::step(dReal dt)
+void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 {
-    if (customDT > 0)
-        dt = customDT;
+    setActions(actions);
 
     // Pq ele faz isso 5 vezes?
     // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
@@ -404,61 +402,16 @@ void World::step(dReal dt)
     received = false;
 }
 
-// void World::recvActions()
-// {
-//     QHostAddress sender;
-//     quint16 port;
-//     Packet packet;
-//     while (commandSocket->hasPendingDatagrams())
-//     {
-//         qint64 size = commandSocket->readDatagram(in_buffer, 65536, &sender, &port);
-//         if (size > 0)
-//         {
-//             packet.ParseFromArray(in_buffer, static_cast<int>(size));
-//             if (packet.has_cmd())
-//             {
-//                 for (const auto &robot_cmd : packet.cmd().robot_commands())
-//                 {
-//                     int id = robotIndex(robot_cmd.id(), robot_cmd.yellowteam());
-//                     if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
-//                         continue;
-//                     robots[id]->setSpeed(0, -1 * robot_cmd.wheel_left());
-//                     robots[id]->setSpeed(1, robot_cmd.wheel_right());
-//                 }
-//                 received = true;
-//             }
-//             if (packet.has_replace())
-//             {
-//                 for (const auto &replace : packet.replace().robots())
-//                 {
-//                     int id = robotIndex(replace.position().robot_id(), replace.yellowteam());
-//                     if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
-//                         continue;
-//                     robots[id]->setXY(replace.position().x(), replace.position().y());
-//                     robots[id]->setDir(replace.position().orientation());
-//                     robots[id]->on = replace.turnon();
-//                 }
-//                 if (packet.replace().has_ball())
-//                 {
-//                     dReal x = 0, y = 0, z = 0, vx = 0, vy = 0;
-//                     ball->getBodyPosition(x, y, z);
-//                     const auto vel_vec = dBodyGetLinearVel(ball->body);
-//                     vx = vel_vec[0];
-//                     vy = vel_vec[1];
-
-//                     x = packet.replace().ball().x();
-//                     y = packet.replace().ball().y();
-//                     vx = packet.replace().ball().vx();
-//                     vy = packet.replace().ball().vy();
-
-//                     ball->setBodyPosition(x, y, Config::World().getBallRadius() * 1.2);
-//                     dBodySetLinearVel(ball->body, vx, vy, 0);
-//                     dBodySetAngularVel(ball->body, 0, 0, 0);
-//                 }
-//             }
-//         }
-//     }
-// }
+void World::setActions(std::vector<std::tuple<double, double>> actions)
+{
+    int id = 0;
+    for (std::tuple<double, double> robotAction : actions)
+    {
+        robots[id]->setSpeed(0, -1 * robotAction.first());
+        robots[id]->setSpeed(1, robotAction.second());
+        id++;
+    }
+}
 
 dReal normalizeAngle(dReal a)
 {

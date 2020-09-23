@@ -63,7 +63,6 @@ public:
     bool received = true;
     bool fullSpeed = false;
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
-    dReal customDT;
     PWorld *physics;
     PBall *ball;
     speedEstimator *ball_speed_estimator;
@@ -81,7 +80,7 @@ public:
     World();
     ~World();
     void simStep(dReal dt = -1);
-    void step(dReal dt = -1);
+    void step(dReal dt = -1, std::vector<std::tuple<double, double>> actions);
     void posProcess();
 
     /**
@@ -111,8 +110,7 @@ public:
     const std::vector<double>& getState();
 
     int robotIndex(unsigned int robot, int team);
-// public slots:
-//     void recvActions();
+    void setActions(std::vector<std::tuple<double, double>> actions);
 };
 
 class RobotsFormation
