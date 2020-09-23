@@ -97,6 +97,7 @@ set(SOURCES
     src/robot.cpp
     src/world.cpp
     src/simulator.cpp
+    src/utils.cpp
 )
 
 set(HEADERS
@@ -111,6 +112,7 @@ set(HEADERS
     src/robot.h
     src/world.h
     src/simulator.h
+    src/utils.h
 )
 
 # files to be compiled

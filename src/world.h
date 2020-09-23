@@ -28,6 +28,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pfixedbox.h"
 
 #include "robot.h"
+#include "utils.h"
 
 #define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
