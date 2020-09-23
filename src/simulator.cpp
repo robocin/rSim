@@ -5,7 +5,9 @@
 
 const std::vector<double>&step(World *world)
 {
-    world->step(Config::World().getDeltaTime());
+    std::vector<std::tuple<double, double>> actions;
+    actions.push_back(std::make_tuple(0.1, 0.1));
+    world->step(Config::World().getDeltaTime(), actions);
     return world->getState();
 }
 
@@ -15,6 +17,7 @@ int main()
     while (true)
     {
         const std::vector<double> state = step(world);
+        std::cout << "robot blue x " << state[5] << " robot blue y " << state[6] << '\n';
     }
     return 0;
 }

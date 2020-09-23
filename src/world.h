@@ -80,7 +80,7 @@ public:
     World();
     ~World();
     void simStep(dReal dt = -1);
-    void step(dReal dt = -1, std::vector<std::tuple<double, double>> actions);
+    void step(dReal dt, std::vector<std::tuple<double, double>> actions);
     void posProcess();
 
     /**

@@ -407,8 +407,8 @@ void World::setActions(std::vector<std::tuple<double, double>> actions)
     int id = 0;
     for (std::tuple<double, double> robotAction : actions)
     {
-        robots[id]->setSpeed(0, -1 * robotAction.first());
-        robots[id]->setSpeed(1, robotAction.second());
+        robots[id]->setSpeed(0, -1 * std::get<0>(robotAction));
+        robots[id]->setSpeed(1, std::get<1>(robotAction));
         id++;
     }
 }
