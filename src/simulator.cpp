@@ -3,27 +3,18 @@
 #include "config.h"
 #include <chrono> 
 
-bool step(World *world)
+const std::vector<double>&step(World *world)
 {
-    world->recvActions();
     world->step(Config::World().getDeltaTime());
+    return world->getState();
 }
 
 int main()
 {
     World *world = new World();
-    RoboCupSSLServer *visionServer = nullptr;
-    QUdpSocket *commandSocket = nullptr;
-    commandSocket = new QUdpSocket(nullptr);
-    commandSocket->bind(QHostAddress::Any, Config::Communication().getCommandListenPort());
-    visionServer = new RoboCupSSLServer();
-    visionServer->change_address(Config::Communication().getVisionMulticastAddr());
-    visionServer->change_port(Config::Communication().getVisionMulticastPort());
-    world->visionServer = visionServer;
-    world->commandSocket = commandSocket;
     while (true)
     {
-        step(world);
+        const std::vector<double> state = step(world);
     }
     return 0;
 }

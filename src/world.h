@@ -19,8 +19,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #ifndef WORLD_H
 #define WORLD_H
 
-#include <QUdpSocket>
 #include <QList>
+#include <QElapsedTimer>
 
 #include "physics/pworld.h"
 #include "physics/pball.h"
@@ -28,53 +28,42 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pfixedbox.h"
 #include "physics/pray.h"
 
-#include "net/robocup_ssl_server.h"
-
 #include "robot.h"
 
 #include "speed_estimator.h"
 #define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
 #define TEAM_COUNT 2
+#define STATE_SIZE 29 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY) 
 
 class RobotsFormation;
-class SendingPacket
-{
-public:
-    SendingPacket(fira_message::sim_to_ref::Environment *_packet, int _t);
-    fira_message::sim_to_ref::Environment *packet;
-    int t;
-};
 
 class World
 {
 private:
     int frame_num;
-    dReal last_dt;
-    QList<SendingPacket *> sendQueue;
     char *in_buffer;
     bool lastInfraredState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
-    int steps_super, steps_fault;
+    int episodeSteps, steps_fault;
+    dReal last_dt;
+    std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
     KickStatus lastKickState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
 
     void getValidPosition(dReal &x, dReal &y, uint32_t max);
 
 public:
+    int goalsYellow = 0;
+    int goalsBlue = 0;
+    int minute = 0;
+    int selected{};
+    bool updatedCursor;
+    bool withGoalKick = false;
+    bool randomStart = false;
+    bool show3DCursor;
+    bool received = true;
+    bool fullSpeed = false;
+    std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
     dReal customDT;
-    int goals_yellow = 0;
-    int goals_blue = 0;
-    World();
-    ~World();
-    void simStep(dReal dt = -1);
-    void step(dReal dt = -1);
-    void posProcess();
-    fira_message::sim_to_ref::Environment *generatePacket();
-    void sendVisionBuffer();
-    int robotIndex(unsigned int robot, int team);
-    const dReal *ball_vel;
-    const dReal *robot_vel;
-    const dReal *robot_angular_vel;
-
     PWorld *physics;
     PBall *ball;
     speedEstimator *ball_speed_estimator;
@@ -83,24 +72,47 @@ public:
     PGround *ground;
     PRay *ray;
     PFixedBox *walls[WALL_COUNT]{};
-    int selected{};
-    bool show3DCursor;
     dReal cursor_x{}, cursor_y{}, cursor_z{};
     dReal cursor_radius{};
-    RoboCupSSLServer *visionServer{};
-    QUdpSocket *commandSocket{};
-    bool updatedCursor;
-    bool withGoalKick = false;
-    bool randomStart = false;
     CRobot *robots[MAX_ROBOT_COUNT * 2]{};
     QElapsedTimer *timer, *timer_fault;
-    bool received = true;
-    bool fullSpeed = false;
-    int minute = 0;
     dReal last_speed = 0.0;
-    std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
-public slots:
-    void recvActions();
+
+    World();
+    ~World();
+    void simStep(dReal dt = -1);
+    void step(dReal dt = -1);
+    void posProcess();
+
+    /**
+    \brief goals has [blueTeamGoals, YellowTeamGoals]
+    \return return std::vector of int representing current episode goals count
+    */
+    const std::vector<int> getGoals();
+
+    /**
+    \brief FieldParams has [FieldWidth, FieldLenght, GoalDepth, GoalWidth]
+    \return return std::vector of double representing field parameters
+    */
+    const std::vector<double> getFieldParams();
+
+    /**
+    \brief get current episode time in seconds
+    \return int, representing episode time in seconds
+    */
+    int getEpisodeTime();
+
+    /**
+    \brief State has [ballX, ballY, ballZ, ballVx, ballVy,
+                    robotBlueX, robotBlueY, robotBlueVx, robotBlueVy,
+                    robotYellowX, robotYellowY, robotYellowVx, robotYellowVy]
+    \return return std::vector of float representing the state
+    */
+    const std::vector<double>& getState();
+
+    int robotIndex(unsigned int robot, int team);
+// public slots:
+//     void recvActions();
 };
 
 class RobotsFormation

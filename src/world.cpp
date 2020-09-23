@@ -26,12 +26,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <ctime>
 #include <math.h>
 
-#include "command.pb.h"
-#include "packet.pb.h"
-#include "replacement.pb.h"
-
-using namespace fira_message::sim_to_ref;
-
 #define WHEEL_COUNT 2
 
 World *_world;
@@ -138,7 +132,7 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
 
 World::World()
 {
-    steps_super = 0;
+    this->episodeSteps = 0;
     steps_fault = 0;
     customDT = -1;
     _world = this;
@@ -400,72 +394,71 @@ void World::step(dReal dt)
         physics->step(dt * 0.2, fullSpeed);
     }
 
-    steps_super++;
+    this->episodeSteps++;
     for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
     {
         robots[k]->step();
     }
-    sendVisionBuffer();
     posProcess();
     frame_num++;
     received = false;
 }
 
-void World::recvActions()
-{
-    QHostAddress sender;
-    quint16 port;
-    Packet packet;
-    while (commandSocket->hasPendingDatagrams())
-    {
-        qint64 size = commandSocket->readDatagram(in_buffer, 65536, &sender, &port);
-        if (size > 0)
-        {
-            packet.ParseFromArray(in_buffer, static_cast<int>(size));
-            if (packet.has_cmd())
-            {
-                for (const auto &robot_cmd : packet.cmd().robot_commands())
-                {
-                    int id = robotIndex(robot_cmd.id(), robot_cmd.yellowteam());
-                    if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
-                        continue;
-                    robots[id]->setSpeed(0, -1 * robot_cmd.wheel_left());
-                    robots[id]->setSpeed(1, robot_cmd.wheel_right());
-                }
-                received = true;
-            }
-            if (packet.has_replace())
-            {
-                for (const auto &replace : packet.replace().robots())
-                {
-                    int id = robotIndex(replace.position().robot_id(), replace.yellowteam());
-                    if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
-                        continue;
-                    robots[id]->setXY(replace.position().x(), replace.position().y());
-                    robots[id]->setDir(replace.position().orientation());
-                    robots[id]->on = replace.turnon();
-                }
-                if (packet.replace().has_ball())
-                {
-                    dReal x = 0, y = 0, z = 0, vx = 0, vy = 0;
-                    ball->getBodyPosition(x, y, z);
-                    const auto vel_vec = dBodyGetLinearVel(ball->body);
-                    vx = vel_vec[0];
-                    vy = vel_vec[1];
+// void World::recvActions()
+// {
+//     QHostAddress sender;
+//     quint16 port;
+//     Packet packet;
+//     while (commandSocket->hasPendingDatagrams())
+//     {
+//         qint64 size = commandSocket->readDatagram(in_buffer, 65536, &sender, &port);
+//         if (size > 0)
+//         {
+//             packet.ParseFromArray(in_buffer, static_cast<int>(size));
+//             if (packet.has_cmd())
+//             {
+//                 for (const auto &robot_cmd : packet.cmd().robot_commands())
+//                 {
+//                     int id = robotIndex(robot_cmd.id(), robot_cmd.yellowteam());
+//                     if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
+//                         continue;
+//                     robots[id]->setSpeed(0, -1 * robot_cmd.wheel_left());
+//                     robots[id]->setSpeed(1, robot_cmd.wheel_right());
+//                 }
+//                 received = true;
+//             }
+//             if (packet.has_replace())
+//             {
+//                 for (const auto &replace : packet.replace().robots())
+//                 {
+//                     int id = robotIndex(replace.position().robot_id(), replace.yellowteam());
+//                     if ((id < 0) || (id >= Config::Field().getRobotsCount() * 2))
+//                         continue;
+//                     robots[id]->setXY(replace.position().x(), replace.position().y());
+//                     robots[id]->setDir(replace.position().orientation());
+//                     robots[id]->on = replace.turnon();
+//                 }
+//                 if (packet.replace().has_ball())
+//                 {
+//                     dReal x = 0, y = 0, z = 0, vx = 0, vy = 0;
+//                     ball->getBodyPosition(x, y, z);
+//                     const auto vel_vec = dBodyGetLinearVel(ball->body);
+//                     vx = vel_vec[0];
+//                     vy = vel_vec[1];
 
-                    x = packet.replace().ball().x();
-                    y = packet.replace().ball().y();
-                    vx = packet.replace().ball().vx();
-                    vy = packet.replace().ball().vy();
+//                     x = packet.replace().ball().x();
+//                     y = packet.replace().ball().y();
+//                     vx = packet.replace().ball().vx();
+//                     vy = packet.replace().ball().vy();
 
-                    ball->setBodyPosition(x, y, Config::World().getBallRadius() * 1.2);
-                    dBodySetLinearVel(ball->body, vx, vy, 0);
-                    dBodySetAngularVel(ball->body, 0, 0, 0);
-                }
-            }
-        }
-    }
-}
+//                     ball->setBodyPosition(x, y, Config::World().getBallRadius() * 1.2);
+//                     dBodySetLinearVel(ball->body, vx, vy, 0);
+//                     dBodySetAngularVel(ball->body, 0, 0, 0);
+//                 }
+//             }
+//         }
+//     }
+// }
 
 dReal normalizeAngle(dReal a)
 {
@@ -476,134 +469,81 @@ dReal normalizeAngle(dReal a)
     return a;
 }
 
-Environment *World::generatePacket()
+int World::getEpisodeTime()
 {
+    return this->episodeSteps * Config::World().getDeltaTime() * 1000;
+}
 
-    int t = steps_super * Config::World().getDeltaTime() * 1000;
-    auto *env = new Environment;
-    dReal x, y, z, dir, k;
-    ball->getBodyPosition(x, y, z);
-    //Estimating Ball Speed
+const std::vector<int> World::getGoals()
+{
+    std::vector<int> goal = std::vector<int>(static_cast<std::size_t>(2));
+    goal.clear();
+    goal.push_back(this->goalsBlue);
+    goal.push_back(this->goalsYellow);
+    return goal;
+}
 
-    //Ball Pose
-    dReal ball_pose[3];
-    ball_pose[0] = x;
-    ball_pose[1] = y;
-    ball_pose[2] = 0.0; //Ball's Angle Not considered
-    //dReal ball_vel[3] = {0.0};
-    //const dReal* ball_vel;
-    //ball_speed_estimator->estimateSpeed((double)(t), ball_pose, ball_vel);
-    ball_vel = dBodyGetLinearVel(ball->body);
-    //Ball speed stored in vall_vel. Remember that the sign for linear speed is changed.
-    dReal dev_x = Config::Noise().getNoiseDeviationX();
-    dReal dev_y = Config::Noise().getNoiseDeviationY();
-    dReal dev_a = Config::Noise().getNoiseDeviationAngle();
-    if (!Config::Noise().getNoise())
+const std::vector<double> World::getFieldParams()
+{
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(4));
+    field.clear();
+    field.push_back(Config::Field().getFieldWidth());
+    field.push_back(Config::Field().getFieldLength());
+    field.push_back(Config::Field().getGoalDepth());
+    field.push_back(Config::Field().getGoalWidth());
+    return field;
+}
+
+const std::vector<double> &World::getState()
+{
+    this->state.clear();
+    dReal ballX, ballY, ballZ;
+    dReal robotX, robotY, robotDir, robotK;
+    const dReal *ballVel, *robotVel;
+
+    // Set noise parameters
+    dReal devX = 0;
+    dReal devY = 0;
+    dReal devA = 0;
+    if (Config::Noise().getNoise())
     {
-        dev_x = 0;
-        dev_y = 0;
-        dev_a = 0;
+        devX = Config::Noise().getNoiseDeviationX();
+        devY = Config::Noise().getNoiseDeviationY();
+        devA = Config::Noise().getNoiseDeviationAngle();
     }
-    if (!Config::Vanishing().getVanishing() || (rand0_1() > Config::Vanishing().getBallVanishing()))
-    {
-        auto *vball = env->mutable_frame()->mutable_ball();
-        vball->set_x(randn_notrig(x, dev_x));
-        vball->set_y(randn_notrig(y, dev_y));
-        vball->set_z(z);
-        vball->set_vx(ball_vel[0]);
-        vball->set_vy(ball_vel[1]);
-    }
+
+    // Ball
+    this->ball->getBodyPosition(ballX, ballY, ballZ);
+    ballVel = dBodyGetLinearVel(this->ball->body);
+
+    // Add ball position to state vector
+    this->state.push_back(randn_notrig(ballX, devX));
+    this->state.push_back(randn_notrig(ballY, devY));
+    this->state.push_back(ballZ);
+    this->state.push_back(ballVel[0]);
+    this->state.push_back(ballVel[1]);
+
+    // Robots
     for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
     {
-        if (!Config::Vanishing().getVanishing() || (rand0_1() > Config::Vanishing().getBlueTeamVanishing()))
+        this->robots[i]->getXY(robotX, robotY);
+        // robotDir is not currently being used
+        robotDir = this->robots[i]->getDir(robotK);
+        robotVel = dBodyGetLinearVel(this->robots[i]->chassis->body);
+
+        // reset when the robot has turned over
+        if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
-            if (!robots[i]->on)
-                continue;
-            robots[i]->getXY(x, y);
-            dir = robots[i]->getDir(k);
-            //Estimating speeds for robots
-            //Robot Pose
-            dReal robot_pose[3];
-            robot_pose[0] = x;
-            robot_pose[1] = y;
-            robot_pose[2] = (normalizeAngle(dir) * M_PI / 180.0);
-            //dReal robot_vel[3] = {0.0};
-            //dReal* robot_vel;
-            //const dReal* robot_vel_aux;
-            //const dReal* robot_angular_vel;
-            if (i < Config::Field().getRobotsCount())
-            {
-                //blue_speed_estimator[i]->estimateSpeed((double)t, robot_pose, robot_vel);
-                robot_vel = dBodyGetLinearVel(robots[i]->chassis->body);
-                // robot_vel[0] = robot_vel_aux[0];
-                // robot_vel[1] = robot_vel_aux[1];
-                robot_angular_vel = dBodyGetAngularVel(robots[i]->chassis->body);
-                // robot_vel[2] = robot_angular_vel[2];
-            }
-            else
-            {
-                //yellow_speed_estimator[i - Config::Field().getRobotsCount()]->estimateSpeed((double)t, robot_pose, robot_vel);
-                robot_vel = dBodyGetLinearVel(robots[i]->chassis->body);
-                //robot_vel[0] = robot_vel_aux[0];
-                //robot_vel[1] = robot_vel_aux[1];
-                robot_angular_vel = dBodyGetAngularVel(robots[i]->chassis->body);
-                // robot_vel[2] = *robot_angular_vel;
-            }
-            //Robot speed stored in robot_vel. Remember that the sign for linear speed is changed.
-            // reset when the robot has turned over
-            if (Config::World().getResetTurnOver() && k < 0.9)
-            {
-                robots[i]->resetRobot();
-            }
-            fira_message::Robot *rob;
-            if (i < Config::Field().getRobotsCount())
-                rob = env->mutable_frame()->add_robots_blue();
-            else
-                rob = env->mutable_frame()->add_robots_yellow();
-
-            if (i >= Config::Field().getRobotsCount())
-                rob->set_robot_id(i - Config::Field().getRobotsCount());
-            else
-                rob->set_robot_id(i);
-            rob->set_x(randn_notrig(x, dev_x));
-            rob->set_y(randn_notrig(y, dev_y));
-            rob->set_orientation(normalizeAngle(randn_notrig(dir, dev_a)) * M_PI / 180.0);
-            rob->set_vx(robot_vel[0]);
-            rob->set_vy(robot_vel[1]);
-            rob->set_vorientation(robot_angular_vel[2]);
+            this->robots[i]->resetRobot();
         }
-    }
-    fira_message::Field *field = env->mutable_field();
-    field->set_width(Config::Field().getFieldWidth());
-    field->set_length(Config::Field().getFieldLength());
-    field->set_goal_depth(Config::Field().getGoalDepth());
-    field->set_goal_width(Config::Field().getGoalWidth());
-    env->set_step(t);
-    env->set_goals_blue(this->goals_blue);
-    env->set_goals_yellow(this->goals_yellow);
-    return env;
-}
 
-SendingPacket::SendingPacket(fira_message::sim_to_ref::Environment *_packet, int _t)
-{
-    packet = _packet;
-    t = _t;
-}
-
-void World::sendVisionBuffer()
-{
-    int t = steps_super * Config::World().getDeltaTime() * 1000;
-    sendQueue.push_back(new SendingPacket(generatePacket(), t));
-    while (t - sendQueue.front()->t >= Config::Communication().getSendDelay())
-    {
-        Environment *packet = sendQueue.front()->packet;
-        delete sendQueue.front();
-        sendQueue.pop_front();
-        visionServer->send(*packet);
-        delete packet;
-        if (sendQueue.isEmpty())
-            break;
+        // Add robot position to state vector
+        this->state.push_back(randn_notrig(robotX, devX));
+        this->state.push_back(randn_notrig(robotY, devY));
+        this->state.push_back(robotVel[0]);
+        this->state.push_back(robotVel[1]);
     }
+    return this->state;
 }
 
 void World::posProcess()
@@ -618,13 +558,13 @@ void World::posProcess()
     if (bx > 0.75 && abs(by) < 0.2)
     {
         side = true;
-        goals_blue++;
+        goalsBlue++;
         is_goal = true;
     }
     else if (bx < -0.75 && abs(by) < 0.2)
     {
         side = false;
-        goals_yellow++;
+        goalsYellow++;
         is_goal = true;
     }
     if (bx < -2 || bx > 2 || by > 2 || by < -2)
@@ -787,7 +727,7 @@ void World::posProcess()
     // End Time Detection
     bool end_time;
 
-    if ((steps_super * Config::World().getDeltaTime() * 1000) > 300000)
+    if ((getEpisodeTime()) > 300000)
     {
         end_time = true;
     }
@@ -796,7 +736,7 @@ void World::posProcess()
         end_time = false;
     }
 
-    if ((((int)(steps_super * Config::World().getDeltaTime() * 1000) / 60000) - minute) > 0)
+    if ((((getEpisodeTime()) / 60000) - minute) > 0)
     {
         minute++;
         std::cout << "****************** " << minute << " Minutes ****************" << std::endl;
@@ -820,9 +760,9 @@ void World::posProcess()
         steps_fault = 0;
         if (end_time)
         {
-            steps_super = 0;
-            goals_blue = 0;
-            goals_yellow = 0;
+            this->episodeSteps = 0;
+            goalsBlue = 0;
+            goalsYellow = 0;
             minute = 0;
         }
     }
@@ -854,9 +794,9 @@ void World::posProcess()
         if (end_time)
         {
             steps_fault = 0;
-            steps_super = 0;
-            goals_blue = 0;
-            goals_yellow = 0;
+            this->episodeSteps = 0;
+            goalsBlue = 0;
+            goalsYellow = 0;
             minute = 0;
         }
     }

@@ -85,19 +85,6 @@ option(DOUBLE_PRECISION "Use double precision? If not single precision will be u
     endif()
   endif()
 
-# Protobuf
-find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS})
-list(APPEND libs ${PROTOBUF_LIBRARIES})
-
-protobuf_generate_cpp(PROTO_CPP PROTO_H
-        msg/common.proto
-        msg/command.proto
-        msg/replacement.proto
-        msg/packet.proto
-        )
-
-
 set(SOURCES
     src/physics/pworld.cpp
     src/physics/pobject.cpp
@@ -107,8 +94,6 @@ set(SOURCES
     src/physics/pcylinder.cpp
     src/physics/pbox.cpp
     src/physics/pray.cpp
-    src/net/robocup_ssl_server.cpp
-    src/net/robocup_ssl_client.cpp
     src/speed_estimator.cpp
     src/config.cpp
     src/robot.cpp
@@ -126,8 +111,6 @@ set(HEADERS
     src/physics/pbox.h
     src/physics/pray.h
     src/speed_estimator.h
-    src/net/robocup_ssl_server.h
-    src/net/robocup_ssl_client.h
     src/config.h
     src/robot.h
     src/world.h
@@ -138,8 +121,6 @@ set(HEADERS
 set(srcs
     ${HEADERS}
     ${SOURCES}
-    ${PROTO_CPP}
-    ${PROTO_H}
 )
 
 target_sources(${app} PRIVATE ${srcs})
