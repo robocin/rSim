@@ -230,7 +230,6 @@ World::World()
     physics->initAllObjects();
 
     //Surfaces
-
     PSurface ballwithwall;
     ballwithwall.surface.mode = dContactBounce | dContactApprox1; // | dContactSlip1;
     ballwithwall.surface.mu = 1;                                  //fric(cfg->ballfriction());
@@ -854,106 +853,6 @@ void World::getValidPosition(dReal &x, dReal &y, uint32_t max)
             }
         }
     } while (!validPlace);
-}
-
-void RobotsFormation::setAll(const dReal *xx, const dReal *yy)
-{
-    for (int i = 0; i < Config::Field().getRobotsCount(); i++)
-    {
-        x[i] = xx[i];
-        y[i] = yy[i];
-    }
-}
-
-RobotsFormation::RobotsFormation(int type)
-{
-    if (type == 0)
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {2.2, 1.0, 1.0, 1.0, 0.33, 1.22,
-                                           3, 3.2, 3.4, 3.6, 3.8, 4.0};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {0.0, -0.75, 0.0, 0.75, 0.25, 0.0,
-                                           1, 1, 1, 1, 1, 1};
-        setAll(teamPosX, teamPosY);
-    }
-    if (type == 1) // formation 1
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {1.5, 1.5, 1.5, 0.55, 2.5, 3.6,
-                                           3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {1.12, 0.0, -1.12, 0.0, 0.0, 0.0,
-                                           0.75, -0.75, 1.5, -1.5, 2.25, -2.25};
-        setAll(teamPosX, teamPosY);
-    }
-    if (type == 2) // formation 2
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {4.2, 3.40, 3.40, 0.7, 0.7, 0.7,
-                                           2, 2, 2, 2, 2, 2};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {0.0, -0.20, 0.20, 0.0, 2.25, -2.25,
-                                           0.75, -0.75, 1.5, -1.5, 2.25, -2.25};
-        setAll(teamPosX, teamPosY);
-    }
-    if (type == 3) // outside field
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {0.4, 0.8, 1.2, 1.6, 2.0, 2.4,
-                                           2.8, 3.2, 3.6, 4.0, 4.4, 4.8};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {-4.0, -4.0, -4.0, -4.0, -4.0, -4.0,
-                                           -4.0, -4.0, -4.0, -4.0, -4.0, -4.0};
-        setAll(teamPosX, teamPosY);
-    }
-    if (type == 4)
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {2.8, 2.5, 2.5, 0.8, 0.8, 1.1, 3, 3.2, 3.4, 3.6, 3.8, 4.0};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {5 + 0.0, 5 - 0.3, 5 + 0.3, 5 + 0.0, 5 + 1.5, 5.5, 1, 1, 1, 1, 1, 1};
-        setAll(teamPosX, teamPosY);
-    }
-    if (type == -1) // outside
-    {
-        dReal teamPosX[MAX_ROBOT_COUNT] = {0.4, 0.8, 1.2, 1.6, 2.0, 2.4,
-                                           2.8, 3.2, 3.6, 4.0, 4.4, 4.8};
-        dReal teamPosY[MAX_ROBOT_COUNT] = {-3.4, -3.4, -3.4, -3.4, -3.4, -3.4,
-                                           -3.4, -3.4, -3.4, -3.4, -3.4, -3.4};
-        setAll(teamPosX, teamPosY);
-    }
-}
-
-void RobotsFormation::loadFromFile(const QString &filename)
-{
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
-    QTextStream in(&file);
-    int k;
-    for (k = 0; k < Config::Field().getRobotsCount(); k++)
-        x[k] = y[k] = 0;
-    k = 0;
-    while (!in.atEnd())
-    {
-        QString line = in.readLine();
-        QStringList list = line.split(",");
-        if (list.count() >= 2)
-        {
-            x[k] = list[0].toFloat();
-            y[k] = list[1].toFloat();
-        }
-        else if (list.count() == 1)
-        {
-            x[k] = list[0].toFloat();
-        }
-        if (k == Config::Field().getRobotsCount() - 1)
-            break;
-        k++;
-    }
-}
-
-void RobotsFormation::resetRobots(CRobot **r, int team)
-{
-    dReal dir = -1;
-    if (team == 1)
-        dir = 1;
-    for (int k = 0; k < Config::Field().getRobotsCount(); k++)
-    {
-        r[k + team * Config::Field().getRobotsCount()]->setXY(x[k] * dir, y[k]);
-        r[k + team * Config::Field().getRobotsCount()]->resetRobot();
-    }
 }
 
 //// Copy & pasted from http://www.dreamincode.net/code/snippet1446.htm

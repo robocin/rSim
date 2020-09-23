@@ -35,8 +35,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #define TEAM_COUNT 2
 #define STATE_SIZE 29 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY) 
 
-class RobotsFormation;
-
 class World
 {
 private:
@@ -105,17 +103,6 @@ public:
 
     int robotIndex(unsigned int robot, int team);
     void setActions(std::vector<std::tuple<double, double>> actions);
-};
-
-class RobotsFormation
-{
-public:
-    dReal x[MAX_ROBOT_COUNT]{};
-    dReal y[MAX_ROBOT_COUNT]{};
-    RobotsFormation(int type);
-    void setAll(const dReal *xx, const dReal *yy);
-    void loadFromFile(const QString &filename);
-    void resetRobots(CRobot **r, int team);
 };
 
 dReal fric(dReal f);
