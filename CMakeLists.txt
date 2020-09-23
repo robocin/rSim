@@ -93,7 +93,6 @@ set(SOURCES
     src/physics/pfixedbox.cpp
     src/physics/pcylinder.cpp
     src/physics/pbox.cpp
-    src/physics/pray.cpp
     src/speed_estimator.cpp
     src/config.cpp
     src/robot.cpp
@@ -109,7 +108,6 @@ set(HEADERS
     src/physics/pfixedbox.h
     src/physics/pcylinder.h
     src/physics/pbox.h
-    src/physics/pray.h
     src/speed_estimator.h
     src/config.h
     src/robot.h

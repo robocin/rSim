@@ -26,7 +26,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pball.h"
 #include "physics/pground.h"
 #include "physics/pfixedbox.h"
-#include "physics/pray.h"
 
 #include "robot.h"
 
@@ -41,11 +40,9 @@ class RobotsFormation;
 class World
 {
 private:
-    int frame_num;
     char *in_buffer;
     bool lastInfraredState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
-    int episodeSteps, steps_fault;
-    dReal last_dt;
+    int episodeSteps, faultSteps;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
     KickStatus lastKickState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
 
@@ -59,8 +56,6 @@ public:
     bool updatedCursor;
     bool withGoalKick = false;
     bool randomStart = false;
-    bool show3DCursor;
-    bool received = true;
     bool fullSpeed = false;
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
     PWorld *physics;
@@ -69,7 +64,6 @@ public:
     speedEstimator *blue_speed_estimator[MAX_ROBOT_COUNT];
     speedEstimator *yellow_speed_estimator[MAX_ROBOT_COUNT];
     PGround *ground;
-    PRay *ray;
     PFixedBox *walls[WALL_COUNT]{};
     dReal cursor_x{}, cursor_y{}, cursor_z{};
     dReal cursor_radius{};

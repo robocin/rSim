@@ -79,37 +79,6 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     return true;
 }
 
-bool rayCallback(dGeomID o1, dGeomID o2, PSurface *surface, int robots_count)
-{
-    if (!_world->updatedCursor)
-        return false;
-    dGeomID obj;
-    if (o1 == _world->ray->geom)
-        obj = o2;
-    else
-        obj = o1;
-    for (int i = 0; i < robots_count * 2; i++)
-    {
-        if (_world->robots[i]->chassis->geom == obj || _world->robots[i]->dummy->geom == obj)
-        {
-            _world->robots[i]->selected = true;
-            _world->robots[i]->select_x = surface->contactPos[0];
-            _world->robots[i]->select_y = surface->contactPos[1];
-            _world->robots[i]->select_z = surface->contactPos[2];
-        }
-    }
-    if (_world->ball->geom == obj)
-    {
-        _world->selected = -2;
-    }
-    if (obj == _world->ground->geom)
-    {
-        _world->cursor_x = surface->contactPos[0];
-        _world->cursor_y = surface->contactPos[1];
-        _world->cursor_z = surface->contactPos[2];
-    }
-    return false;
-}
 
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
@@ -133,19 +102,16 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
 World::World()
 {
     this->episodeSteps = 0;
-    steps_fault = 0;
+    this->faultSteps = 0;
     _world = this;
-    show3DCursor = false;
-    updatedCursor = false;
-    frame_num = 0;
-    last_dt = -1;
+    this->updatedCursor = false;
     physics = new PWorld(0.05, 9.81f, Config::Field().getRobotsCount());
     ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
 
     ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
                          Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
                          Config::Field().getFieldLineWidth(), 0);
-    ray = new PRay(50);
+
 
     const double thick = Config::Field().getWallThickness();
     const double increment = thick / 2; //cfg->Field_Margin() + cfg->Field_Referee_Margin() + thick / 2;
@@ -169,8 +135,10 @@ World::World()
     // Bounding walls
 
     for (auto &w : walls)
+    {
         w = new PFixedBox(thick / 2, pos_y, pos_z,
                           siz_x, thick, siz_z);
+    }
 
     walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
                              siz_x, thick, siz_z);
@@ -228,7 +196,6 @@ World::World()
 
     physics->addObject(ground);
     physics->addObject(ball);
-    physics->addObject(ray);
     for (auto &wall : walls)
         physics->addObject(wall);
     const int wheeltexid = 4 * Config::Field().getRobotsCount() + 12 + 1; //37 for 6 robots
@@ -264,13 +231,6 @@ World::World()
 
     //Surfaces
 
-    physics->createSurface(ray, ground)->callback = rayCallback;
-    physics->createSurface(ray, ball)->callback = rayCallback;
-    for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
-    {
-        physics->createSurface(ray, robots[k]->chassis)->callback = rayCallback;
-        physics->createSurface(ray, robots[k]->dummy)->callback = rayCallback;
-    }
     PSurface ballwithwall;
     ballwithwall.surface.mode = dContactBounce | dContactApprox1; // | dContactSlip1;
     ballwithwall.surface.mu = 1;                                  //fric(cfg->ballfriction());
@@ -384,22 +344,16 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
             dBodyAddTorque(ball->body, balltx, ballty, balltz);
         }
         dBodyAddForce(ball->body, ballfx, ballfy, ballfz);
-        if (dt == 0)
-            dt = last_dt;
-        else
-            last_dt = dt;
 
         physics->step(dt * 0.2, fullSpeed);
     }
 
-    this->episodeSteps++;
     for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
     {
         robots[k]->step();
     }
+    this->episodeSteps++;
     posProcess();
-    frame_num++;
-    received = false;
 }
 
 void World::setActions(std::vector<std::tuple<double, double>> actions)
@@ -623,9 +577,9 @@ void World::posProcess()
 
     // Fault Detection
     bool fault = false;
-    steps_fault++;
+    this->faultSteps++;
     int quadrant = 4;
-    if (steps_fault * Config::World().getDeltaTime() * 1000 >= 10000)
+    if (this->faultSteps * Config::World().getDeltaTime() * 1000 >= 10000)
     {
         if (fabs(ball_prev_pos.first - bx) < 0.0001 &&
             fabs(ball_prev_pos.second - by) < 0.0001)
@@ -664,14 +618,14 @@ void World::posProcess()
         }
         ball_prev_pos.first = bx;
         ball_prev_pos.second = by;
-        steps_fault = 0;
+        this->faultSteps = 0;
     }
     else
     {
         if (fabs(ball_prev_pos.first - bx) > 0.0001 ||
             fabs(ball_prev_pos.second - by) > 0.0001)
         {
-            steps_fault = 0;
+            this->faultSteps = 0;
         }
     }
     ball_prev_pos.first = bx;
@@ -710,7 +664,7 @@ void World::posProcess()
         dBodySetLinearVel(ball->body, 0, 0, 0);
         dBodySetAngularVel(ball->body, 0, 0, 0);
 
-        steps_fault = 0;
+        this->faultSteps = 0;
         if (end_time)
         {
             this->episodeSteps = 0;
@@ -746,7 +700,7 @@ void World::posProcess()
         }
         if (end_time)
         {
-            steps_fault = 0;
+            this->faultSteps = 0;
             this->episodeSteps = 0;
             goalsBlue = 0;
             goalsYellow = 0;
@@ -811,12 +765,12 @@ void World::posProcess()
                 robots[i]->setXY(posX[i], posY[i]);
             }
         }
-        steps_fault = 0;
+        this->faultSteps = 0;
     }
     else if (penalty)
     {
 
-        steps_fault = 0;
+        this->faultSteps = 0;
 
         if (side)
         {
@@ -849,7 +803,7 @@ void World::posProcess()
     else if (goal_shot)
     {
 
-        steps_fault = 0;
+        this->faultSteps = 0;
 
         dReal posX[6] = {0.65, 0.48, 0.49, 0.19, 0.18, -0.67};
         dReal posY[6] = {0.11, 0.37, -0.33, 0.13, -0.21, -0.01};
