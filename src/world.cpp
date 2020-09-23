@@ -69,7 +69,6 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     return true;
 }
 
-
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     if (_world->ball->tag != -1) //spinner adjusting
@@ -95,98 +94,18 @@ World::World()
     this->faultSteps = 0;
     _world = this;
     this->updatedCursor = false;
-    physics = new PWorld(0.05, 9.81f, Config::Field().getRobotsCount());
+    physics = new PWorld(Config::World().getDeltaTime(), 9.81f, Config::Field().getRobotsCount());
     ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
 
     ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
-                         Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
-                         Config::Field().getFieldLineWidth(), 0);
+                        Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
+                        Config::Field().getFieldLineWidth(), 0);
 
-
-    const double thick = Config::Field().getWallThickness();
-    const double increment = thick / 2; //cfg->Field_Margin() + cfg->Field_Referee_Margin() + thick / 2;
-    const double pos_x = Config::Field().getFieldLength() / 2.0 + increment;
-    const double pos_y = Config::Field().getFieldWidth() / 2.0 + increment;
-    const double pos_z = 0.0;
-    const double siz_x = 2.0 * pos_x;
-    const double siz_y = 2.0 * pos_y;
-    const double siz_z = 0.4;
-    const double tone = 1.0;
-
-    const double gthick = Config::Field().getWallThickness();
-    const double gpos_x = (Config::Field().getFieldLength() + gthick) / 2.0 + Config::Field().getGoalDepth();
-    const double gpos_y = (Config::Field().getGoalWidth() + gthick) / 2.0;
-    const double gpos_z = 0; //Config::Field().getGoalHeight() / 2.0;
-    const double gsiz_x = Config::Field().getGoalDepth() + gthick;
-    const double gsiz_y = Config::Field().getGoalWidth();
-    const double gsiz_z = siz_z; //Config::Field().getGoalHeight();
-    const double gpos2_x = (Config::Field().getFieldLength() + gsiz_x) / 2.0;
-
-    // Bounding walls
-
-    for (auto &w : walls)
-    {
-        w = new PFixedBox(thick / 2, pos_y, pos_z,
-                          siz_x, thick, siz_z);
-    }
-
-    walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
-                             siz_x, thick, siz_z);
-
-    walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
-                             siz_x, thick, siz_z);
-
-    walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                             thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                              thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    // Goal walls
-    walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z);
-
-    walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z);
-
-    walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z);
-
-    walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
-                             gthick, gsiz_y, gsiz_z);
-
-    walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z);
-
-    walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
-                             gsiz_x, gthick, gsiz_z);
-
-    // Corner Wall
-    walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z);
-    walls[12]->setRotation(0, 0, 1, M_PI / 4);
-
-    walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z);
-    walls[13]->setRotation(0, 0, 1, -M_PI / 4);
-
-    walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z);
-    walls[14]->setRotation(0, 0, 1, M_PI / 4);
-
-    walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                              gsiz_x, gthick, gsiz_z);
-    walls[15]->setRotation(0, 0, 1, -M_PI / 4);
+    initWalls();
 
     physics->addObject(ground);
     physics->addObject(ball);
-    for (auto &wall : walls)
+    for (auto &wall : this->walls)
         physics->addObject(wall);
     const int wheeltexid = 4 * Config::Field().getRobotsCount() + 12 + 1; //37 for 6 robots
     srand(static_cast<unsigned>(time(0)));
@@ -278,6 +197,84 @@ World::World()
     }
 }
 
+void World::initWalls()
+{
+    const double thick = Config::Field().getWallThickness();
+    const double increment = thick / 2; //cfg->Field_Margin() + cfg->Field_Referee_Margin() + thick / 2;
+    const double pos_x = Config::Field().getFieldLength() / 2.0 + increment;
+    const double pos_y = Config::Field().getFieldWidth() / 2.0 + increment;
+    const double pos_z = 0.0;
+    const double siz_x = 2.0 * pos_x;
+    const double siz_y = 2.0 * pos_y;
+    const double siz_z = 0.4;
+    const double tone = 1.0;
+
+    const double gthick = Config::Field().getWallThickness();
+    const double gpos_x = (Config::Field().getFieldLength() + gthick) / 2.0 + Config::Field().getGoalDepth();
+    const double gpos_y = (Config::Field().getGoalWidth() + gthick) / 2.0;
+    const double gpos_z = 0; //Config::Field().getGoalHeight() / 2.0;
+    const double gsiz_x = Config::Field().getGoalDepth() + gthick;
+    const double gsiz_y = Config::Field().getGoalWidth();
+    const double gsiz_z = siz_z; //Config::Field().getGoalHeight();
+    const double gpos2_x = (Config::Field().getFieldLength() + gsiz_x) / 2.0;
+
+
+    this->walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
+                            siz_x, thick, siz_z);
+
+    this->walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
+                            siz_x, thick, siz_z);
+
+    this->walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
+                            thick, (siz_y - gsiz_y) / 2, siz_z);
+
+    this->walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
+                            thick, (siz_y - gsiz_y) / 2, siz_z);
+
+    this->walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
+                            thick, (siz_y - gsiz_y) / 2, siz_z);
+
+    this->walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
+                            thick, (siz_y - gsiz_y) / 2, siz_z);
+
+    // Goal walls
+    this->walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
+                            gthick, gsiz_y, gsiz_z);
+
+    this->walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
+                            gsiz_x, gthick, gsiz_z);
+
+    this->walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
+                            gsiz_x, gthick, gsiz_z);
+
+    this->walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
+                            gthick, gsiz_y, gsiz_z);
+
+    this->walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
+                            gsiz_x, gthick, gsiz_z);
+
+    this->walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
+                            gsiz_x, gthick, gsiz_z);
+
+    // Corner Wall
+    this->walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
+                            gsiz_x, gthick, gsiz_z);
+    this->walls[12]->setRotation(0, 0, 1, M_PI / 4);
+
+    this->walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
+                            gsiz_x, gthick, gsiz_z);
+    this->walls[13]->setRotation(0, 0, 1, -M_PI / 4);
+
+    this->walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
+                            gsiz_x, gthick, gsiz_z);
+    this->walls[14]->setRotation(0, 0, 1, M_PI / 4);
+
+    this->walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
+                            gsiz_x, gthick, gsiz_z);
+    this->walls[15]->setRotation(0, 0, 1, -M_PI / 4);
+
+}
+
 int World::robotIndex(unsigned int robot, int team)
 {
     if (robot >= Config::Field().getRobotsCount())
@@ -346,15 +343,6 @@ void World::setActions(std::vector<std::tuple<double, double>> actions)
         robots[id]->setSpeed(1, std::get<1>(robotAction));
         id++;
     }
-}
-
-dReal normalizeAngle(dReal a)
-{
-    if (a > 180)
-        return -360 + a;
-    if (a < -180)
-        return 360 + a;
-    return a;
 }
 
 int World::getEpisodeTime()

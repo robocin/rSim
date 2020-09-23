@@ -70,6 +70,7 @@ public:
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);
     void posProcess();
+    void initWalls();
 
     /**
     \brief goals has [blueTeamGoals, YellowTeamGoals]

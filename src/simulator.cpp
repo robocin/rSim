@@ -6,7 +6,7 @@
 const std::vector<double>&step(World *world)
 {
     std::vector<std::tuple<double, double>> actions;
-    actions.push_back(std::make_tuple(0.1, 0.1));
+    actions.push_back(std::make_tuple(1.0, 1.0));
     world->step(Config::World().getDeltaTime(), actions);
     return world->getState();
 }
