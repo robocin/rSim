@@ -38,10 +38,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 class World
 {
 private:
-    bool lastInfraredState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
     int episodeSteps, faultSteps;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
-    KickStatus lastKickState[TEAM_COUNT][MAX_ROBOT_COUNT]{};
 
     void getValidPosition(dReal &x, dReal &y, uint32_t max);
 
@@ -49,8 +47,6 @@ public:
     int goalsYellow = 0;
     int goalsBlue = 0;
     int minute = 0;
-    int selected{};
-    bool updatedCursor;
     bool withGoalKick = false;
     bool randomStart = false;
     bool fullSpeed = false;

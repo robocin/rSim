@@ -20,7 +20,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 // ang2 = position angle
 // ang  = rotation angle
-CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2, int wheeltexid)
+CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
 {
     id = _id;
     rob = robot;
@@ -33,7 +33,7 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2, int wheeltex
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
     dReal centerz = z - Config::Robot().getRadius() * 0.5 + Config::Robot().getWheelRadius() - Config::Robot().getBottomHeight();
-    cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass(), wheeltexid);
+    cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass());
     cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
@@ -94,7 +94,7 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
 }
 
 CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-               int rob_id, int wheeltexid, int dir, bool turn_on)
+            int rob_id, int dir, bool turn_on)
 {
     m_x = x;
     m_y = y;
@@ -117,8 +117,8 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     dummy_to_chassis = dJointCreateFixed(world->world, nullptr);
     dJointAttach(dummy_to_chassis, chassis->body, dummy->body);
 
-    wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle(), wheeltexid);
-    wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle(), wheeltexid);
+    wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle());
+    wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
     balls[0] = new RBall(this, 0, Config::Robot().getWheel1Angle() + 90, Config::Robot().getWheel1Angle() + 90);
     balls[1] = new RBall(this, 1, Config::Robot().getWheel2Angle() + 90, Config::Robot().getWheel2Angle() + 90);
     firsttime = true;

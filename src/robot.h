@@ -27,13 +27,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #define ROBOT_GRAY 0.4
 
-enum KickStatus
-{
-    NO_KICK = 0,
-    FLAT_KICK = 1,
-    CHIP_KICK = 2,
-};
-
 class CRobot
 {
     PWorld *physics;
@@ -59,7 +52,7 @@ public:
     {
     public:
         int id;
-        Wheel(CRobot *robot, int _id, dReal ang, dReal ang2, int wheeltexid);
+        Wheel(CRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
         dJointID joint;
         dJointID motor;
@@ -81,7 +74,7 @@ public:
     } * balls[2]{};
 
     CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-           int rob_id, int wheeltexid, int dir, bool turn_on);
+        int rob_id, int dir, bool turn_on);
     ~CRobot();
     void step();
     void setSpeed(int i, dReal s); //i = 0,1,2,3

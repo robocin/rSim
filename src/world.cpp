@@ -93,25 +93,21 @@ World::World()
     this->episodeSteps = 0;
     this->faultSteps = 0;
     _world = this;
-    this->updatedCursor = false;
-    physics = new PWorld(Config::World().getDeltaTime(), 9.81f, Config::Field().getRobotsCount());
-    ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
-
-    ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
+    this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, Config::Field().getRobotsCount());
+    this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
+    this->ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
                         Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
                         Config::Field().getFieldLineWidth(), 0);
 
     initWalls();
 
-    physics->addObject(ground);
-    physics->addObject(ball);
+    this->physics->addObject(this->ground);
+    this->physics->addObject(this->ball);
     for (auto &wall : this->walls)
-        physics->addObject(wall);
-    const int wheeltexid = 4 * Config::Field().getRobotsCount() + 12 + 1; //37 for 6 robots
-    srand(static_cast<unsigned>(time(0)));
+        this->physics->addObject(wall);
 
-    // gonca comentou pra ver aqui
-    // cfg->robotSettings = cfg->blueSettings;
+    // TODO: entender daqui pra baixo
+    srand(static_cast<unsigned>(time(0)));
     for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
     {
         bool turn_on = (k % Config::Field().getRobotsCount() < 3) ? true : false;
@@ -120,23 +116,16 @@ World::World()
         float HI_X = 0.65;
         float HI_Y = 0.55;
         float dir = 1.0;
-        // if (k > Config::Field().getRobotsCount())
-        // {
-        //     cfg->robotSettings = cfg->yellowSettings;
-        //     x = form->x[k - Config::Field().getRobotsCount()];
-        //     y = -form->y[k - Config::Field().getRobotsCount()];
-        //     dir = -1;
-        // }
         float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
         float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
         x = (k % Config::Field().getRobotsCount() < 3) ? x : 3.0;
         y = (k % Config::Field().getRobotsCount() < 3) ? y : 3.0;
         robots[k] = new CRobot(
-            physics, ball, x, y, ROBOT_START_Z(),
-            k + 1, wheeltexid, dir, turn_on);
+            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            k + 1, dir, turn_on);
     }
 
-    physics->initAllObjects();
+    this->physics->initAllObjects();
 
     //Surfaces
     PSurface ballwithwall;
@@ -147,32 +136,32 @@ World::World()
     ballwithwall.surface.slip1 = 0; //cfg->ballslip();
 
     PSurface wheelswithground;
-    PSurface *ball_ground = physics->createSurface(ball, ground);
+    PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
     ball_ground->callback = ballCallBack;
 
     for (auto &wall : walls)
-        physics->createSurface(ball, wall)->surface = ballwithwall.surface;
+        this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
 
     for (int k = 0; k < 2 * Config::Field().getRobotsCount(); k++)
     {
-        physics->createSurface(robots[k]->chassis, ground);
+        this->physics->createSurface(robots[k]->chassis, this->ground);
         for (auto &wall : walls)
-            physics->createSurface(robots[k]->chassis, wall);
-        physics->createSurface(robots[k]->dummy, ball);
-        //physics->createSurface(robots[k]->chassis,ball);
+            this->physics->createSurface(robots[k]->chassis, wall);
+        this->physics->createSurface(robots[k]->dummy, this->ball);
+        //this->physics->createSurface(robots[k]->chassis,this->ball);
         for (auto &wheel : robots[k]->wheels)
         {
-            physics->createSurface(wheel->cyl, ball);
-            PSurface *w_g = physics->createSurface(wheel->cyl, ground);
+            this->physics->createSurface(wheel->cyl, this->ball);
+            PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
         }
         for (auto &b : robots[k]->balls)
         {
-            //            physics->createSurface(b->pBall,ball);
-            PSurface *w_g = physics->createSurface(b->pBall, ground);
+            //            this->physics->createSurface(b->pBall,this->ball);
+            PSurface *w_g = this->physics->createSurface(b->pBall, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
@@ -181,18 +170,8 @@ World::World()
         {
             if (k != j)
             {
-                physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
-        }
-    }
-
-    // initialize robot state
-    for (int team = 0; team < TEAM_COUNT; ++team)
-    {
-        for (int i = 0; i < MAX_ROBOT_COUNT; ++i)
-        {
-            lastInfraredState[team][i] = false;
-            lastKickState[team][i] = NO_KICK;
         }
     }
 }
@@ -284,7 +263,7 @@ int World::robotIndex(unsigned int robot, int team)
 
 World::~World()
 {
-    delete physics;
+    delete this->physics;
 }
 
 void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
@@ -295,7 +274,7 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
     // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
     for (int kk = 0; kk < 5; kk++)
     {
-        const dReal *ballvel = dBodyGetLinearVel(ball->body);
+        const dReal *ballvel = dBodyGetLinearVel(this->ball->body);
         // Norma do vetor velocidade da bola
         dReal ballspeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
         ballspeed = sqrt(ballspeed);
@@ -303,7 +282,7 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         dReal balltx = 0, ballty = 0, balltz = 0;
         if (ballspeed < 0.01)
         {
-            ; //const dReal* ballAngVel = dBodyGetAngularVel(ball->body);
+            ; //const dReal* ballAngVel = dBodyGetAngularVel(this->ball->body);
             //TODO: what was supposed to be here?
         }
         else
@@ -319,11 +298,11 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
             balltx = -ballfy * Config::World().getBallRadius();
             ballty = ballfx * Config::World().getBallRadius();
             balltz = 0;
-            dBodyAddTorque(ball->body, balltx, ballty, balltz);
+            dBodyAddTorque(this->ball->body, balltx, ballty, balltz);
         }
-        dBodyAddForce(ball->body, ballfx, ballfy, ballfz);
+        dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
-        physics->step(dt * 0.2, fullSpeed);
+        this->physics->step(dt * 0.2, fullSpeed);
     }
 
     for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
@@ -429,7 +408,7 @@ void World::posProcess()
     bool out_of_bands = false;
 
     dReal bx, by, bz;
-    ball->getBodyPosition(bx, by, bz);
+    this->ball->getBodyPosition(bx, by, bz);
     // Goal Detection
     if (bx > 0.75 && abs(by) < 0.2)
     {
@@ -629,9 +608,9 @@ void World::posProcess()
             robots[i]->setXY(x, y);
         }
         getValidPosition(x, y, Config::Field().getRobotsCount() * 2);
-        ball->setBodyPosition(x, y, 0);
-        dBodySetLinearVel(ball->body, 0, 0, 0);
-        dBodySetAngularVel(ball->body, 0, 0, 0);
+        this->ball->setBodyPosition(x, y, 0);
+        dBodySetLinearVel(this->ball->body, 0, 0, 0);
+        dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
         this->faultSteps = 0;
         if (end_time)
@@ -644,9 +623,9 @@ void World::posProcess()
     }
     else if (is_goal || end_time)
     {
-        ball->setBodyPosition(0, 0, 0);
-        dBodySetLinearVel(ball->body, 0, 0, 0);
-        dBodySetAngularVel(ball->body, 0, 0, 0);
+        this->ball->setBodyPosition(0, 0, 0);
+        dBodySetLinearVel(this->ball->body, 0, 0, 0);
+        dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
         if (side)
         {
@@ -680,9 +659,9 @@ void World::posProcess()
     {
         if (quadrant == 0)
         {
-            ball->setBodyPosition(-0.375, -0.4, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(-0.375, -0.4, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
             dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.3, 0.71};
             dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
@@ -694,9 +673,9 @@ void World::posProcess()
         }
         else if (quadrant == 1)
         {
-            ball->setBodyPosition(-0.375, 0.4, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(-0.375, 0.4, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
             dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.30, 0.71};
             dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
@@ -708,9 +687,9 @@ void World::posProcess()
         }
         else if (quadrant == 2)
         {
-            ball->setBodyPosition(0.375, -0.4, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(0.375, -0.4, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
             dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
             dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
@@ -722,9 +701,9 @@ void World::posProcess()
         }
         else if (quadrant == 3)
         {
-            ball->setBodyPosition(0.375, 0.4, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(0.375, 0.4, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
             dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
             dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
@@ -746,9 +725,9 @@ void World::posProcess()
             dReal posX[6] = {0.75, -0.06, -0.06, 0.35, -0.05, -0.74};
             dReal posY[6] = {-0.01, 0.23, -0.33, 0.02, 0.48, 0.01};
 
-            ball->setBodyPosition(-0.47, -0.01, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(-0.47, -0.01, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
             for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
             {
@@ -760,9 +739,9 @@ void World::posProcess()
             dReal posX[6] = {0.35, -0.05, -0.74, 0.75, -0.06, -0.06};
             dReal posY[6] = {0.02, 0.48, 0.01, -0.01, 0.23, -0.33};
 
-            ball->setBodyPosition(0.47, -0.01, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(0.47, -0.01, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
             for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
@@ -778,9 +757,9 @@ void World::posProcess()
         dReal posY[6] = {0.11, 0.37, -0.33, 0.13, -0.21, -0.01};
         if (side)
         {
-            ball->setBodyPosition(0.61, 0.11, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(0.61, 0.11, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
             for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
@@ -788,9 +767,9 @@ void World::posProcess()
         }
         else
         {
-            ball->setBodyPosition(-0.61, 0.11, 0);
-            dBodySetLinearVel(ball->body, 0, 0, 0);
-            dBodySetAngularVel(ball->body, 0, 0, 0);
+            this->ball->setBodyPosition(-0.61, 0.11, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
             for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i] * (-1), posY[i]);
