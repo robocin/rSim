@@ -11,7 +11,7 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} CMAKE_PROJECT_NAME_LOWER)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 include(${PROJECT_SOURCE_DIR}/cmake/Utils.cmake)
 standard_config()
-standard_paths(${PROJECT_SOURCE_DIR} bin src/)
+standard_paths(${PROJECT_SOURCE_DIR} bin lib/)
 
 set(app ${CMAKE_PROJECT_NAME})
 
@@ -54,42 +54,6 @@ list(APPEND libs ${OPENGL_LIBRARIES})
 #find_package(GLUT REQUIRED)
 #include_directories(${GLUT_INCLUDE_DIR})
 
-# Python
-FIND_PACKAGE(PythonInterp)
-
-if (PYTHONINTERP_FOUND)
-  if (UNIX AND NOT APPLE)
-    if (PYTHON_VERSION_MAJOR EQUAL 3)
-        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_SUFFIX})
-        FIND_PACKAGE(PythonInterp 3)
-        FIND_PACKAGE(PythonLibs 3 REQUIRED)
-    else()
-        FIND_PACKAGE(Boost COMPONENTS python)
-        FIND_PACKAGE(PythonInterp)
-        FIND_PACKAGE(PythonLibs REQUIRED)
-    endif()
-  else()	
-    if (PYTHON_VERSION_MAJOR EQUAL 3)
-        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
-        FIND_PACKAGE(PythonInterp 3)
-        FIND_PACKAGE(PythonLibs 3 REQUIRED)
-    else()
-        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
-        FIND_PACKAGE(PythonInterp)
-        FIND_PACKAGE(PythonLibs REQUIRED)
-    endif()
-  endif()
-else()
-    message("Python not found")
-endif()
-include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
-list(APPEND libs ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
-message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
-
 # Qt
 if(APPLE AND EXISTS /usr/local/opt/qt)
   # Homebrew installs Qt5 (up to at least 5.9.1) in
@@ -99,8 +63,6 @@ if(APPLE AND EXISTS /usr/local/opt/qt)
 endif()
 find_package(Qt5 COMPONENTS Core Network REQUIRED)
 list(APPEND libs Qt5::Core Qt5::Network)
-
-
 
 # ODE
 find_package(ODE REQUIRED)
@@ -132,7 +94,6 @@ set(SOURCES
     src/physics/pbox.cpp
     src/config.cpp
     src/robot.cpp
-    src/world.cpp
     src/utils.cpp
 )
 
@@ -146,7 +107,6 @@ set(HEADERS
     src/physics/pbox.h
     src/config.h
     src/robot.h
-    src/world.h
     src/utils.h
 )
 
@@ -156,8 +116,18 @@ set(srcs
     ${SOURCES}
 )
 
-add_library(robosim_c SHARED ${srcs})
+add_library(robosim_core STATIC ${srcs})
+target_link_libraries(robosim_core ${libs})
+
+add_library(robosim SHARED src/world.cpp)
+
+add_library(robosim_c SHARED robosim/robosim_c_wrapper.cpp src/world.cpp)
+set_target_properties(robosim_c PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robosim)
+
+add_dependencies(robosim robosim_core)
+add_dependencies(robosim_c robosim_core)
+
+target_link_libraries(robosim ${libs})
+target_link_libraries(robosim robosim_core)
 target_link_libraries(robosim_c ${libs})
-ADD_EXECUTABLE(robosim_c_wrapper src/robosim_c_wrapper.cpp)
-TARGET_LINK_LIBRARIES(robosim_c_wrapper robosim_c)
-ADD_TEST(NAME test COMMAND robosim_c_wrapper)
+target_link_libraries(robosim_c robosim_core)
