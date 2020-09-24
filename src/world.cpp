@@ -406,6 +406,7 @@ void World::posProcess()
     bool side;
     bool is_goal = false;
     bool out_of_bands = false;
+    this->done = false;
 
     dReal bx, by, bz;
     this->ball->getBodyPosition(bx, by, bz);
@@ -599,6 +600,7 @@ void World::posProcess()
 
     if (randomStart && (is_goal || penalty || fault || goal_shot || end_time))
     {
+        this->done = true;
         dReal x, y;
         for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
         {

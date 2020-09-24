@@ -50,6 +50,7 @@ public:
     bool withGoalKick = false;
     bool randomStart = false;
     bool fullSpeed = false;
+    bool done = false;
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
     PWorld *physics;
     PBall *ball;

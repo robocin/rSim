@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.5)
 
-
 ## Project branding, version and package mantainer
 project(RoboSim)
 set(VERSION "1.0.0")
 set(MAINTAINER "Mateus Machado, Felipe Martins, Tiago Barros <(mgm4, fbm2, tsb)@cin.ufpe.br> ")
+#set(Python3_ROOT_DIR "${HOME}/anaconda3/envs/base")
 
 # some utils and helper vars
 string(TOLOWER ${CMAKE_PROJECT_NAME} CMAKE_PROJECT_NAME_LOWER)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 include(${PROJECT_SOURCE_DIR}/cmake/Utils.cmake)
 standard_config()
-standard_paths(${PROJECT_SOURCE_DIR} bin lib)
+standard_paths(${PROJECT_SOURCE_DIR} bin src/)
 
 set(app ${CMAKE_PROJECT_NAME})
+
 # create the target before the sources list is known so that we can call
 # add_dependencies(<target> external_proj)
-add_executable(${app} "" src/simulator.cpp)
 
 # definitions for knowing the OS from the code
 if(MSVC)
@@ -42,7 +42,6 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -pthread")
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/physics)
 
-
 ## Handling depenendcies
 
 # we will append all libs to this var
@@ -55,6 +54,42 @@ list(APPEND libs ${OPENGL_LIBRARIES})
 #find_package(GLUT REQUIRED)
 #include_directories(${GLUT_INCLUDE_DIR})
 
+# Python
+FIND_PACKAGE(PythonInterp)
+
+if (PYTHONINTERP_FOUND)
+  if (UNIX AND NOT APPLE)
+    if (PYTHON_VERSION_MAJOR EQUAL 3)
+        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_SUFFIX})
+        FIND_PACKAGE(PythonInterp 3)
+        FIND_PACKAGE(PythonLibs 3 REQUIRED)
+    else()
+        FIND_PACKAGE(Boost COMPONENTS python)
+        FIND_PACKAGE(PythonInterp)
+        FIND_PACKAGE(PythonLibs REQUIRED)
+    endif()
+  else()	
+    if (PYTHON_VERSION_MAJOR EQUAL 3)
+        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+        FIND_PACKAGE(PythonInterp 3)
+        FIND_PACKAGE(PythonLibs 3 REQUIRED)
+    else()
+        FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+        FIND_PACKAGE(PythonInterp)
+        FIND_PACKAGE(PythonLibs REQUIRED)
+    endif()
+  endif()
+else()
+    message("Python not found")
+endif()
+include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+list(APPEND libs ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
+
 # Qt
 if(APPLE AND EXISTS /usr/local/opt/qt)
   # Homebrew installs Qt5 (up to at least 5.9.1) in
@@ -64,6 +99,8 @@ if(APPLE AND EXISTS /usr/local/opt/qt)
 endif()
 find_package(Qt5 COMPONENTS Core Network REQUIRED)
 list(APPEND libs Qt5::Core Qt5::Network)
+
+
 
 # ODE
 find_package(ODE REQUIRED)
@@ -96,7 +133,6 @@ set(SOURCES
     src/config.cpp
     src/robot.cpp
     src/world.cpp
-    src/simulator.cpp
     src/utils.cpp
 )
 
@@ -111,7 +147,6 @@ set(HEADERS
     src/config.h
     src/robot.h
     src/world.h
-    src/simulator.h
     src/utils.h
 )
 
@@ -121,6 +156,8 @@ set(srcs
     ${SOURCES}
 )
 
-target_sources(${app} PRIVATE ${srcs})
-install(TARGETS ${app} DESTINATION bin)
-target_link_libraries(${app} ${libs})
+add_library(robosim_c SHARED ${srcs})
+target_link_libraries(robosim_c ${libs})
+ADD_EXECUTABLE(robosim_c_wrapper src/robosim_c_wrapper.cpp)
+TARGET_LINK_LIBRARIES(robosim_c_wrapper robosim_c)
+ADD_TEST(NAME test COMMAND robosim_c_wrapper)
