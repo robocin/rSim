@@ -68,6 +68,7 @@ public:
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);
     void posProcess();
     void initWalls();
+    bool getDone(){ return done; }
 
     /**
     \brief goals has [blueTeamGoals, YellowTeamGoals]

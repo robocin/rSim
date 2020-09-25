@@ -2,9 +2,9 @@
 
 extern "C"
 {
-  World *World_new() { return new World(); }
-  void World_del(World *world) { delete world; }
-  void step(World *world, double *act, double *state_data)
+  World *newWorld() { return new World(); }
+  void delWorld(World *world) { delete world; }
+  void step(World *world, double *act)
   {
     std::vector<std::tuple<double, double>> actions;
     actions.clear();
@@ -14,8 +14,21 @@ extern "C"
       actions.push_back(action);
     }
     world->step(Config::World().getDeltaTime(), actions);
+  }
+  void getState(World *world, double *state_data)
+  {
     const std::vector<double> state = world->getState();
     const double *state_features = state.data();
     memcpy(state_data, state_features, state.size() * sizeof(double));
   }
+  bool getDone(World *world) { return world->getDone(); }
+  void getFieldParams(World *world, double *params_data)
+  {
+    const std::vector<double> params = world->getFieldParams();
+    const double *params_features = params.data();
+    memcpy(params_data, params_features, params.size() * sizeof(double));
+  }
+  int getEpisodeTime(World *world) { return world->getEpisodeTime(); }
+  int getGoalsBlue(World *world) { return world->getGoals()[0]; }
+  int getGoalsYellow(World *world) { return world->getGoals()[1]; }
 }
