@@ -61,7 +61,6 @@ class SimulatorVSS():
         action = np.array(action, dtype=np.float64)
         action = action.flatten()
         robosim_lib.step(self.world, as_ctypes(action))
-        state = self.get_state()
 
     def reset(self):
         robosim_lib.delWorld(self.world)

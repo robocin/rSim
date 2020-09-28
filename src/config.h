@@ -68,20 +68,22 @@ namespace Config
             switch(this->FieldType)
             {
                 case 0: // 3x3
-                    setFieldLength(12.);
-                    setFieldWidth(9.);
-                    setFieldPenaltyWidth(2.4);
-                    setFieldPenaltyDepth(1.2);
-                    setFieldPenaltyPoint(1.2);
-                    setGoalWidth(1.2);
+                    setFieldLength(1.50);
+                    setFieldWidth(1.300);
+                    setFieldRad(0.200)
+                    setFieldFreeKick(0.200);
+                    setFieldPenaltyWidth(0.70);
+                    setFieldPenaltyDepth(0.15);
+                    setFieldPenaltyPoint(0.35);
                     break;
                 case 1: // 5x5
-                    setFieldLength(9.);
-                    setFieldWidth(6.);
-                    setFieldPenaltyWidth(2.);
-                    setFieldPenaltyDepth(1.);
-                    setFieldPenaltyPoint(1.);
-                    setGoalWidth(1.);
+                    setFieldLength(2.2);
+                    setFieldWidth(1.8);
+                    setFieldRad(0.25)
+                    setFieldFreeKick(0.25);
+                    setFieldPenaltyWidth(0.8);
+                    setFieldPenaltyDepth(0.35);
+                    setFieldPenaltyPoint(0.375);
                     break;
                 default:
                     break;
