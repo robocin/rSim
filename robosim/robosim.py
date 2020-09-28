@@ -6,7 +6,10 @@ import numpy as np
 from gym.spaces import Box
 from numpy.ctypeslib import as_ctypes
 
-os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':'+os.getcwd()
+try:
+    os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']+':'+os.getcwd()
+except KeyError:
+    os.environ['LD_LIBRARY_PATH'] = os.getcwd()
 
 
 robosim_lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__),

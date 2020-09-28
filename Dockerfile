@@ -11,5 +11,5 @@ WORKDIR /work/build
 RUN cmake -DCMAKE_BUILD_TYPE=RelwithDebInfo ..
 RUN make -j4
 WORKDIR /work
-RUN pip3 install numpy
+RUN pip3 install numpy gym
 RUN pip3 install -e .
