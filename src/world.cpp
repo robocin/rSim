@@ -88,16 +88,18 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World()
+World::World(int fieldType, int nRobots)
 {
+    this->field.setRobotsCount(nRobots);
+    this->field.setFieldType(fieldType);
     this->episodeSteps = 0;
     this->faultSteps = 0;
     _world = this;
-    this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, Config::Field().getRobotsCount());
+    this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
-    this->ground = new PGround(Config::Field().getFieldRad(), Config::Field().getFieldLength(), Config::Field().getFieldWidth(),
-                        Config::Field().getFieldPenaltyDepth(), Config::Field().getFieldPenaltyWidth(), Config::Field().getFieldPenaltyPoint(),
-                        Config::Field().getFieldLineWidth(), 0);
+    this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
+                        this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
+                        this->field.getFieldLineWidth(), 0);
 
     initWalls();
 
@@ -108,9 +110,9 @@ World::World()
 
     // TODO: entender daqui pra baixo
     srand(static_cast<unsigned>(time(0)));
-    for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
+    for (int k = 0; k < this->field.getRobotsCount() * 2; k++)
     {
-        bool turn_on = (k % Config::Field().getRobotsCount() < 3) ? true : false;
+        bool turn_on = (k % this->field.getRobotsCount() < 3) ? true : false;
         float LO_X = -0.65;
         float LO_Y = -0.55;
         float HI_X = 0.65;
@@ -118,8 +120,8 @@ World::World()
         float dir = 1.0;
         float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
         float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
-        x = (k % Config::Field().getRobotsCount() < 3) ? x : 3.0;
-        y = (k % Config::Field().getRobotsCount() < 3) ? y : 3.0;
+        x = (k % this->field.getRobotsCount() < 3) ? x : 3.0;
+        y = (k % this->field.getRobotsCount() < 3) ? y : 3.0;
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -143,7 +145,7 @@ World::World()
     for (auto &wall : walls)
         this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
 
-    for (int k = 0; k < 2 * Config::Field().getRobotsCount(); k++)
+    for (int k = 0; k < 2 * this->field.getRobotsCount(); k++)
     {
         this->physics->createSurface(robots[k]->chassis, this->ground);
         for (auto &wall : walls)
@@ -166,7 +168,7 @@ World::World()
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
         }
-        for (int j = k + 1; j < 2 * Config::Field().getRobotsCount(); j++)
+        for (int j = k + 1; j < 2 * this->field.getRobotsCount(); j++)
         {
             if (k != j)
             {
@@ -178,24 +180,24 @@ World::World()
 
 void World::initWalls()
 {
-    const double thick = Config::Field().getWallThickness();
+    const double thick = this->field.getWallThickness();
     const double increment = thick / 2; //cfg->Field_Margin() + cfg->Field_Referee_Margin() + thick / 2;
-    const double pos_x = Config::Field().getFieldLength() / 2.0 + increment;
-    const double pos_y = Config::Field().getFieldWidth() / 2.0 + increment;
+    const double pos_x = this->field.getFieldLength() / 2.0 + increment;
+    const double pos_y = this->field.getFieldWidth() / 2.0 + increment;
     const double pos_z = 0.0;
     const double siz_x = 2.0 * pos_x;
     const double siz_y = 2.0 * pos_y;
     const double siz_z = 0.4;
     const double tone = 1.0;
 
-    const double gthick = Config::Field().getWallThickness();
-    const double gpos_x = (Config::Field().getFieldLength() + gthick) / 2.0 + Config::Field().getGoalDepth();
-    const double gpos_y = (Config::Field().getGoalWidth() + gthick) / 2.0;
-    const double gpos_z = 0; //Config::Field().getGoalHeight() / 2.0;
-    const double gsiz_x = Config::Field().getGoalDepth() + gthick;
-    const double gsiz_y = Config::Field().getGoalWidth();
-    const double gsiz_z = siz_z; //Config::Field().getGoalHeight();
-    const double gpos2_x = (Config::Field().getFieldLength() + gsiz_x) / 2.0;
+    const double gthick = this->field.getWallThickness();
+    const double gpos_x = (this->field.getFieldLength() + gthick) / 2.0 + this->field.getGoalDepth();
+    const double gpos_y = (this->field.getGoalWidth() + gthick) / 2.0;
+    const double gpos_z = 0; //this->field.getGoalHeight() / 2.0;
+    const double gsiz_x = this->field.getGoalDepth() + gthick;
+    const double gsiz_y = this->field.getGoalWidth();
+    const double gsiz_z = siz_z; //this->field.getGoalHeight();
+    const double gpos2_x = (this->field.getFieldLength() + gsiz_x) / 2.0;
 
 
     this->walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
@@ -256,9 +258,9 @@ void World::initWalls()
 
 int World::robotIndex(unsigned int robot, int team)
 {
-    if (robot >= Config::Field().getRobotsCount())
+    if (robot >= this->field.getRobotsCount())
         return -1;
-    return robot + team * Config::Field().getRobotsCount();
+    return robot + team * this->field.getRobotsCount();
 }
 
 World::~World()
@@ -305,7 +307,7 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         this->physics->step(dt * 0.2, fullSpeed);
     }
 
-    for (int k = 0; k < Config::Field().getRobotsCount() * 2; k++)
+    for (int k = 0; k < this->field.getRobotsCount() * 2; k++)
     {
         robots[k]->step();
     }
@@ -342,10 +344,10 @@ const std::vector<double> World::getFieldParams()
 {
     std::vector<double> field = std::vector<double>(static_cast<std::size_t>(4));
     field.clear();
-    field.push_back(Config::Field().getFieldWidth());
-    field.push_back(Config::Field().getFieldLength());
-    field.push_back(Config::Field().getGoalDepth());
-    field.push_back(Config::Field().getGoalWidth());
+    field.push_back(this->field.getFieldWidth());
+    field.push_back(this->field.getFieldLength());
+    field.push_back(this->field.getGoalDepth());
+    field.push_back(this->field.getGoalWidth());
     return field;
 }
 
@@ -379,7 +381,7 @@ const std::vector<double> &World::getState()
     this->state.push_back(ballVel[1]);
 
     // Robots
-    for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+    for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
     {
         this->robots[i]->getXY(robotX, robotY);
         // robotDir is not currently being used
@@ -432,7 +434,7 @@ void World::posProcess()
     {
         // Penalti Detection
         bool one_in_pen_area = false;
-        for (uint32_t i = 0; i < Config::Field().getRobotsCount(); i++)
+        for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
         {
             int num = robotIndex(i, 0);
             if (!robots[num]->on)
@@ -455,7 +457,7 @@ void World::posProcess()
         if (withGoalKick)
         {
             bool one_in_enemy_area = false;
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount(); i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
             {
                 int num = robotIndex(i, 1);
                 if (!robots[num]->on)
@@ -480,7 +482,7 @@ void World::posProcess()
     {
         // Penalti Detection
         bool one_in_pen_area = false;
-        for (uint32_t i = 0; i < Config::Field().getRobotsCount(); i++)
+        for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
         {
             int num = robotIndex(i, 1);
             if (!robots[num]->on)
@@ -503,7 +505,7 @@ void World::posProcess()
         if (withGoalKick)
         {
             bool one_in_enemy_area = false;
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount(); i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
             {
                 int num = robotIndex(i, 0);
                 if (!robots[num]->on)
@@ -602,14 +604,14 @@ void World::posProcess()
     {
         this->done = true;
         dReal x, y;
-        for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+        for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
         {
             if (!robots[i]->on)
                 continue;
             getValidPosition(x, y, i);
             robots[i]->setXY(x, y);
         }
-        getValidPosition(x, y, Config::Field().getRobotsCount() * 2);
+        getValidPosition(x, y, this->field.getRobotsCount() * 2);
         this->ball->setBodyPosition(x, y, 0);
         dBodySetLinearVel(this->ball->body, 0, 0, 0);
         dBodySetAngularVel(this->ball->body, 0, 0, 0);
@@ -634,7 +636,7 @@ void World::posProcess()
             dReal posX[6] = {0.15, 0.35, 0.71, -0.08, -0.35, -0.71};
             dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i] * (-1), posY[i]);
             }
@@ -643,7 +645,7 @@ void World::posProcess()
         {
             dReal posX[6] = {0.08, 0.35, 0.71, -0.15, -0.35, -0.71};
             dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i] * (-1), posY[i]);
             }
@@ -668,7 +670,7 @@ void World::posProcess()
             dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.3, 0.71};
             dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -682,7 +684,7 @@ void World::posProcess()
             dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.30, 0.71};
             dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -696,7 +698,7 @@ void World::posProcess()
             dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
             dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -710,7 +712,7 @@ void World::posProcess()
             dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
             dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -731,7 +733,7 @@ void World::posProcess()
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
             dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i] * (-1), posY[i]);
             }
@@ -744,7 +746,7 @@ void World::posProcess()
             this->ball->setBodyPosition(0.47, -0.01, 0);
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
             dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -762,7 +764,7 @@ void World::posProcess()
             this->ball->setBodyPosition(0.61, 0.11, 0);
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
             dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i], posY[i]);
             }
@@ -772,7 +774,7 @@ void World::posProcess()
             this->ball->setBodyPosition(-0.61, 0.11, 0);
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
             dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < Config::Field().getRobotsCount() * 2; i++)
+            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
             {
                 robots[i]->setXY(posX[i] * (-1), posY[i]);
             }
@@ -788,7 +790,7 @@ void World::getValidPosition(dReal &x, dReal &y, uint32_t max)
     float HI_Y = 0.55;
     srand(static_cast<unsigned>(time(0)));
     bool validPlace;
-    max = max > 0 ? max : Config::Field().getRobotsCount() * 2;
+    max = max > 0 ? max : this->field.getRobotsCount() * 2;
     do
     {
         validPlace = true;

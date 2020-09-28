@@ -48,10 +48,10 @@ include_directories(${PROJECT_SOURCE_DIR}/physics)
 set(libs)
 
 # OpenGL
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
-list(APPEND libs ${OPENGL_LIBRARIES})
-#find_package(GLUT REQUIRED)
+# find_package(OpenGL REQUIRED)
+# include_directories(${OPENGL_INCLUDE_DIR})
+# list(APPEND libs ${OPENGL_LIBRARIES})
+# find_package(GLUT REQUIRED)
 #include_directories(${GLUT_INCLUDE_DIR})
 
 # Qt
@@ -65,6 +65,7 @@ find_package(Qt5 COMPONENTS Core Network REQUIRED)
 list(APPEND libs Qt5::Core Qt5::Network)
 
 # ODE
+INCLUDE(FindPackageHandleStandardArgs)
 find_package(ODE REQUIRED)
 include_directories(${ODE_INCLUDE_DIRS})
 list(APPEND libs ${ODE_LIBRARIES})

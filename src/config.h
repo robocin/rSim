@@ -11,6 +11,7 @@ namespace Config
     {
     private:
         int RobotsCount = 3;
+        int FieldType = 0;
         double FieldLineWidth = 0.003;
         double FieldLength = 1.50;
         double FieldWidth = 1.300;
@@ -26,6 +27,21 @@ namespace Config
         double GoalDepth = 0.10;
         double GoalWidth = 0.40;
         double GoalHeight = 0.05;
+        void setFieldLineWidth(double value) { this->FieldLineWidth = value; }
+        void setFieldLength(double value) { this->FieldLength = value; }
+        void setFieldWidth(double value) { this->FieldWidth = value; }
+        void setFieldRad(double value) { this->FieldRad = value; }
+        void setFieldFreeKick(double value) { this->FieldFreeKick = value; }
+        void setFieldPenaltyWidth(double value) { this->FieldPenaltyWidth = value; }
+        void setFieldPenaltyDepth(double value) { this->FieldPenaltyDepth = value; }
+        void setFieldPenaltyPoint(double value) { this->FieldPenaltyPoint = value; }
+        void setFieldMargin(double value) { this->FieldMargin = value; }
+        void setFieldRefereeMargin(double value) { this->FieldRefereeMargin = value; }
+        void setWallThickness(double value) { this->WallThickness = value; }
+        void setGoalThickness(double value) { this->GoalThickness = value; }
+        void setGoalDepth(double value) { this->GoalDepth = value; }
+        void setGoalWidth(double value) { this->GoalWidth = value; }
+        void setGoalHeight(double value) { this->GoalHeight = value; }
 
     public:
         int getRobotsCount() { return this->RobotsCount; }
@@ -44,6 +60,33 @@ namespace Config
         double getGoalDepth() { return this->GoalDepth; }
         double getGoalWidth() { return this->GoalWidth; }
         double getGoalHeight() { return this->GoalHeight; }
+        int getFieldType() {return this->FieldType;}
+        void setRobotsCount(int value) { this->RobotsCount = value; }
+        void setFieldType(int value) 
+        {
+            this->FieldType = value;
+            switch(this->FieldType)
+            {
+                case 0: // 3x3
+                    setFieldLength(12.);
+                    setFieldWidth(9.);
+                    setFieldPenaltyWidth(2.4);
+                    setFieldPenaltyDepth(1.2);
+                    setFieldPenaltyPoint(1.2);
+                    setGoalWidth(1.2);
+                    break;
+                case 1: // 5x5
+                    setFieldLength(9.);
+                    setFieldWidth(6.);
+                    setFieldPenaltyWidth(2.);
+                    setFieldPenaltyDepth(1.);
+                    setFieldPenaltyPoint(1.);
+                    setGoalWidth(1.);
+                    break;
+                default:
+                    break;
+            }
+        }
     };
 
     class World
