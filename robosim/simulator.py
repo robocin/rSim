@@ -31,6 +31,8 @@ robosim_lib.getGoalsBlue.argtypes = [c_void_p]
 robosim_lib.getGoalsBlue.restype = int
 robosim_lib.getGoalsYellow.argtypes = [c_void_p]
 robosim_lib.getGoalsYellow.restype = int
+robosim_lib.replace.argtypes = [c_void_p, c_void_p, c_void_p, c_void_p]
+robosim_lib.replace.restype = None
 
 
 class SimulatorVSS():
@@ -175,3 +177,11 @@ class SimulatorVSS():
         status['goals_yellow'] = robosim_lib.getGoalsYellow(self.world)
         status['time'] = robosim_lib.getEpisodeTime(self.world)
         return status
+
+    def replace(self, ball_pos: np.ndarray,
+                blue_pos: np.ndarray, yellow_pos: np.ndarray):
+        ball_pos = ball_pos.flatten()
+        blue_pos = blue_pos.flatten()
+        yellow_pos = yellow_pos.flatten()
+        robosim_lib.replace(self.world, as_ctypes(ball_pos),
+                            as_ctypes(blue_pos), as_ctypes(yellow_pos))

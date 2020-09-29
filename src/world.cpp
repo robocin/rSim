@@ -91,6 +91,8 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
 World::World(int fieldType, int nRobots)
 {
     this->field.setRobotsCount(nRobots);
+    this->field.setRobotsBlueCount(nRobots / 2);
+    this->field.setRobotsYellowCount(nRobots / 2);
     this->field.setFieldType(fieldType);
     this->episodeSteps = 0;
     this->faultSteps = 0;
@@ -98,8 +100,8 @@ World::World(int fieldType, int nRobots)
     this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
-                        this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
-                        this->field.getFieldLineWidth(), 0);
+                               this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
+                               this->field.getFieldLineWidth(), 0);
 
     initWalls();
 
@@ -208,61 +210,59 @@ void World::initWalls()
     const double gsiz_z = siz_z; //this->field.getGoalHeight();
     const double gpos2_x = (this->field.getFieldLength() + gsiz_x) / 2.0;
 
-
     this->walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
-                            siz_x, thick, siz_z);
+                                   siz_x, thick, siz_z);
 
     this->walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
-                            siz_x, thick, siz_z);
+                                   siz_x, thick, siz_z);
 
     this->walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                            thick, (siz_y - gsiz_y) / 2, siz_z);
+                                   thick, (siz_y - gsiz_y) / 2, siz_z);
 
     this->walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                            thick, (siz_y - gsiz_y) / 2, siz_z);
+                                    thick, (siz_y - gsiz_y) / 2, siz_z);
 
     this->walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                            thick, (siz_y - gsiz_y) / 2, siz_z);
+                                   thick, (siz_y - gsiz_y) / 2, siz_z);
 
     this->walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                            thick, (siz_y - gsiz_y) / 2, siz_z);
+                                    thick, (siz_y - gsiz_y) / 2, siz_z);
 
     // Goal walls
     this->walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
-                            gthick, gsiz_y, gsiz_z);
+                                   gthick, gsiz_y, gsiz_z);
 
     this->walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                   gsiz_x, gthick, gsiz_z);
 
     this->walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                   gsiz_x, gthick, gsiz_z);
 
     this->walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
-                            gthick, gsiz_y, gsiz_z);
+                                   gthick, gsiz_y, gsiz_z);
 
     this->walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                   gsiz_x, gthick, gsiz_z);
 
     this->walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                   gsiz_x, gthick, gsiz_z);
 
     // Corner Wall
     this->walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                    gsiz_x, gthick, gsiz_z);
     this->walls[12]->setRotation(0, 0, 1, M_PI / 4);
 
     this->walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                    gsiz_x, gthick, gsiz_z);
     this->walls[13]->setRotation(0, 0, 1, -M_PI / 4);
 
     this->walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                    gsiz_x, gthick, gsiz_z);
     this->walls[14]->setRotation(0, 0, 1, M_PI / 4);
 
     this->walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                            gsiz_x, gthick, gsiz_z);
+                                    gsiz_x, gthick, gsiz_z);
     this->walls[15]->setRotation(0, 0, 1, -M_PI / 4);
-
 }
 
 int World::robotIndex(unsigned int robot, int team)
@@ -321,7 +321,6 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         robots[k]->step();
     }
     this->episodeSteps++;
-    posProcess();
 }
 
 void World::setActions(std::vector<std::tuple<double, double>> actions)
@@ -414,382 +413,41 @@ const std::vector<double> &World::getState()
     return this->state;
 }
 
-void World::posProcess()
+void World::replace(double *ball, double *pos_blue, double *pos_yellow)
 {
-    bool side;
-    bool is_goal = false;
-    bool out_of_bands = false;
-    this->done = false;
-
-    dReal bx, by, bz;
-    this->ball->getBodyPosition(bx, by, bz);
-    // Goal Detection
-    if (bx > 0.75 && abs(by) < 0.2)
+    this->ball->setBodyPosition(ball[0], ball[1], 0);
+    dBodySetLinearVel(this->ball->body, 0, 0, 0);
+    dBodySetAngularVel(this->ball->body, 0, 0, 0);
+    std::vector<std::vector<double>> blues;
+    blues.clear();
+    for (int i = 0; i < this->field.getRobotsBlueCount(); i = i + 2)
     {
-        side = true;
-        goalsBlue++;
-        is_goal = true;
-    }
-    else if (bx < -0.75 && abs(by) < 0.2)
-    {
-        side = false;
-        goalsYellow++;
-        is_goal = true;
-    }
-    if (bx < -2 || bx > 2 || by > 2 || by < -2)
-        out_of_bands = true;
-
-    bool penalty = false;
-    bool goal_shot = false;
-    if (bx < -0.6 && abs(by) < 0.35)
-    {
-        // Penalti Detection
-        bool one_in_pen_area = false;
-        for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
-        {
-            int num = robotIndex(i, 0);
-            if (!robots[num]->on)
-                continue;
-            dReal rx, ry;
-            robots[num]->getXY(rx, ry);
-            if (rx < -0.6 && abs(ry) < 0.35)
-            {
-                if (one_in_pen_area)
-                {
-                    penalty = true;
-                    side = true;
-                }
-                else
-                    one_in_pen_area = true;
-            }
-        }
-
-        // Atk Fault Detection
-        if (withGoalKick)
-        {
-            bool one_in_enemy_area = false;
-            for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
-            {
-                int num = robotIndex(i, 1);
-                if (!robots[num]->on)
-                    continue;
-                dReal rx, ry;
-                robots[num]->getXY(rx, ry);
-                if (rx < -0.6 && abs(ry) < 0.35)
-                {
-                    if (one_in_enemy_area)
-                    {
-                        goal_shot = true;
-                        side = false;
-                    }
-                    else
-                        one_in_enemy_area = true;
-                }
-            }
-        }
+        std::vector<double> pos;
+        pos.clear();
+        pos.push_back(pos_blue[i]);
+        pos.push_back(pos_blue[i + 1]);
+        blues.push_back(pos);
     }
 
-    if (bx > 0.6 && abs(by) < 0.35)
+    std::vector<std::vector<double>> yellows;
+    yellows.clear();
+    for (int i = 0; i < this->field.getRobotsYellowCount(); i = i + 2)
     {
-        // Penalti Detection
-        bool one_in_pen_area = false;
-        for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
-        {
-            int num = robotIndex(i, 1);
-            if (!robots[num]->on)
-                continue;
-            dReal rx, ry;
-            robots[num]->getXY(rx, ry);
-            if (rx > 0.6 && abs(ry) < 0.35)
-            {
-                if (one_in_pen_area)
-                {
-                    penalty = true;
-                    side = false;
-                }
-                else
-                    one_in_pen_area = true;
-            }
-        }
-
-        // Atk Fault Detection
-        if (withGoalKick)
-        {
-            bool one_in_enemy_area = false;
-            for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
-            {
-                int num = robotIndex(i, 0);
-                if (!robots[num]->on)
-                    continue;
-                dReal rx, ry;
-                robots[num]->getXY(rx, ry);
-                if (rx > 0.6 && abs(ry) < 0.35)
-                {
-                    if (one_in_enemy_area)
-                    {
-                        goal_shot = true;
-                        side = true;
-                    }
-                    else
-                        one_in_enemy_area = true;
-                }
-            }
-        }
+        std::vector<double> pos;
+        pos.clear();
+        pos.push_back(pos_yellow[i]);
+        pos.push_back(pos_yellow[i + 1]);
+        yellows.push_back(pos);
     }
 
-    // Fault Detection
-    bool fault = false;
-    this->faultSteps++;
-    int quadrant = 4;
-    if (this->faultSteps * Config::World().getDeltaTime() * 1000 >= 10000)
+    for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
-        if (fabs(ball_prev_pos.first - bx) < 0.0001 &&
-            fabs(ball_prev_pos.second - by) < 0.0001)
-        {
-            if ((bx < -0.6) && abs(by) < 0.35)
-            {
-                penalty = true;
-                side = true;
-            }
-            else if (bx > 0.6 && abs(by) < 0.35)
-            {
-
-                penalty = true;
-                side = false;
-            }
-            else
-            {
-                fault = true;
-                if (bx < 0 && by <= 0)
-                {
-                    quadrant = 0;
-                }
-                else if (bx < 0 && by >= 0)
-                {
-                    quadrant = 1;
-                }
-                else if (bx > 0 && by <= 0)
-                {
-                    quadrant = 2;
-                }
-                else if (bx > 0 && by >= 0)
-                {
-                    quadrant = 3;
-                }
-            }
-        }
-        ball_prev_pos.first = bx;
-        ball_prev_pos.second = by;
-        this->faultSteps = 0;
+        robots[i]->setXY(blues[i][0] * (-1), blues[i][1]);
     }
-    else
+    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount(); i++)
     {
-        if (fabs(ball_prev_pos.first - bx) > 0.0001 ||
-            fabs(ball_prev_pos.second - by) > 0.0001)
-        {
-            this->faultSteps = 0;
-        }
-    }
-    ball_prev_pos.first = bx;
-    ball_prev_pos.second = by;
-
-    // End Time Detection
-    bool end_time;
-
-    if ((getEpisodeTime()) > 300000)
-    {
-        end_time = true;
-    }
-    else
-    {
-        end_time = false;
-    }
-
-    if ((((getEpisodeTime()) / 60000) - minute) > 0)
-    {
-        minute++;
-        std::cout << "****************** " << minute << " Minutes ****************" << std::endl;
-    }
-
-    if (randomStart && (is_goal || penalty || fault || goal_shot || end_time))
-    {
-        this->done = true;
-        dReal x, y;
-        for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-        {
-            if (!robots[i]->on)
-                continue;
-            getValidPosition(x, y, i);
-            robots[i]->setXY(x, y);
-        }
-        getValidPosition(x, y, this->field.getRobotsCount() * 2);
-        this->ball->setBodyPosition(x, y, 0);
-        dBodySetLinearVel(this->ball->body, 0, 0, 0);
-        dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-        this->faultSteps = 0;
-        if (end_time)
-        {
-            this->episodeSteps = 0;
-            goalsBlue = 0;
-            goalsYellow = 0;
-            minute = 0;
-        }
-    }
-    else if (is_goal || end_time)
-    {
-        this->ball->setBodyPosition(0, 0, 0);
-        dBodySetLinearVel(this->ball->body, 0, 0, 0);
-        dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-        if (side)
-        {
-            dReal posX[6] = {0.15, 0.35, 0.71, -0.08, -0.35, -0.71};
-            dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i] * (-1), posY[i]);
-            }
-        }
-        else
-        {
-            dReal posX[6] = {0.08, 0.35, 0.71, -0.15, -0.35, -0.71};
-            dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i] * (-1), posY[i]);
-            }
-        }
-        if (end_time)
-        {
-            this->faultSteps = 0;
-            this->episodeSteps = 0;
-            goalsBlue = 0;
-            goalsYellow = 0;
-            minute = 0;
-        }
-    }
-    else if (fault)
-    {
-        if (quadrant == 0)
-        {
-            this->ball->setBodyPosition(-0.375, -0.4, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-            dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.3, 0.71};
-            dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-        else if (quadrant == 1)
-        {
-            this->ball->setBodyPosition(-0.375, 0.4, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-            dReal posX[6] = {-0.575, -0.44, -0.71, -0.175, -0.30, 0.71};
-            dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-        else if (quadrant == 2)
-        {
-            this->ball->setBodyPosition(0.375, -0.4, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-            dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
-            dReal posY[6] = {-0.4, 0.13, -0.02, -0.4, 0.13, -0.02};
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-        else if (quadrant == 3)
-        {
-            this->ball->setBodyPosition(0.375, 0.4, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-            dReal posX[6] = {0.175, 0.3, -0.71, 0.575, 0.44, 0.71};
-            dReal posY[6] = {0.4, -0.13, -0.02, 0.4, -0.13, -0.02};
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-        this->faultSteps = 0;
-    }
-    else if (penalty)
-    {
-
-        this->faultSteps = 0;
-
-        if (side)
-        {
-            dReal posX[6] = {0.75, -0.06, -0.06, 0.35, -0.05, -0.74};
-            dReal posY[6] = {-0.01, 0.23, -0.33, 0.02, 0.48, 0.01};
-
-            this->ball->setBodyPosition(-0.47, -0.01, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i] * (-1), posY[i]);
-            }
-        }
-        else
-        {
-            dReal posX[6] = {0.35, -0.05, -0.74, 0.75, -0.06, -0.06};
-            dReal posY[6] = {0.02, 0.48, 0.01, -0.01, 0.23, -0.33};
-
-            this->ball->setBodyPosition(0.47, -0.01, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-    }
-    else if (goal_shot)
-    {
-
-        this->faultSteps = 0;
-
-        dReal posX[6] = {0.65, 0.48, 0.49, 0.19, 0.18, -0.67};
-        dReal posY[6] = {0.11, 0.37, -0.33, 0.13, -0.21, -0.01};
-        if (side)
-        {
-            this->ball->setBodyPosition(0.61, 0.11, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i], posY[i]);
-            }
-        }
-        else
-        {
-            this->ball->setBodyPosition(-0.61, 0.11, 0);
-            dBodySetLinearVel(this->ball->body, 0, 0, 0);
-            dBodySetAngularVel(this->ball->body, 0, 0, 0);
-            for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-            {
-                robots[i]->setXY(posX[i] * (-1), posY[i]);
-            }
-        }
+        uint32_t k = i - this->field.getRobotsBlueCount();
+        robots[i]->setXY(yellows[k][0] * (-1), yellows[k][1]);
     }
 }
 

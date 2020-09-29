@@ -33,7 +33,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
 #define TEAM_COUNT 2
-#define STATE_SIZE 29 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY) 
+#define STATE_SIZE 29 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY)
 
 class World
 {
@@ -50,7 +50,6 @@ public:
     bool withGoalKick = false;
     bool randomStart = false;
     bool fullSpeed = false;
-    bool done = false;
     std::pair<float, float> ball_prev_pos = std::pair<float, float>(0.0, 0.0);
     PWorld *physics;
     PBall *ball;
@@ -66,9 +65,10 @@ public:
     ~World();
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);
-    void posProcess();
+    void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
-    bool getDone(){ return done; }
+    int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
+    int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
 
     /**
     \brief goals has [blueTeamGoals, YellowTeamGoals]
@@ -94,7 +94,7 @@ public:
                     robotYellowX, robotYellowY, robotYellowVx, robotYellowVy]
     \return return std::vector of float representing the state
     */
-    const std::vector<double>& getState();
+    const std::vector<double> &getState();
 
     int robotIndex(unsigned int robot, int team);
     void setActions(std::vector<std::tuple<double, double>> actions);

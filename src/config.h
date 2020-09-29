@@ -11,6 +11,8 @@ namespace Config
     {
     private:
         int RobotsCount = 3;
+        int RobotsBlueCount = 3;
+        int RobotsYellowCount = 3;
         int FieldType = 0;
         double FieldLineWidth = 0.003;
         double FieldLength = 1.50;
@@ -45,6 +47,8 @@ namespace Config
 
     public:
         int getRobotsCount() { return this->RobotsCount; }
+        int getRobotsBlueCount() { return this->RobotsBlueCount; }
+        int getRobotsYellowCount() { return this->RobotsYellowCount; }
         double getFieldLineWidth() { return this->FieldLineWidth; }
         double getFieldLength() { return this->FieldLength; }
         double getFieldWidth() { return this->FieldWidth; }
@@ -60,33 +64,35 @@ namespace Config
         double getGoalDepth() { return this->GoalDepth; }
         double getGoalWidth() { return this->GoalWidth; }
         double getGoalHeight() { return this->GoalHeight; }
-        int getFieldType() {return this->FieldType;}
+        int getFieldType() { return this->FieldType; }
         void setRobotsCount(int value) { this->RobotsCount = value; }
-        void setFieldType(int value) 
+        void setRobotsBlueCount(int value) { this->RobotsBlueCount = value; }
+        void setRobotsYellowCount(int value) { this->RobotsYellowCount = value; }
+        void setFieldType(int value)
         {
             this->FieldType = value;
-            switch(this->FieldType)
+            switch (this->FieldType)
             {
-                case 0: // 3x3
-                    setFieldLength(1.50);
-                    setFieldWidth(1.300);
-                    setFieldRad(0.200);
-                    setFieldFreeKick(0.200);
-                    setFieldPenaltyWidth(0.70);
-                    setFieldPenaltyDepth(0.15);
-                    setFieldPenaltyPoint(0.35);
-                    break;
-                case 1: // 5x5
-                    setFieldLength(2.2);
-                    setFieldWidth(1.8);
-                    setFieldRad(0.25);
-                    setFieldFreeKick(0.25);
-                    setFieldPenaltyWidth(0.8);
-                    setFieldPenaltyDepth(0.35);
-                    setFieldPenaltyPoint(0.375);
-                    break;
-                default:
-                    break;
+            case 0: // 3x3
+                setFieldLength(1.50);
+                setFieldWidth(1.300);
+                setFieldRad(0.200);
+                setFieldFreeKick(0.200);
+                setFieldPenaltyWidth(0.70);
+                setFieldPenaltyDepth(0.15);
+                setFieldPenaltyPoint(0.35);
+                break;
+            case 1: // 5x5
+                setFieldLength(2.2);
+                setFieldWidth(1.8);
+                setFieldRad(0.25);
+                setFieldFreeKick(0.25);
+                setFieldPenaltyWidth(0.8);
+                setFieldPenaltyDepth(0.35);
+                setFieldPenaltyPoint(0.375);
+                break;
+            default:
+                break;
             }
         }
     };
