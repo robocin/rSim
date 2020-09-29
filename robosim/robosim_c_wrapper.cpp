@@ -2,7 +2,10 @@
 
 extern "C"
 {
-    World *newWorld(int fieldType, int nRobots) { return new World(fieldType, nRobots); }
+    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow)
+    {
+        return new World(fieldType, nRobotsBlue, nRobotsYellow);
+    }
     void delWorld(World *world) { delete world; }
     void step(World *world, double *act)
     {

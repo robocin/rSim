@@ -88,11 +88,11 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(int fieldType, int nRobots)
+World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
 {
-    this->field.setRobotsCount(nRobots);
-    this->field.setRobotsBlueCount(nRobots / 2);
-    this->field.setRobotsYellowCount(nRobots / 2);
+    this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
+    this->field.setRobotsBlueCount(nRobotsBlue);
+    this->field.setRobotsYellowCount(nRobotsYellow);
     this->field.setFieldType(fieldType);
     this->episodeSteps = 0;
     this->faultSteps = 0;
@@ -112,9 +112,9 @@ World::World(int fieldType, int nRobots)
 
     // TODO: entender daqui pra baixo
     srand(static_cast<unsigned>(time(0)));
-    for (int k = 0; k < this->field.getRobotsCount() * 2; k++)
+    for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
-        bool turn_on = (k % this->field.getRobotsCount() < 3) ? true : false;
+        bool turn_on = true;
         float LO_X = -0.4;
         float LO_Y = -0.3;
         float HI_X = 0.4;
@@ -122,8 +122,20 @@ World::World(int fieldType, int nRobots)
         float dir = 1.0;
         float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
         float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
-        x = (k % this->field.getRobotsCount() < 3) ? x : 3.0;
-        y = (k % this->field.getRobotsCount() < 3) ? y : 3.0;
+        robots[k] = new CRobot(
+            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            k + 1, dir, turn_on);
+    }
+    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
+    {
+        bool turn_on = true;
+        float LO_X = -0.4;
+        float LO_Y = -0.3;
+        float HI_X = 0.4;
+        float HI_Y = 0.3;
+        float dir = 1.0;
+        float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
+        float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -147,7 +159,7 @@ World::World(int fieldType, int nRobots)
     for (auto &wall : walls)
         this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
 
-    for (int k = 0; k < 2 * this->field.getRobotsCount(); k++)
+    for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
         this->physics->createSurface(robots[k]->chassis, this->ground);
         for (auto &wall : walls)
@@ -170,22 +182,13 @@ World::World(int fieldType, int nRobots)
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
         }
-        for (int j = k + 1; j < 2 * this->field.getRobotsCount(); j++)
+        for (int j = k + 1; j < this->field.getRobotsCount(); j++)
         {
             if (k != j)
             {
                 this->physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
-    }
-    this->ball->setBodyPosition(0, 0, 0);
-    dBodySetLinearVel(this->ball->body, 0, 0, 0);
-    dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    dReal posX[6] = {0.15, 0.35, 0.71, -0.08, -0.35, -0.71};
-    dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
-    for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
-    {
-        robots[i]->setXY(posX[i] * (-1), posY[i]);
     }
 }
 
@@ -269,7 +272,7 @@ int World::robotIndex(unsigned int robot, int team)
 {
     if (robot >= this->field.getRobotsCount())
         return -1;
-    return robot + team * this->field.getRobotsCount();
+    return robot + team * this->field.getRobotsBlueCount();
 }
 
 World::~World()
@@ -316,7 +319,7 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         this->physics->step(dt * 0.2, fullSpeed);
     }
 
-    for (int k = 0; k < this->field.getRobotsCount() * 2; k++)
+    for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
         robots[k]->step();
     }
@@ -326,11 +329,15 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 void World::setActions(std::vector<std::tuple<double, double>> actions)
 {
     int id = 0;
-    for (std::tuple<double, double> robotAction : actions)
+    for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
-        robots[id]->setSpeed(0, -1 * std::get<0>(robotAction));
-        robots[id]->setSpeed(1, std::get<1>(robotAction));
-        id++;
+        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setSpeed(1, std::get<1>(actions[i]));
+    }
+    for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
+    {
+        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setSpeed(1, std::get<1>(actions[i]));
     }
 }
 
@@ -391,7 +398,7 @@ const std::vector<double> &World::getState()
     this->state.push_back(ballVel[1]);
 
     // Robots
-    for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
+    for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
     {
         this->robots[i]->getXY(robotX, robotY);
         // robotDir is not currently being used
@@ -449,30 +456,4 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
         uint32_t k = i - this->field.getRobotsBlueCount();
         robots[i]->setXY(yellows[k][0] * (-1), yellows[k][1]);
     }
-}
-
-void World::getValidPosition(dReal &x, dReal &y, uint32_t max)
-{
-    float LO_X = -0.65;
-    float LO_Y = -0.55;
-    float HI_X = 0.65;
-    float HI_Y = 0.55;
-    srand(static_cast<unsigned>(time(0)));
-    bool validPlace;
-    max = max > 0 ? max : this->field.getRobotsCount() * 2;
-    do
-    {
-        validPlace = true;
-        x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
-        y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
-        for (uint32_t i = 0; i < max; i++)
-        {
-            dReal x2, y2;
-            robots[i]->getXY(x2, y2);
-            if (sqrt(((x - x2) * (x - x2)) + ((y - y2) * (y - y2))) <= (Config::Robot().getRadius() * 2))
-            {
-                validPlace = false;
-            }
-        }
-    } while (!validPlace);
 }

@@ -41,7 +41,6 @@ private:
     int episodeSteps, faultSteps;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
     Config::Field field = Config::Field();
-    void getValidPosition(dReal &x, dReal &y, uint32_t max);
 
 public:
     int goalsYellow = 0;
@@ -61,7 +60,7 @@ public:
     QElapsedTimer *timer, *timer_fault;
     dReal last_speed = 0.0;
 
-    World(int fieldType, int nRobots);
+    World(int fieldType, int nRobotsBlue, int nRobotsYellow);
     ~World();
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);

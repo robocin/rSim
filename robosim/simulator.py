@@ -44,7 +44,8 @@ class SimulatorVSS():
     and physics of the simulator.
     '''
 
-    def __init__(self, field_type: int = 0, n_robots: int = 3) -> None:
+    def __init__(self, field_type: int = 0,
+                 n_robots_blue: int = 3, n_robots_yellow: int = 3) -> None:
         '''
         Creates our Simulator object.
 
@@ -55,8 +56,11 @@ class SimulatorVSS():
             0 - 3x3 field
             1 - 5x5 field
 
-        n_robots : int
-            Number of robots for both teams
+        n_robots_blue : int
+            Number of blue robots
+
+        n_robots_yellow : int
+            Number of blue robots
 
         Returns
         -------
@@ -64,11 +68,15 @@ class SimulatorVSS():
 
         '''
         self.field_type: int = field_type
-        self.n_robots: int = n_robots
-        self.world: object = robosim_lib.newWorld(
-            self.field_type, self.n_robots)
+        self.n_robots_blue: int = n_robots_blue
+        self.n_robots_yellow: int = n_robots_yellow
+        self.world: object = robosim_lib.newWorld(self.field_type,
+                                                  self.n_robots_blue,
+                                                  self.n_robots_yellow)
         self.field_params: Dict[str, np.float64] = self.get_field_params()
-        self.state_size: int = 5 + (self.n_robots * 4) + (self.n_robots * 4)
+        self.state_size: int = 5 \
+            + (self.n_robots_blue * 4)\
+            + (self.n_robots_yellow * 4)
 
     def __del__(self):
         robosim_lib.delWorld(self.world)
@@ -131,7 +139,9 @@ class SimulatorVSS():
 
         '''
         robosim_lib.delWorld(self.world)
-        self.world = robosim_lib.newWorld(self.field_type, self.n_robots)
+        self.world = robosim_lib.newWorld(self.field_type,
+                                          self.n_robots_blue,
+                                          self.n_robots_yellow)
         return self.get_state()
 
     def get_field_params(self) -> Dict[str, float]:
