@@ -4,7 +4,6 @@ from typing import Dict
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes
-from robosim.render import RCRender
 
 try:
     os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + \
@@ -68,7 +67,6 @@ class SimulatorVSS():
             self.field_type, self.n_robots)
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 + (self.n_robots * 4) + (self.n_robots * 4)
-        self.view = RCRender(n_robots, n_robots, self.field_params)
 
     def __del__(self):
         robosim_lib.delWorld(self.world)
@@ -132,8 +130,6 @@ class SimulatorVSS():
         '''
         robosim_lib.delWorld(self.world)
         self.world = robosim_lib.newWorld(self.field_type, self.n_robots)
-        if self.view.screen is not None:
-            self.view.close()
         return self.get_state()
 
     def get_field_params(self) -> Dict[str, float]:
@@ -153,9 +149,9 @@ class SimulatorVSS():
             goal_width
 
         '''
-        params = np.zeros(5, dtype=np.float64)
+        params = np.zeros(6, dtype=np.float64)
         keys = ['field_width', 'field_length',
-                'penalty_width', 'penalty_length', 'goal_width']
+                'penalty_width', 'penalty_length', 'goal_width', 'goal_depth']
         robosim_lib.getFieldParams(self.world, as_ctypes(params))
         return {key: param for key, param in zip(keys, params)}
 
@@ -179,27 +175,3 @@ class SimulatorVSS():
         status['goals_yellow'] = robosim_lib.getGoalsYellow(self.world)
         status['time'] = robosim_lib.getEpisodeTime(self.world)
         return status
-
-    def render(self) -> None:
-        '''
-        Renders the game depending on 
-        ball's and players' positions.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-
-        '''
-        state = self.get_state()
-        ball = (state[0], state[1])
-        blues = list()
-        for i in range(5, self.n_robots*4+6, 4):
-            blues.append((state[i], state[i+1]))
-        yellows = list()
-        for i in range(self.n_robots*4+5, len(state), 4):
-            yellows.append((state[i], state[i+1]))
-        self.view.view(ball, blues, yellows)

@@ -351,13 +351,14 @@ const std::vector<int> World::getGoals()
 
 const std::vector<double> World::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(5));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
     field.clear();
     field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
     field.push_back(this->field.getFieldPenaltyWidth());
     field.push_back(this->field.getFieldPenaltyDepth());
     field.push_back(this->field.getGoalWidth());
+    field.push_back(this->field.getGoalDepth());
     return field;
 }
 
