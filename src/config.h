@@ -70,7 +70,7 @@ namespace Config
                 case 0: // 3x3
                     setFieldLength(1.50);
                     setFieldWidth(1.300);
-                    setFieldRad(0.200)
+                    setFieldRad(0.200);
                     setFieldFreeKick(0.200);
                     setFieldPenaltyWidth(0.70);
                     setFieldPenaltyDepth(0.15);
@@ -79,7 +79,7 @@ namespace Config
                 case 1: // 5x5
                     setFieldLength(2.2);
                     setFieldWidth(1.8);
-                    setFieldRad(0.25)
+                    setFieldRad(0.25);
                     setFieldFreeKick(0.25);
                     setFieldPenaltyWidth(0.8);
                     setFieldPenaltyDepth(0.35);

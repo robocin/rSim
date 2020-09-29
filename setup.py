@@ -10,6 +10,5 @@ setup(name='robosim',
                 'VSS '
                 'SSL '
                 ),
-      requires=['numpy', 'gym'],
-      packages=['robosim']
+      requires=['numpy', 'gym', 'pygame'],
       )

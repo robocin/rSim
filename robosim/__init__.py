@@ -1,1 +1,2 @@
-from robosim import *
+from robosim.simulator import *
+from robosim.render import *

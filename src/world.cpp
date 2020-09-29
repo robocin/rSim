@@ -113,10 +113,10 @@ World::World(int fieldType, int nRobots)
     for (int k = 0; k < this->field.getRobotsCount() * 2; k++)
     {
         bool turn_on = (k % this->field.getRobotsCount() < 3) ? true : false;
-        float LO_X = -0.65;
-        float LO_Y = -0.55;
-        float HI_X = 0.65;
-        float HI_Y = 0.55;
+        float LO_X = -0.4;
+        float LO_Y = -0.3;
+        float HI_X = 0.4;
+        float HI_Y = 0.3;
         float dir = 1.0;
         float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
         float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
@@ -175,6 +175,15 @@ World::World(int fieldType, int nRobots)
                 this->physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
+    }
+    this->ball->setBodyPosition(0, 0, 0);
+    dBodySetLinearVel(this->ball->body, 0, 0, 0);
+    dBodySetAngularVel(this->ball->body, 0, 0, 0);
+    dReal posX[6] = {0.15, 0.35, 0.71, -0.08, -0.35, -0.71};
+    dReal posY[6] = {0.02, 0.13, -0.02, 0.02, 0.13, -0.02};
+    for (uint32_t i = 0; i < this->field.getRobotsCount() * 2; i++)
+    {
+        robots[i]->setXY(posX[i] * (-1), posY[i]);
     }
 }
 
@@ -342,11 +351,12 @@ const std::vector<int> World::getGoals()
 
 const std::vector<double> World::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(4));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(5));
     field.clear();
     field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getGoalDepth());
+    field.push_back(this->field.getFieldPenaltyWidth());
+    field.push_back(this->field.getFieldPenaltyDepth());
     field.push_back(this->field.getGoalWidth());
     return field;
 }
