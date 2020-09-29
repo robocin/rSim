@@ -2,13 +2,38 @@ import os
 
 import numpy as np
 import pygame
+from pygame.constants import QUIT
 
 
 class RCRender:
+    '''
+    Rendering Class to RoboSim Simulator
+    '''
 
     def __init__(self, n_robots_blue: int,
                  n_robots_yellow: int,
-                 field_params: dict):
+                 field_params: dict) -> None:
+        '''
+        Creates our View object.
+
+        Parameters
+        ----------
+        n_robots_blue : int
+            Number of blue robots
+        
+        n_robots_yellow : int
+            Number of yellow robots
+
+        field_params : dict
+            field_width, field_length,
+            penalty_width, penalty_length,
+            goal_width
+
+        Returns
+        -------
+        None
+
+        '''
         pygame.init()
         self.n_robots_blue = n_robots_blue
         self.n_robots_yellow = n_robots_yellow
@@ -20,7 +45,19 @@ class RCRender:
             self.field_params['field_length']*self.scale)+50
         self.screen = None
 
-    def draw_field(self):
+    def draw_field(self) -> None:
+        '''
+        Auxiliary function to draw the background.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        '''
         penalty_width = int(self.field_params['penalty_width']*self.scale)
         penalty_length = int(self.field_params['penalty_length']*self.scale)
 
@@ -64,13 +101,25 @@ class RCRender:
                          pygame.Rect(goal_x, goal_y,
                                      goal_length, goal_width), 1)
 
-    def view(self, ball, blues, yellows):
-        # draw game
+    def view(self, ball: np.ndarray,
+             blues: np.ndarray, yellows: np.ndarray) -> None:
+        '''
+        Draws the field, ball and players.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        '''
         if self.screen is None:
             self.screen = pygame.display.set_mode(
                 (self.screen_height, self.screen_width))
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == QUIT:
                 self.close()
         self.draw_field()
         ball_r = int(0.015*self.scale)
@@ -87,14 +136,44 @@ class RCRender:
                                robot_r, robot_r-3)
         pygame.display.update()
 
-    def pos_transform(self, x, y):
+    def pos_transform(self, x: float, y: float) -> np.ndarray:
+        '''
+        Transforms original position of ball and players
+        to the desired pixel position.
+
+        Parameters
+        ----------
+        x: float
+            Original x position
+
+        y: float
+            Original y position
+
+        Returns
+        -------
+        np.ndarray
+            Pixel position of object
+
+        '''
         pos = np.array([x+self.field_params['field_length']/2,
                         y+self.field_params['field_width']/2])
         pos *= self.scale
         pos = np.array(pos, dtype=np.int) + 25
         return pos
 
-    def close(self):
+    def close(self) -> None:
+        '''
+        Closes the view
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        '''
         pygame.display.quit()
         self.screen = None
 

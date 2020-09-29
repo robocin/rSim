@@ -35,9 +35,32 @@ robosim_lib.getGoalsYellow.restype = int
 
 
 class SimulatorVSS():
-    def __init__(self, field_type: int = 0, n_robots: int = 3):
+    '''
+    RoboSim VSS Simulator.
+    Based on FiraSim. Transfers all the graphic functions
+    to handle in python, whenever the user wants to.
+    The SimulatorVSS uses a C++ interface to create the simulation
+    and physics of the simulator.
+    '''
+
+    def __init__(self, field_type: int = 0, n_robots: int = 3) -> None:
         '''
-        TODO: DOCUMENTAR PARAMETROS
+        Creates our Simulator object.
+
+        Parameters
+        ----------
+        field_type : int
+            The number corresponding to the type of the field
+            0 - 3x3 field
+            1 - 5x5 field
+
+        n_robots : int
+            Number of robots for both teams
+
+        Returns
+        -------
+        None
+
         '''
         self.field_type: int = field_type
         self.n_robots: int = n_robots
@@ -50,32 +73,85 @@ class SimulatorVSS():
     def __del__(self):
         robosim_lib.delWorld(self.world)
 
-    def get_state(self):
+    def get_state(self) -> np.ndarray:
         '''
-        TODO: DOCUMENTAR O FORMATO DO STATE
+        Returns the state array.
+        State:
+            - Ball: x, y, z, vx, vy
+            - Robots_blue: x, y, vx, vy
+            - Robots_yellow: x, y, vx, vy
+        State size: 5 + 4*n_robots_blue + 4*n_robots_yellow
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        np.ndarray
+            State
+
         '''
         state = np.zeros(self.state_size, dtype=np.float64)
         robosim_lib.getState(self.world, as_ctypes(state))
         return state
 
-    def step(self, action):
+    def step(self, action: np.ndarray) -> None:
         '''
-        TODO DOCUMENTAR FORMATO ACTION
+        Steps the simulator given an action.
+
+        Parameters
+        ----------
+        action: np.ndarray
+            Action of shape (6, 2),
+            2 wheels' speed for 6 robots.
+
+        Returns
+        -------
+        None
+
         '''
         action = np.array(action, dtype=np.float64)
         action = action.flatten()
         robosim_lib.step(self.world, as_ctypes(action))
 
-    def reset(self):
+    def reset(self) -> np.ndarray:
+        '''
+        Resets the simulator and it's render view
+        if it's in use.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        np.ndarray
+            State
+
+        '''
         robosim_lib.delWorld(self.world)
         self.world = robosim_lib.newWorld(self.field_type, self.n_robots)
         if self.view.screen is not None:
             self.view.close()
         return self.get_state()
 
-    def get_field_params(self):
+    def get_field_params(self) -> Dict[str, float]:
         '''
-        TODO DOCUMENTAR FORMATO RETURN FIELD PARAMS
+        Returns the field parameters from the given
+        field type.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        dict
+            field_width, field_length,
+            penalty_width, penalty_length,
+            goal_width
+
         '''
         params = np.zeros(5, dtype=np.float64)
         keys = ['field_width', 'field_length',
@@ -85,7 +161,17 @@ class SimulatorVSS():
 
     def get_status(self) -> Dict[str, int]:
         '''
-        TODO DOCUMENTAR FORMATO STATUS
+        Returns the game status.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        dict
+            goals_blue, goals_yellow, time
+
         '''
         status: Dict[str, int] = {
             'goals_blue': 0, 'goals_yellow': 0, 'time': 0}
@@ -94,7 +180,20 @@ class SimulatorVSS():
         status['time'] = robosim_lib.getEpisodeTime(self.world)
         return status
 
-    def render(self):
+    def render(self) -> None:
+        '''
+        Renders the game depending on 
+        ball's and players' positions.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+
+        '''
         state = self.get_state()
         ball = (state[0], state[1])
         blues = list()
