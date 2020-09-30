@@ -1,6 +1,7 @@
 bin
 build
 .vscode
+lib/
 *.so
 *.a
 *__pycache__
