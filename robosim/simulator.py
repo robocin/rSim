@@ -5,12 +5,6 @@ from typing import Dict
 import numpy as np
 from numpy.ctypeslib import as_ctypes
 
-try:
-    os.environ['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH'] + \
-        ':'+os.getcwd()
-except KeyError:
-    os.environ['LD_LIBRARY_PATH'] = os.getcwd()
-
 
 robosim_lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__),
                                             'librobosim_c.so'))
