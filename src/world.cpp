@@ -427,33 +427,37 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
     std::vector<std::vector<double>> blues;
     blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount()*2; i = i + 2)
+    for (int i = 0; i < this->field.getRobotsBlueCount()*3; i = i + 3)
     {
         std::vector<double> pos;
         pos.clear();
         pos.push_back(pos_blue[i]);
         pos.push_back(pos_blue[i + 1]);
+        pos.push_back(pos_blue[i+2]);
         blues.push_back(pos);
     }
 
     std::vector<std::vector<double>> yellows;
     yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount()*2; i = i + 2)
+    for (int i = 0; i < this->field.getRobotsYellowCount()*3; i = i + 3)
     {
         std::vector<double> pos;
         pos.clear();
         pos.push_back(pos_yellow[i]);
         pos.push_back(pos_yellow[i + 1]);
+        pos.push_back(pos_yellow[i+2]);
         yellows.push_back(pos);
     }
 
     for (uint32_t i = 0; i < 3; i++)
     {
         this->robots[i]->setXY(blues[i][0] * (-1), blues[i][1]);
+        this->robots[i]->setDir(blues[i][2]);
     }
     for (uint32_t i = 3; i < this->field.getRobotsYellowCount(); i++)
     {
         uint32_t k = i - 3;
         this->robots[i]->setXY(yellows[k][0] * (-1), yellows[k][1]);
+        this->robots[i]->setDir(yellows[i][2]);
     }
 }
