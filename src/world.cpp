@@ -427,7 +427,7 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
     std::vector<std::vector<double>> blues;
     blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount(); i = i + 2)
+    for (int i = 0; i < this->field.getRobotsBlueCount()*2; i = i + 2)
     {
         std::vector<double> pos;
         pos.clear();
@@ -438,7 +438,7 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
 
     std::vector<std::vector<double>> yellows;
     yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount(); i = i + 2)
+    for (int i = 0; i < this->field.getRobotsYellowCount()*2; i = i + 2)
     {
         std::vector<double> pos;
         pos.clear();
@@ -447,13 +447,13 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
         yellows.push_back(pos);
     }
 
-    for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
+    for (uint32_t i = 0; i < 3; i++)
     {
-        robots[i]->setXY(blues[i][0] * (-1), blues[i][1]);
+        this->robots[i]->setXY(blues[i][0] * (-1), blues[i][1]);
     }
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount(); i++)
+    for (uint32_t i = 3; i < this->field.getRobotsYellowCount(); i++)
     {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        robots[i]->setXY(yellows[k][0] * (-1), yellows[k][1]);
+        uint32_t k = i - 3;
+        this->robots[i]->setXY(yellows[k][0] * (-1), yellows[k][1]);
     }
 }
