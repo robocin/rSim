@@ -282,6 +282,7 @@ World::~World()
 
 void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 {
+    if (getEpisodeTime() > 300000) return;
     setActions(actions);
 
     // Pq ele faz isso 5 vezes?
