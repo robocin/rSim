@@ -374,7 +374,7 @@ const std::vector<double> &World::getState()
     this->state.clear();
     dReal ballX, ballY, ballZ;
     dReal robotX, robotY, robotDir, robotK;
-    const dReal *ballVel, *robotVel;
+    const dReal *ballVel, *robotVel, *robotVelDir;
 
     // Set noise parameters
     dReal devX = 0;
@@ -402,10 +402,11 @@ const std::vector<double> &World::getState()
     for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
     {
         this->robots[i]->getXY(robotX, robotY);
+
         // robotDir is not currently being used
         robotDir = this->robots[i]->getDir(robotK);
         robotVel = dBodyGetLinearVel(this->robots[i]->chassis->body);
-
+        robotVelDir = dBodyGetAngularVel(this->robots[i]->chassis->body);
         // reset when the robot has turned over
         if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
@@ -413,10 +414,12 @@ const std::vector<double> &World::getState()
         }
 
         // Add robot position to state vector
-        this->state.push_back(randn_notrig(robotX, devX));
-        this->state.push_back(randn_notrig(robotY, devY));
+        this->state.push_back(robotX);
+        this->state.push_back(robotY);
+        this->state.push_back(robotDir);
         this->state.push_back(robotVel[0]);
         this->state.push_back(robotVel[1]);
+        this->state.push_back(robotVelDir[2]);
     }
     return this->state;
 }
@@ -425,6 +428,48 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
 {
     this->ball->setBodyPosition(ball[0], ball[1], 0);
     dBodySetLinearVel(this->ball->body, 0, 0, 0);
+    dBodySetAngularVel(this->ball->body, 0, 0, 0);
+    std::vector<std::vector<double>> blues;
+    blues.clear();
+    for (int i = 0; i < this->field.getRobotsBlueCount() * 3; i = i + 3)
+    {
+        std::vector<double> pos;
+        pos.clear();
+        pos.push_back(pos_blue[i]);
+        pos.push_back(pos_blue[i + 1]);
+        pos.push_back(pos_blue[i + 2]);
+        blues.push_back(pos);
+    }
+
+    std::vector<std::vector<double>> yellows;
+    yellows.clear();
+    for (int i = 0; i < this->field.getRobotsYellowCount() * 3; i = i + 3)
+    {
+        std::vector<double> pos;
+        pos.clear();
+        pos.push_back(pos_yellow[i]);
+        pos.push_back(pos_yellow[i + 1]);
+        pos.push_back(pos_yellow[i + 2]);
+        yellows.push_back(pos);
+    }
+
+    for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
+    {
+        this->robots[i]->setXY(blues[i][0], blues[i][1]);
+        this->robots[i]->setDir(blues[i][2]);
+    }
+    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
+    {
+        uint32_t k = i - this->field.getRobotsBlueCount();
+        this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
+        this->robots[i]->setDir(yellows[k][2]);
+    }
+}
+
+void World::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
+{
+    this->ball->setBodyPosition(ball[0], ball[1], 0);
+    dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
     std::vector<std::vector<double>> blues;
     blues.clear();

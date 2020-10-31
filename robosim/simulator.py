@@ -27,6 +27,9 @@ robosim_lib.getGoalsYellow.argtypes = [c_void_p]
 robosim_lib.getGoalsYellow.restype = int
 robosim_lib.replace.argtypes = [c_void_p, c_void_p, c_void_p, c_void_p]
 robosim_lib.replace.restype = None
+robosim_lib.replace_with_vel.argtypes = [
+    c_void_p, c_void_p, c_void_p, c_void_p]
+robosim_lib.replace_with_vel.restype = None
 
 
 class SimulatorVSS():
@@ -69,8 +72,8 @@ class SimulatorVSS():
                                                   self.n_robots_yellow)
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
-            + (self.n_robots_blue * 4)\
-            + (self.n_robots_yellow * 4)
+            + (self.n_robots_blue * 6)\
+            + (self.n_robots_yellow * 6)
 
     def __del__(self):
         robosim_lib.delWorld(self.world)
@@ -80,9 +83,9 @@ class SimulatorVSS():
         Returns the state array.
         State:
             - Ball: x, y, z, vx, vy
-            - Robots_blue: x, y, vx, vy
-            - Robots_yellow: x, y, vx, vy
-        State size: 5 + 4*n_robots_blue + 4*n_robots_yellow
+            - Robots_blue: x, y, dir, vx, vy, vdir
+            - Robots_yellow: x, y, dir, vx, vy, vdir
+        State size: 5 + 6*n_robots_blue + 6*n_robots_yellow
 
         Parameters
         ----------
@@ -189,3 +192,12 @@ class SimulatorVSS():
         yellow_pos = yellow_pos.flatten()
         robosim_lib.replace(self.world, as_ctypes(ball_pos),
                             as_ctypes(blue_pos), as_ctypes(yellow_pos))
+
+    def replace_with_vel(self, ball: np.ndarray,
+                         blue_pos: np.ndarray, yellow_pos: np.ndarray):
+        ball = ball.flatten()
+        blue_pos = blue_pos.flatten()
+        yellow_pos = yellow_pos.flatten()
+        robosim_lib.replace_with_vel(self.world, as_ctypes(ball),
+                                     as_ctypes(blue_pos),
+                                     as_ctypes(yellow_pos))

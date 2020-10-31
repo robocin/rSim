@@ -37,4 +37,8 @@ extern "C"
     {
         world->replace(ball_data, pos_blue_data, pos_yellow_data);
     }
+    void replace_with_vel(World *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
+    {
+        world->replace_with_vel(ball_data, pos_blue_data, pos_yellow_data);
+    }
 }
