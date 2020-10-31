@@ -184,13 +184,13 @@ namespace Config
     private:
         double CenterFromKicker = 0.05;
         double Radius = 0.0375;
-        double Height = 0.055;
+        double Height = 0.02;
         double BottomHeight = 0.00;
         double KickerZValue = 0.005;
         double KickerThickness = 0.005;
         double KickerWidth = 0.08;
         double KickerHeight = 0.04;
-        double WheelRadius = 0.025;
+        double WheelRadius = 0.02;
         double WheelThickness = 0.005;
         int Wheel1Angle = 90;
         int Wheel2Angle = 270;
