@@ -33,7 +33,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
 #define TEAM_COUNT 2
-#define STATE_SIZE 29 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY)
+#define STATE_SIZE 41 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY)
 
 class World
 {
@@ -65,6 +65,7 @@ public:
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
+    void replace_with_vel(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
