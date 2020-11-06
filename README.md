@@ -5,9 +5,10 @@ Robot soccer simulator based on FiraSim and GrSim.
 Simulates games from Very Small Size and Small Size leagues of RoboCup.
 
 ## Install Requirements
+Debian:
 ```shell
 $apt-get update
-$apt-get install libboost-all-dev python-dev git cmake g++ gdb libgl1-mesa-dev libx11-dev libglu1-mesa-dev libode-dev
+$apt-get install cmake qt-default libode-dev
 $pip install numpy
 ```
 
