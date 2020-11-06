@@ -19,7 +19,7 @@ $cd build
 $cmake ..
 $make -j4
 $cd ..
-$pip install .
+$pip install -e .
 ```
 
 ## Usage VSS simulator
