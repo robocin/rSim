@@ -96,7 +96,6 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     this->field.setFieldType(fieldType);
     this->timeStep = timeStep;
     this->episodeSteps = 0;
-    this->faultSteps = 0;
     _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
@@ -116,13 +115,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
-        float LO_X = -0.4;
-        float LO_Y = -0.3;
-        float HI_X = 0.4;
-        float HI_Y = 0.3;
-        float dir = 1.0;
-        float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
-        float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
+        float dir = 1;
+        float x = -(0.2 + (k * 0.2));
+        float y = 0;
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -130,13 +125,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
         bool turn_on = true;
-        float LO_X = -0.4;
-        float LO_Y = -0.3;
-        float HI_X = 0.4;
-        float HI_Y = 0.3;
-        float dir = 1.0;
-        float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
-        float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
+        float dir = -1;
+        float x = 0.2 + ((k - this->field.getRobotsBlueCount()) * 0.2);
+        float y = 0;
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -497,12 +488,14 @@ void World::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
 
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
+        this->robots[i]->resetRobot();
         this->robots[i]->setXY(blues[i][0], blues[i][1]);
         this->robots[i]->setDir(blues[i][2]);
     }
     for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
     {
         uint32_t k = i - this->field.getRobotsBlueCount();
+        this->robots[i]->resetRobot();
         this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
         this->robots[i]->setDir(yellows[k][2]);
     }

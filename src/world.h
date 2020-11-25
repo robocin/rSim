@@ -38,7 +38,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 class World
 {
 private:
-    int episodeSteps, faultSteps;
+    int episodeSteps;
     double timeStep;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
     Config::Field field = Config::Field();
