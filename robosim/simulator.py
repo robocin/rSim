@@ -42,7 +42,8 @@ class SimulatorVSS():
     '''
 
     def __init__(self, field_type: int = 0,
-                 n_robots_blue: int = 3, n_robots_yellow: int = 3) -> None:
+                 n_robots_blue: int = 3, n_robots_yellow: int = 3,
+                 time_step_ms: int = 16) -> None:
         '''
         Creates our Simulator object.
 
@@ -67,9 +68,11 @@ class SimulatorVSS():
         self.field_type: int = field_type
         self.n_robots_blue: int = n_robots_blue
         self.n_robots_yellow: int = n_robots_yellow
+        self.time_step_ms = time_step_ms
         self.world: object = robosim_lib.newWorld(self.field_type,
                                                   self.n_robots_blue,
-                                                  self.n_robots_yellow)
+                                                  self.n_robots_yellow,
+                                                  self.time_step_ms)
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
             + (self.n_robots_blue * 6)\
@@ -138,7 +141,8 @@ class SimulatorVSS():
         robosim_lib.delWorld(self.world)
         self.world = robosim_lib.newWorld(self.field_type,
                                           self.n_robots_blue,
-                                          self.n_robots_yellow)
+                                          self.n_robots_yellow,
+                                          self.time_step_ms)
         return self.get_state()
 
     def get_field_params(self) -> Dict[str, float]:
@@ -182,7 +186,7 @@ class SimulatorVSS():
             'goals_blue': 0, 'goals_yellow': 0, 'time': 0}
         status['goals_blue'] = robosim_lib.getGoalsBlue(self.world)
         status['goals_yellow'] = robosim_lib.getGoalsYellow(self.world)
-        status['time'] = robosim_lib.getEpisodeTime(self.world)
+        status['time_ms'] = robosim_lib.getEpisodeTime(self.world)
         return status
 
     def replace(self, ball_pos: np.ndarray,

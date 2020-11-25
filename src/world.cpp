@@ -88,16 +88,17 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
+World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
 {
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
     this->field.setFieldType(fieldType);
+    this->timeStep = timeStep;
     this->episodeSteps = 0;
     this->faultSteps = 0;
     _world = this;
-    this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, this->field.getRobotsCount());
+    this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
@@ -282,7 +283,6 @@ World::~World()
 
 void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 {
-    if (getEpisodeTime() > 300000) return;
     setActions(actions);
 
     // Pq ele faz isso 5 vezes?
@@ -344,7 +344,7 @@ void World::setActions(std::vector<std::tuple<double, double>> actions)
 
 int World::getEpisodeTime()
 {
-    return this->episodeSteps * Config::World().getDeltaTime() * 1000;
+    return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
 }
 
 const std::vector<int> World::getGoals()

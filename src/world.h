@@ -39,6 +39,7 @@ class World
 {
 private:
     int episodeSteps, faultSteps;
+    double timeStep;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
     Config::Field field = Config::Field();
 
@@ -60,7 +61,7 @@ public:
     QElapsedTimer *timer, *timer_fault;
     dReal last_speed = 0.0;
 
-    World(int fieldType, int nRobotsBlue, int nRobotsYellow);
+    World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep);
     ~World();
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);
@@ -69,6 +70,7 @@ public:
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
+    double getTimeStep() { return this->timeStep; }
 
     /**
     \brief goals has [blueTeamGoals, YellowTeamGoals]
@@ -83,8 +85,8 @@ public:
     const std::vector<double> getFieldParams();
 
     /**
-    \brief get current episode time in seconds
-    \return int, representing episode time in seconds
+    \brief get current episode time in miliseconds
+    \return int, representing episode time in miliseconds
     */
     int getEpisodeTime();
 

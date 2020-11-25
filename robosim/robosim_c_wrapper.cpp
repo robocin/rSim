@@ -2,9 +2,9 @@
 
 extern "C"
 {
-    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow)
+    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, int timeStep_ms)
     {
-        return new World(fieldType, nRobotsBlue, nRobotsYellow);
+        return new World(fieldType, nRobotsBlue, nRobotsYellow, timeStep_ms / 1000.0);
     }
     void delWorld(World *world) { delete world; }
     void step(World *world, double *act)
@@ -16,7 +16,7 @@ extern "C"
             std::tuple<double, double> action(act[i], act[i + 1]);
             actions.push_back(action);
         }
-        world->step(Config::World().getDeltaTime(), actions);
+        world->step(world->getTimeStep(), actions);
     }
     void getState(World *world, double *state_data)
     {
