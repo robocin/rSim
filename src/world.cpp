@@ -155,9 +155,10 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     {
         this->physics->createSurface(robots[k]->chassis, this->ground);
         for (auto &wall : walls)
+        {
             this->physics->createSurface(robots[k]->chassis, wall);
-        this->physics->createSurface(robots[k]->dummy, this->ball);
-        //this->physics->createSurface(robots[k]->chassis,this->ball);
+        }
+        this->physics->createSurface(robots[k]->chassis, this->ball);
         for (auto &wheel : robots[k]->wheels)
         {
             this->physics->createSurface(wheel->cyl, this->ball);
@@ -178,7 +179,7 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
         {
             if (k != j)
             {
-                this->physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(robots[k]->chassis, robots[j]->chassis); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
     }

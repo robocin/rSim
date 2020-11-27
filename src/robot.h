@@ -41,8 +41,6 @@ class CRobot
 public:
     dSpaceID space;
     PObject *chassis;
-    PBox *dummy;
-    dJointID dummy_to_chassis;
     PBox *boxes[3]{};
     bool on;
     //these values are not controled by this class
@@ -74,7 +72,7 @@ public:
     } * balls[2]{};
 
     CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-        int rob_id, int dir, bool turn_on);
+           int rob_id, int dir, bool turn_on);
     ~CRobot();
     void step();
     void setSpeed(int i, dReal s); //i = 0,1,2,3

@@ -94,7 +94,7 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
 }
 
 CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-            int rob_id, int dir, bool turn_on)
+               int rob_id, int dir, bool turn_on)
 {
     m_x = x;
     m_y = y;
@@ -109,13 +109,6 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
     chassis->space = space;
     physics->addObject(chassis);
-
-    dummy = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
-    dummy->space = space;
-    physics->addObject(dummy);
-
-    dummy_to_chassis = dJointCreateFixed(world->world, nullptr);
-    dJointAttach(dummy_to_chassis, chassis->body, dummy->body);
 
     wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle());
     wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
@@ -181,8 +174,6 @@ void CRobot::resetRobot()
     resetSpeeds();
     dBodySetLinearVel(chassis->body, 0, 0, 0);
     dBodySetAngularVel(chassis->body, 0, 0, 0);
-    dBodySetLinearVel(dummy->body, 0, 0, 0);
-    dBodySetAngularVel(dummy->body, 0, 0, 0);
     for (auto &wheel : wheels)
     {
         dBodySetLinearVel(wheel->cyl->body, 0, 0, 0);
@@ -231,7 +222,6 @@ void CRobot::setXY(dReal x, dReal y)
     dReal height = ROBOT_START_Z();
     chassis->getBodyPosition(xx, yy, zz);
     chassis->setBodyPosition(x, y, height);
-    dummy->setBodyPosition(x, y, height);
     for (auto &wheel : wheels)
     {
         wheel->cyl->getBodyPosition(kx, ky, kz);
@@ -243,7 +233,6 @@ void CRobot::setDir(dReal ang)
 {
     ang *= M_PI / 180.0f;
     chassis->setBodyRotation(0, 0, 1, ang);
-    dummy->setBodyRotation(0, 0, 1, ang);
     dMatrix3 wLocalRot, wRot, cRot;
     dVector3 localPos, finalPos, cPos;
     chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
