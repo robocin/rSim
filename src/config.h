@@ -185,7 +185,7 @@ namespace Config
         double CenterFromKicker = 0.05;
         double Radius = 0.0375;
         double Height = 0.075;
-        double BottomHeight = 0.02;
+        double BottomHeight = 0.005;
         double KickerZValue = 0.005;
         double KickerThickness = 0.005;
         double KickerWidth = 0.08;
