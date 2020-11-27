@@ -402,6 +402,7 @@ const std::vector<double> &World::getState()
         // reset when the robot has turned over
         if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
+            std::cout << "turnover " << robotK << '\n';
             this->robots[i]->resetRobot();
         }
 
