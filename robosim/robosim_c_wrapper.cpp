@@ -2,9 +2,11 @@
 
 extern "C"
 {
-    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, int timeStep_ms)
+    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, int timeStep_ms,
+                    double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
     {
-        return new World(fieldType, nRobotsBlue, nRobotsYellow, timeStep_ms / 1000.0);
+        return new World(fieldType, nRobotsBlue, nRobotsYellow, timeStep_ms / 1000.0,
+                         ballPos, blueRobotsPos, yellowRobotsPos);
     }
     void delWorld(World *world) { delete world; }
     void step(World *world, double *act)

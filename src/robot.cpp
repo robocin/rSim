@@ -114,7 +114,7 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
     balls[0] = new RBall(this, 0, Config::Robot().getWheel1Angle() + 90, Config::Robot().getWheel1Angle() + 90);
     balls[1] = new RBall(this, 1, Config::Robot().getWheel2Angle() + 90, Config::Robot().getWheel2Angle() + 90);
-    firsttime = true;
+    setDir(m_dir);
     on = turn_on;
 }
 
@@ -145,16 +145,7 @@ void normalizeVector(dReal &x, dReal &y, dReal &z)
 
 void CRobot::step()
 {
-    if (on)
-    {
-        if (firsttime)
-        {
-            if (m_dir == -1)
-                setDir(180);
-            firsttime = false;
-        }
-    }
-    else
+    if (!on)
     {
         if (last_state)
             wheels[0]->speed = wheels[1]->speed = 0;
@@ -182,10 +173,7 @@ void CRobot::resetRobot()
     dReal x, y;
     getXY(x, y);
     setXY(x, y);
-    if (m_dir == -1)
-        setDir(180);
-    else
-        setDir(0);
+    setDir(m_dir);
 }
 
 void CRobot::getXY(dReal &x, dReal &y)

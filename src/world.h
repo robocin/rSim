@@ -61,7 +61,8 @@ public:
     QElapsedTimer *timer, *timer_fault;
     dReal last_speed = 0.0;
 
-    World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep);
+    World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
     ~World();
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double>> actions);

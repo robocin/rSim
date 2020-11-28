@@ -88,7 +88,8 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
+World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
 {
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
@@ -98,7 +99,7 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     this->episodeSteps = 0;
     _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
-    this->ball = new PBall(0, 0, Config::World().getBallRadius(), Config::World().getBallRadius(), Config::World().getBallMass());
+    this->ball = new PBall(ballPos[0], ballPos[1], Config::World().getBallRadius(), Config::World().getBallRadius(), Config::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
                                this->field.getFieldLineWidth(), 0);
@@ -115,9 +116,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
-        float dir = 1;
-        float x = -(0.2 + (k * 0.2));
-        float y = 0;
+        float x = blueRobotsPos[k * 3];
+        float y = blueRobotsPos[(k * 3) + 1];
+        float dir = blueRobotsPos[(k * 3) + 2];
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -125,9 +126,10 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep)
     for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
         bool turn_on = true;
-        float dir = -1;
-        float x = 0.2 + ((k - this->field.getRobotsBlueCount()) * 0.2);
-        float y = 0;
+        int i = k - this->field.getRobotsBlueCount();
+        float x = yellowRobotsPos[i * 3];
+        float y = yellowRobotsPos[(i * 3) + 1];
+        float dir = yellowRobotsPos[(i * 3) + 2];
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);

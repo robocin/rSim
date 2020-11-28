@@ -35,7 +35,6 @@ class CRobot
     dReal m_r, m_g, m_b;
     dReal m_dir;
     int m_rob_id;
-    bool firsttime;
     bool last_state{};
 
 public:
