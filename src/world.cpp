@@ -279,6 +279,11 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 {
     setActions(actions);
 
+    for (int k = 0; k < this->field.getRobotsCount(); k++)
+    {
+        robots[k]->step();
+    }
+
     // Pq ele faz isso 5 vezes?
     // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
     for (int kk = 0; kk < 5; kk++)
@@ -314,10 +319,6 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         this->physics->step(dt * 0.2, fullSpeed);
     }
 
-    for (int k = 0; k < this->field.getRobotsCount(); k++)
-    {
-        robots[k]->step();
-    }
     this->episodeSteps++;
 }
 
@@ -402,6 +403,24 @@ const std::vector<double> &World::getState()
         robotVel = dBodyGetLinearVel(this->robots[i]->chassis->body);
         robotVelDir = dBodyGetAngularVel(this->robots[i]->chassis->body);
         // reset when the robot has turned over
+
+        if (i == 0)
+        {
+            dReal wheelx, wheely, wheelz;
+            for (auto &wheel : this->robots[i]->wheels){
+                wheel->cyl->getBodyDirection(wheelx, wheely, wheelz);
+
+                dReal dot = wheelx; //zarb dar (1.0,0.0,0.0)
+                dReal length = sqrt(wheelx * wheelx + wheelz * wheelz);
+                auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
+                absAng = (wheelz > 0) ? absAng : -absAng;
+                std::cout << "wheel ang: " << absAng << '\n';
+                break;
+                
+                std::cout << " Wheel x: " << wheelx << " wheel y: " << wheely << " wheel z: " << wheelz << '\n';
+            }
+        }
+
         if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
             std::cout << "turnover " << robotK << '\n';
