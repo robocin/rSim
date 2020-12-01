@@ -327,13 +327,13 @@ void World::setActions(std::vector<std::tuple<double, double>> actions)
     int id = 0;
     for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
-        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setSpeed(1, std::get<1>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
     }
     for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
     {
-        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setSpeed(1, std::get<1>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
     }
 }
 
@@ -414,7 +414,7 @@ const std::vector<double> &World::getState()
                 dReal length = sqrt(wheelx * wheelx + wheelz * wheelz);
                 auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
                 absAng = (wheelz > 0) ? absAng : -absAng;
-                std::cout << "wheel ang: " << absAng << '\n';
+                // std::cout << "wheel ang: " << absAng << '\n';
                 break;
                 
                 std::cout << " Wheel x: " << wheelx << " wheel y: " << wheely << " wheel z: " << wheelz << '\n';

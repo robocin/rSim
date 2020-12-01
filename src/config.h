@@ -182,52 +182,39 @@ namespace Config
     class Robot
     {
     private:
-        double CenterFromKicker = 0.05;
         double Radius = 0.0375;
-        double Height = 0.030;
-        double BottomHeight = 0.005;
-        double KickerZValue = 0.005;
-        double KickerThickness = 0.005;
-        double KickerWidth = 0.08;
-        double KickerHeight = 0.04;
-        double WheelRadius = 0.02;
+        double Height = 0.056;
+        double BottomHeight = 0.002;
+        double WheelRadius = 0.026;
         double WheelThickness = 0.005;
         int Wheel1Angle = 90;
         int Wheel2Angle = 270;
-        double BodyMass = 2.0;
-        double WheelMass = 0.2;
-        double KickerMass = 0.02;
-        double KickerDampFactor = 0.2;
-        double RollerTorqueFactor = 0.06;
-        double RollerPerpendicularTorqueFactor = 0.005;
-        double KickerFriction = 0.8;
+        double BodyMass = 0.120;
+        double WheelMass = 0.015;
         double WheelTangentFriction = 0.8;
         double WheelPerpendicularFriction = 1;
-        double WheelMotorFMax = 0.2;
+        double WheelMotorMaxTorque = 0.0725;
+        double WheelMotorMaxRPM = 630.0;
+        double casterWheelsRadius = 0.002;
+        double casterWheelsMass = 0.001;
 
     public:
-        double getCenterFromKicker() { return this->CenterFromKicker; }
         double getRadius() { return this->Radius; }
         double getHeight() { return this->Height; }
         double getBottomHeight() { return this->BottomHeight; }
-        double getKickerZValue() { return this->KickerZValue; }
-        double getKickerThickness() { return this->KickerThickness; }
-        double getKickerWidth() { return this->KickerWidth; }
-        double getKickerHeight() { return this->KickerHeight; }
         double getWheelRadius() { return this->WheelRadius; }
         double getWheelThickness() { return this->WheelThickness; }
         int getWheel1Angle() { return this->Wheel1Angle; }
         int getWheel2Angle() { return this->Wheel2Angle; }
         double getBodyMass() { return this->BodyMass; }
         double getWheelMass() { return this->WheelMass; }
-        double getKickerMass() { return this->KickerMass; }
-        double getKickerDampFactor() { return this->KickerDampFactor; }
-        double getRollerTorqueFactor() { return this->RollerTorqueFactor; }
-        double getRollerPerpendicularTorqueFactor() { return this->RollerPerpendicularTorqueFactor; }
-        double getKickerFriction() { return this->KickerFriction; }
         double getWheelTangentFriction() { return this->WheelTangentFriction; }
         double getWheelPerpendicularFriction() { return this->WheelPerpendicularFriction; }
-        double getWheelMotorFMax() { return this->WheelMotorFMax; }
+        double getWheelMotorMaxTorque() { return this->WheelMotorMaxTorque; }
+        double getWheelMotorMaxRPM() { return this->WheelMotorMaxRPM; }
+        double getCasterWheelsRadius() { return this->casterWheelsRadius; }
+        double getCasterWheelsMass() { return this->casterWheelsMass; }
+
     };
 
 } // namespace Config

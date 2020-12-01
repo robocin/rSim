@@ -54,7 +54,7 @@ public:
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
-        dReal speed;
+        dReal desiredAngularSpeed; // Degrees/s
         CRobot *rob;
     } * wheels[2]{};
 
@@ -66,7 +66,6 @@ public:
         void step();
         dJointID joint;
         PBall *pBall;
-        dReal speed;
         CRobot *rob;
     } * balls[2]{};
 
@@ -74,7 +73,7 @@ public:
            int rob_id, int dir, bool turn_on);
     ~CRobot();
     void step();
-    void setSpeed(int i, dReal s); //i = 0,1,2,3
+    void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     dReal getSpeed(int i);
     void incSpeed(int i, dReal v);
