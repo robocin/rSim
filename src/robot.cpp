@@ -74,7 +74,7 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dReal z = rob->m_z;
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
-    dReal centerz = z - Config::Robot().getHeight() * 0.5 + Config::Robot().getCasterWheelsRadius() - Config::Robot().getBottomHeight();
+    dReal centerz = z - Config::Robot().getHeight() * 0.5 + Config::Robot().getCasterWheelsRadius() - Config::Robot().getBottomHeight() + 0.0001;
     pBall = new PBall(centerx, centery, centerz, Config::Robot().getCasterWheelsRadius(), Config::Robot().getCasterWheelsMass());
     pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
