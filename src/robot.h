@@ -67,7 +67,7 @@ public:
         dJointID joint;
         PBall *pBall;
         CRobot *rob;
-    } * balls[2]{};
+    } * balls[4]{};
 
     CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
            int rob_id, int dir, bool turn_on);

@@ -110,8 +110,10 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
 
     wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle());
     wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
-    balls[0] = new RBall(this, 0, Config::Robot().getWheel1Angle() + 90, Config::Robot().getWheel1Angle() + 90);
-    balls[1] = new RBall(this, 1, Config::Robot().getWheel2Angle() + 90, Config::Robot().getWheel2Angle() + 90);
+    balls[0] = new RBall(this, 0, 45, 45);
+    balls[1] = new RBall(this, 1, -45, -45);
+    balls[2] = new RBall(this, 2, 135, 135);
+    balls[3] = new RBall(this, 3, -135, -135);
     setDir(m_dir);
     on = turn_on;
 }
