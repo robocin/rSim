@@ -366,6 +366,8 @@ const std::vector<double> World::getFieldParams()
 
 const std::vector<double> &World::getState()
 {
+    std::vector<double> last_state = this->state;
+
     this->state.clear();
     dReal ballX, ballY, ballZ;
     dReal robotX, robotY, robotDir, robotK;
@@ -384,14 +386,22 @@ const std::vector<double> &World::getState()
 
     // Ball
     this->ball->getBodyPosition(ballX, ballY, ballZ);
-    ballVel = dBodyGetLinearVel(this->ball->body);
 
     // Add ball position to state vector
     this->state.push_back(randn_notrig(ballX, devX));
     this->state.push_back(randn_notrig(ballY, devY));
     this->state.push_back(ballZ);
-    this->state.push_back(ballVel[0]);
-    this->state.push_back(ballVel[1]);
+    if (last_state.size() > 0)
+    {
+        this->state.push_back((ballX - last_state[0]) / this->timeStep);
+        this->state.push_back((ballY - last_state[1]) / this->timeStep);
+    }
+    else
+    {
+        ballVel = dBodyGetLinearVel(this->ball->body);
+        this->state.push_back(0.);
+        this->state.push_back(0.);
+    }
 
     // Robots
     for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
@@ -403,24 +413,6 @@ const std::vector<double> &World::getState()
         robotVel = dBodyGetLinearVel(this->robots[i]->chassis->body);
         robotVelDir = dBodyGetAngularVel(this->robots[i]->chassis->body);
         // reset when the robot has turned over
-
-        if (i == 0)
-        {
-            dReal wheelx, wheely, wheelz;
-            for (auto &wheel : this->robots[i]->wheels){
-                wheel->cyl->getBodyDirection(wheelx, wheely, wheelz);
-
-                dReal dot = wheelx; //zarb dar (1.0,0.0,0.0)
-                dReal length = sqrt(wheelx * wheelx + wheelz * wheelz);
-                auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
-                absAng = (wheelz > 0) ? absAng : -absAng;
-                // std::cout << "wheel ang: " << absAng << '\n';
-                break;
-                
-                std::cout << " Wheel x: " << wheelx << " wheel y: " << wheely << " wheel z: " << wheelz << '\n';
-            }
-        }
-
         if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
             std::cout << "turnover " << robotK << '\n';
@@ -431,9 +423,18 @@ const std::vector<double> &World::getState()
         this->state.push_back(robotX);
         this->state.push_back(robotY);
         this->state.push_back(robotDir);
-        this->state.push_back(robotVel[0]);
-        this->state.push_back(robotVel[1]);
-        this->state.push_back(robotVelDir[2]);
+        if (last_state.size() > 0)
+        {
+            this->state.push_back((robotX - last_state[5 + (6 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - last_state[5 + (6 * i) + 1]) / this->timeStep);
+            this->state.push_back((robotDir - last_state[5 + (6 * i) + 2]) / this->timeStep);
+        }
+        else
+        {
+            this->state.push_back(0.);
+            this->state.push_back(0.);
+            this->state.push_back(0.);
+        }
     }
     return this->state;
 }
