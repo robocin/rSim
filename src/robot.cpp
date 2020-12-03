@@ -22,8 +22,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 // ang  = rotation angle
 CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
 {
-    id = _id;
-    rob = robot;
+    this->id = _id;
+    this->rob = robot;
     dReal rad = Config::Robot().getRadius() + Config::Robot().getWheelThickness() / 2.0;
     ang *= M_PI / 180.0f;
     ang2 *= M_PI / 180.0f;
@@ -32,41 +32,41 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     dReal z = rob->m_z;
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
-    dReal centerz = z - Config::Robot().getRadius() * 0.5 + Config::Robot().getWheelRadius() - Config::Robot().getBottomHeight();
-    cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass());
-    cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
-    cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
-    cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    cyl->space = rob->space;
+    dReal centerz = z - Config::Robot().getHeight() * 0.5 + Config::Robot().getWheelRadius() - Config::Robot().getBottomHeight();
+    this->cyl = new PCylinder(centerx, centery, centerz, Config::Robot().getWheelRadius(), Config::Robot().getWheelThickness(), Config::Robot().getWheelMass());
+    this->cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
+    this->cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
+    this->cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
+    this->cyl->space = this->rob->space;
 
-    rob->physics->addObject(cyl);
+    this->rob->physics->addObject(this->cyl);
 
-    joint = dJointCreateHinge(rob->physics->world, nullptr);
+    this->joint = dJointCreateHinge(this->rob->physics->world, nullptr);
 
-    dJointAttach(joint, rob->chassis->body, cyl->body);
-    const dReal *a = dBodyGetPosition(cyl->body);
-    dJointSetHingeAxis(joint, cos(ang), sin(ang), 0);
-    dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
+    dJointAttach(this->joint, this->rob->chassis->body, this->cyl->body);
+    const dReal *a = dBodyGetPosition(this->cyl->body);
+    dJointSetHingeAxis(this->joint, cos(ang), sin(ang), 0);
+    dJointSetHingeAnchor(this->joint, a[0], a[1], a[2]);
 
-    motor = dJointCreateAMotor(rob->physics->world, nullptr);
-    dJointAttach(motor, rob->chassis->body, cyl->body);
-    dJointSetAMotorNumAxes(motor, 1);
-    dJointSetAMotorAxis(motor, 0, 1, cos(ang), sin(ang), 0);
-    dJointSetAMotorParam(motor, dParamFMax, Config::Robot().getWheelMotorFMax());
-    speed = 0;
+    this->motor = dJointCreateAMotor(this->rob->physics->world, nullptr);
+    dJointAttach(this->motor, this->rob->chassis->body, this->cyl->body);
+    dJointSetAMotorNumAxes(this->motor, 1);
+    dJointSetAMotorAxis(this->motor, 0, 1, cos(ang), sin(ang), 0);
+    dJointSetAMotorParam(this->motor, dParamFMax, Config::Robot().getWheelMotorMaxTorque());
+    this->desiredAngularSpeed = 0;
 }
 
 void CRobot::Wheel::step()
 {
-    dJointSetAMotorParam(motor, dParamVel, speed);
-    dJointSetAMotorParam(motor, dParamFMax, Config::Robot().getWheelMotorFMax());
+    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamFMax, Config::Robot().getWheelMotorMaxTorque());
 }
 
 CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
 {
     id = _id;
     rob = robot;
-    dReal rad = Config::Robot().getRadius() - Config::World().getBallRadius();
+    dReal rad = Config::Robot().getRadius() - Config::Robot().getCasterWheelsRadius();
     ang *= M_PI / 180.0f;
     ang2 *= M_PI / 180.0f;
     dReal x = rob->m_x;
@@ -74,8 +74,8 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dReal z = rob->m_z;
     dReal centerx = x + rad * cos(ang2);
     dReal centery = y + rad * sin(ang2);
-    dReal centerz = z - Config::Robot().getRadius() * 0.5 + Config::World().getBallRadius() - Config::Robot().getBottomHeight();
-    pBall = new PBall(centerx, centery, centerz, Config::World().getBallRadius(), Config::World().getBallMass());
+    dReal centerz = z - Config::Robot().getHeight() * 0.5 + Config::Robot().getCasterWheelsRadius() - Config::Robot().getBottomHeight() + 0.0001;
+    pBall = new PBall(centerx, centery, centerz, Config::Robot().getCasterWheelsRadius(), Config::Robot().getCasterWheelsMass());
     pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     pBall->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
@@ -89,12 +89,10 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     const dReal *a = dBodyGetPosition(pBall->body);
     dJointSetHingeAxis(joint, cos(ang), sin(ang), 0);
     dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
-
-    speed = 0;
 }
 
 CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-            int rob_id, int dir, bool turn_on)
+               int rob_id, int dir, bool turn_on)
 {
     m_x = x;
     m_y = y;
@@ -110,18 +108,13 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     chassis->space = space;
     physics->addObject(chassis);
 
-    dummy = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
-    dummy->space = space;
-    physics->addObject(dummy);
-
-    dummy_to_chassis = dJointCreateFixed(world->world, nullptr);
-    dJointAttach(dummy_to_chassis, chassis->body, dummy->body);
-
     wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle());
     wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
-    balls[0] = new RBall(this, 0, Config::Robot().getWheel1Angle() + 90, Config::Robot().getWheel1Angle() + 90);
-    balls[1] = new RBall(this, 1, Config::Robot().getWheel2Angle() + 90, Config::Robot().getWheel2Angle() + 90);
-    firsttime = true;
+    balls[0] = new RBall(this, 0, 45, 45);
+    balls[1] = new RBall(this, 1, -45, -45);
+    balls[2] = new RBall(this, 2, 135, 135);
+    balls[3] = new RBall(this, 3, -135, -135);
+    setDir(m_dir);
     on = turn_on;
 }
 
@@ -152,19 +145,10 @@ void normalizeVector(dReal &x, dReal &y, dReal &z)
 
 void CRobot::step()
 {
-    if (on)
-    {
-        if (firsttime)
-        {
-            if (m_dir == -1)
-                setDir(180);
-            firsttime = false;
-        }
-    }
-    else
+    if (!on)
     {
         if (last_state)
-            wheels[0]->speed = wheels[1]->speed = 0;
+            wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
     }
     for (auto &wheel : wheels)
         wheel->step();
@@ -173,7 +157,7 @@ void CRobot::step()
 
 void CRobot::resetSpeeds()
 {
-    wheels[0]->speed = wheels[1]->speed = 0;
+    wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
 }
 
 void CRobot::resetRobot()
@@ -181,8 +165,6 @@ void CRobot::resetRobot()
     resetSpeeds();
     dBodySetLinearVel(chassis->body, 0, 0, 0);
     dBodySetAngularVel(chassis->body, 0, 0, 0);
-    dBodySetLinearVel(dummy->body, 0, 0, 0);
-    dBodySetAngularVel(dummy->body, 0, 0, 0);
     for (auto &wheel : wheels)
     {
         dBodySetLinearVel(wheel->cyl->body, 0, 0, 0);
@@ -191,10 +173,7 @@ void CRobot::resetRobot()
     dReal x, y;
     getXY(x, y);
     setXY(x, y);
-    if (m_dir == -1)
-        setDir(180);
-    else
-        setDir(0);
+    setDir(m_dir);
 }
 
 void CRobot::getXY(dReal &x, dReal &y)
@@ -231,7 +210,6 @@ void CRobot::setXY(dReal x, dReal y)
     dReal height = ROBOT_START_Z();
     chassis->getBodyPosition(xx, yy, zz);
     chassis->setBodyPosition(x, y, height);
-    dummy->setBodyPosition(x, y, height);
     for (auto &wheel : wheels)
     {
         wheel->cyl->getBodyPosition(kx, ky, kz);
@@ -243,7 +221,6 @@ void CRobot::setDir(dReal ang)
 {
     ang *= M_PI / 180.0f;
     chassis->setBodyRotation(0, 0, 1, ang);
-    dummy->setBodyRotation(0, 0, 1, ang);
     dMatrix3 wLocalRot, wRot, cRot;
     dVector3 localPos, finalPos, cPos;
     chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
@@ -266,31 +243,21 @@ void CRobot::setDir(dReal ang)
     }
 }
 
-void CRobot::setSpeed(int i, dReal s)
+void CRobot::setWheelDesiredAngularSpeed(int i, dReal s)
 {
     if (!((i >= 2) || (i < 0)))
-        wheels[i]->speed = s;
-}
-
-void CRobot::setSpeed(dReal vx, dReal vy, dReal vw)
-{
-    // Calculate Motor Speeds
-    dReal dw1 = (1.0 / Config::Robot().getWheelRadius()) * ((Config::Robot().getRadius() * vw) + vx);
-    dReal dw2 = (1.0 / Config::Robot().getWheelRadius()) * ((Config::Robot().getRadius() * -vw) + vx);
-
-    setSpeed(0, dw1);
-    setSpeed(1, dw2);
+        wheels[i]->desiredAngularSpeed = s;
 }
 
 dReal CRobot::getSpeed(int i)
 {
     if ((i >= 2) || (i < 0))
         return -1;
-    return wheels[i]->speed;
+    return wheels[i]->desiredAngularSpeed;
 }
 
 void CRobot::incSpeed(int i, dReal v)
 {
     if (!((i >= 2) || (i < 0)))
-        wheels[i]->speed += v;
+        wheels[i]->desiredAngularSpeed += v;
 }

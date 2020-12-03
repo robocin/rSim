@@ -35,14 +35,11 @@ class CRobot
     dReal m_r, m_g, m_b;
     dReal m_dir;
     int m_rob_id;
-    bool firsttime;
     bool last_state{};
 
 public:
     dSpaceID space;
     PObject *chassis;
-    PBox *dummy;
-    dJointID dummy_to_chassis;
     PBox *boxes[3]{};
     bool on;
     //these values are not controled by this class
@@ -57,7 +54,7 @@ public:
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
-        dReal speed;
+        dReal desiredAngularSpeed; // Degrees/s
         CRobot *rob;
     } * wheels[2]{};
 
@@ -69,15 +66,14 @@ public:
         void step();
         dJointID joint;
         PBall *pBall;
-        dReal speed;
         CRobot *rob;
-    } * balls[2]{};
+    } * balls[4]{};
 
     CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-        int rob_id, int dir, bool turn_on);
+           int rob_id, int dir, bool turn_on);
     ~CRobot();
     void step();
-    void setSpeed(int i, dReal s); //i = 0,1,2,3
+    void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     dReal getSpeed(int i);
     void incSpeed(int i, dReal v);
@@ -93,6 +89,6 @@ public:
     PWorld *getWorld();
 };
 
-#define ROBOT_START_Z() (Config::Robot().getHeight() * 0.5 + Config::Robot().getWheelRadius() * 1 + Config::Robot().getBottomHeight())
+#define ROBOT_START_Z() (Config::Robot().getHeight() * 0.5 + Config::Robot().getBottomHeight())
 
 #endif // ROBOT_H

@@ -42,34 +42,58 @@ class SimulatorVSS():
     '''
 
     def __init__(self, field_type: int = 0,
-                 n_robots_blue: int = 3, n_robots_yellow: int = 3) -> None:
+                 n_robots_blue: int = 3,
+                 n_robots_yellow: int = 3,
+                 time_step_ms: int = 16,
+                 ball_pos: np.ndarray = None,
+                 blue_robots_pos: np.ndarray = None,
+                 yellow_robots_pos: np.ndarray = None) -> None:
         '''
-        Creates our Simulator object.
+            Creates our Simulator object.
 
-        Parameters
-        ----------
-        field_type : int
-            The number corresponding to the type of the field
-            0 - 3x3 field
-            1 - 5x5 field
+            Parameters
+            ----------
+            field_type : int
+                The number corresponding to the type of the field
+                0 - 3x3 field
+                1 - 5x5 field
 
-        n_robots_blue : int
-            Number of blue robots
+            n_robots_blue : int
+                Number of blue robots
 
-        n_robots_yellow : int
-            Number of blue robots
+            n_robots_yellow : int
+                Number of blue robots
 
-        Returns
-        -------
-        None
+            time_step_ms : int
+                Simulation timestep in miliseconds
+
+            ball_pos : np.ndarray
+                Ball position array [ballX, ballY, ballVx, ballVy]
+
+            yellow and blue robots_pos : np.ndarray
+                Array of robot position array [[robotX, robotY, robotTheta]]
+
+            Returns
+            -------
+            None
 
         '''
         self.field_type: int = field_type
         self.n_robots_blue: int = n_robots_blue
         self.n_robots_yellow: int = n_robots_yellow
+        self.time_step_ms = time_step_ms
+        # convert from list to np.ndarray
+        ball_pos = np.array(ball_pos).flatten()
+        blue_robots_pos = np.array(blue_robots_pos).flatten()
+        yellow_robots_pos = np.array(yellow_robots_pos).flatten()
         self.world: object = robosim_lib.newWorld(self.field_type,
                                                   self.n_robots_blue,
-                                                  self.n_robots_yellow)
+                                                  self.n_robots_yellow,
+                                                  self.time_step_ms,
+                                                  as_ctypes(ball_pos),
+                                                  as_ctypes(blue_robots_pos),
+                                                  as_ctypes(yellow_robots_pos)
+                                                  )
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
             + (self.n_robots_blue * 6)\
@@ -120,7 +144,10 @@ class SimulatorVSS():
         action = action.flatten()
         robosim_lib.step(self.world, as_ctypes(action))
 
-    def reset(self) -> np.ndarray:
+    def reset(self,
+              ball_pos: np.ndarray,
+              blue_robots_pos: np.ndarray,
+              yellow_robots_pos: np.ndarray) -> np.ndarray:
         '''
         Resets the simulator and it's render view
         if it's in use.
@@ -138,7 +165,12 @@ class SimulatorVSS():
         robosim_lib.delWorld(self.world)
         self.world = robosim_lib.newWorld(self.field_type,
                                           self.n_robots_blue,
-                                          self.n_robots_yellow)
+                                          self.n_robots_yellow,
+                                          self.time_step_ms,
+                                          as_ctypes(ball_pos.flatten()),
+                                          as_ctypes(blue_robots_pos.flatten()),
+                                          as_ctypes(yellow_robots_pos.flatten())
+                                          )
         return self.get_state()
 
     def get_field_params(self) -> Dict[str, float]:
@@ -182,7 +214,7 @@ class SimulatorVSS():
             'goals_blue': 0, 'goals_yellow': 0, 'time': 0}
         status['goals_blue'] = robosim_lib.getGoalsBlue(self.world)
         status['goals_yellow'] = robosim_lib.getGoalsYellow(self.world)
-        status['time'] = robosim_lib.getEpisodeTime(self.world)
+        status['time_ms'] = robosim_lib.getEpisodeTime(self.world)
         return status
 
     def replace(self, ball_pos: np.ndarray,

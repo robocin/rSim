@@ -88,17 +88,18 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
+World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
 {
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
     this->field.setFieldType(fieldType);
+    this->timeStep = timeStep;
     this->episodeSteps = 0;
-    this->faultSteps = 0;
     _world = this;
-    this->physics = new PWorld(Config::World().getDeltaTime(), 9.81f, this->field.getRobotsCount());
-    this->ball = new PBall(0, 0, 0.5, Config::World().getBallRadius(), Config::World().getBallMass());
+    this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
+    this->ball = new PBall(ballPos[0], ballPos[1], Config::World().getBallRadius(), Config::World().getBallRadius(), Config::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
                                this->field.getFieldLineWidth(), 0);
@@ -115,13 +116,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
-        float LO_X = -0.4;
-        float LO_Y = -0.3;
-        float HI_X = 0.4;
-        float HI_Y = 0.3;
-        float dir = 1.0;
-        float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
-        float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
+        float x = blueRobotsPos[k * 3];
+        float y = blueRobotsPos[(k * 3) + 1];
+        float dir = blueRobotsPos[(k * 3) + 2];
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -129,13 +126,10 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
     for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
         bool turn_on = true;
-        float LO_X = -0.4;
-        float LO_Y = -0.3;
-        float HI_X = 0.4;
-        float HI_Y = 0.3;
-        float dir = 1.0;
-        float x = LO_X + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_X - LO_X)));
-        float y = LO_Y + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (HI_Y - LO_Y)));
+        int i = k - this->field.getRobotsBlueCount();
+        float x = yellowRobotsPos[i * 3];
+        float y = yellowRobotsPos[(i * 3) + 1];
+        float dir = yellowRobotsPos[(i * 3) + 2];
         robots[k] = new CRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
@@ -163,9 +157,10 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
     {
         this->physics->createSurface(robots[k]->chassis, this->ground);
         for (auto &wall : walls)
+        {
             this->physics->createSurface(robots[k]->chassis, wall);
-        this->physics->createSurface(robots[k]->dummy, this->ball);
-        //this->physics->createSurface(robots[k]->chassis,this->ball);
+        }
+        this->physics->createSurface(robots[k]->chassis, this->ball);
         for (auto &wheel : robots[k]->wheels)
         {
             this->physics->createSurface(wheel->cyl, this->ball);
@@ -186,7 +181,7 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow)
         {
             if (k != j)
             {
-                this->physics->createSurface(robots[k]->dummy, robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(robots[k]->chassis, robots[j]->chassis); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
     }
@@ -282,8 +277,12 @@ World::~World()
 
 void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
 {
-    if (getEpisodeTime() > 300000) return;
     setActions(actions);
+
+    for (int k = 0; k < this->field.getRobotsCount(); k++)
+    {
+        robots[k]->step();
+    }
 
     // Pq ele faz isso 5 vezes?
     // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
@@ -320,10 +319,6 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         this->physics->step(dt * 0.2, fullSpeed);
     }
 
-    for (int k = 0; k < this->field.getRobotsCount(); k++)
-    {
-        robots[k]->step();
-    }
     this->episodeSteps++;
 }
 
@@ -332,19 +327,19 @@ void World::setActions(std::vector<std::tuple<double, double>> actions)
     int id = 0;
     for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
-        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setSpeed(1, std::get<1>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
     }
     for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
     {
-        robots[i]->setSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setSpeed(1, std::get<1>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
+        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
     }
 }
 
 int World::getEpisodeTime()
 {
-    return this->episodeSteps * Config::World().getDeltaTime() * 1000;
+    return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
 }
 
 const std::vector<int> World::getGoals()
@@ -371,6 +366,8 @@ const std::vector<double> World::getFieldParams()
 
 const std::vector<double> &World::getState()
 {
+    std::vector<double> last_state = this->state;
+
     this->state.clear();
     dReal ballX, ballY, ballZ;
     dReal robotX, robotY, robotDir, robotK;
@@ -389,14 +386,22 @@ const std::vector<double> &World::getState()
 
     // Ball
     this->ball->getBodyPosition(ballX, ballY, ballZ);
-    ballVel = dBodyGetLinearVel(this->ball->body);
 
     // Add ball position to state vector
     this->state.push_back(randn_notrig(ballX, devX));
     this->state.push_back(randn_notrig(ballY, devY));
     this->state.push_back(ballZ);
-    this->state.push_back(ballVel[0]);
-    this->state.push_back(ballVel[1]);
+    if (last_state.size() > 0)
+    {
+        this->state.push_back((ballX - last_state[0]) / this->timeStep);
+        this->state.push_back((ballY - last_state[1]) / this->timeStep);
+    }
+    else
+    {
+        ballVel = dBodyGetLinearVel(this->ball->body);
+        this->state.push_back(0.);
+        this->state.push_back(0.);
+    }
 
     // Robots
     for (uint32_t i = 0; i < this->field.getRobotsCount(); i++)
@@ -410,6 +415,7 @@ const std::vector<double> &World::getState()
         // reset when the robot has turned over
         if (Config::World().getResetTurnOver() && robotK < 0.9)
         {
+            std::cout << "turnover " << robotK << '\n';
             this->robots[i]->resetRobot();
         }
 
@@ -417,9 +423,18 @@ const std::vector<double> &World::getState()
         this->state.push_back(robotX);
         this->state.push_back(robotY);
         this->state.push_back(robotDir);
-        this->state.push_back(robotVel[0]);
-        this->state.push_back(robotVel[1]);
-        this->state.push_back(robotVelDir[2]);
+        if (last_state.size() > 0)
+        {
+            this->state.push_back((robotX - last_state[5 + (6 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - last_state[5 + (6 * i) + 1]) / this->timeStep);
+            this->state.push_back((robotDir - last_state[5 + (6 * i) + 2]) / this->timeStep);
+        }
+        else
+        {
+            this->state.push_back(0.);
+            this->state.push_back(0.);
+            this->state.push_back(0.);
+        }
     }
     return this->state;
 }
@@ -497,12 +512,14 @@ void World::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
 
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
+        this->robots[i]->resetRobot();
         this->robots[i]->setXY(blues[i][0], blues[i][1]);
         this->robots[i]->setDir(blues[i][2]);
     }
     for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
     {
         uint32_t k = i - this->field.getRobotsBlueCount();
+        this->robots[i]->resetRobot();
         this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
         this->robots[i]->setDir(yellows[k][2]);
     }
