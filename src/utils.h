@@ -2,6 +2,7 @@
 
 #define PI 3.14159265358979323846
 
+dReal smallestAngleDiff(dReal angle, dReal last_angle);
 dReal randn_notrig(dReal mu = 0.0, dReal sigma = 1.0);
 dReal randn_trig(dReal mu = 0.0, dReal sigma = 1.0);
 dReal rand0_1();

@@ -201,7 +201,7 @@ dReal CRobot::getDir(dReal &k)
     dReal dot = x; //zarb dar (1.0,0.0,0.0)
     dReal length = sqrt(x * x + y * y);
     auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
-    return (y > 0) ? absAng : -absAng;
+    return (y > 0) ? absAng : 360-absAng;
 }
 
 void CRobot::setXY(dReal x, dReal y)
