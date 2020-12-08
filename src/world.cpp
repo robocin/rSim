@@ -427,7 +427,7 @@ const std::vector<double> &World::getState()
         {
             this->state.push_back((robotX - last_state[5 + (6 * i) + 0]) / this->timeStep);
             this->state.push_back((robotY - last_state[5 + (6 * i) + 1]) / this->timeStep);
-            this->state.push_back((robotDir - last_state[5 + (6 * i) + 2]) / this->timeStep);
+            this->state.push_back(smallestAngleDiff(robotDir, last_state[5 + (6 * i) + 2]) / this->timeStep);
         }
         else
         {
