@@ -106,9 +106,15 @@ class SimulatorVSS():
         '''
         Returns the state array.
         State:
-            - Ball: x, y, z, vx, vy
-            - Robots_blue: x, y, dir, vx, vy, vdir
-            - Robots_yellow: x, y, dir, vx, vy, vdir
+            - Ball: x, y, z, v_x, v_y
+            - Robots_blue: x, y, theta, v_x, v_y, v_theta
+            - Robots_yellow: x, y, theta, v_x, v_y, v_theta
+            Units:
+                x, y, z     -> meters
+                theta       -> degrees (0, 360)
+                v_x, v_y    -> meters/seconds
+                v_theta     -> degrees/seconds
+
         State size: 5 + 6*n_robots_blue + 6*n_robots_yellow
 
         Parameters
@@ -169,7 +175,8 @@ class SimulatorVSS():
                                           self.time_step_ms,
                                           as_ctypes(ball_pos.flatten()),
                                           as_ctypes(blue_robots_pos.flatten()),
-                                          as_ctypes(yellow_robots_pos.flatten())
+                                          as_ctypes(
+                                              yellow_robots_pos.flatten())
                                           )
         return self.get_state()
 
