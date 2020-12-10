@@ -67,6 +67,7 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     id = _id;
     rob = robot;
     dReal rad = Config::Robot().getRadius() - Config::Robot().getCasterWheelsRadius();
+    rad = sqrt((rad * rad) + (rad * rad));
     ang *= M_PI / 180.0f;
     ang2 *= M_PI / 180.0f;
     dReal x = rob->m_x;
