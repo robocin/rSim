@@ -119,9 +119,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
         float x = blueRobotsPos[k * 3];
         float y = blueRobotsPos[(k * 3) + 1];
         float dir = blueRobotsPos[(k * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new SSLRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
-            k + 1, dir, turn_on);
+            k + 1, dir);
     }
     for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
@@ -130,9 +130,9 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
         float x = yellowRobotsPos[i * 3];
         float y = yellowRobotsPos[(i * 3) + 1];
         float dir = yellowRobotsPos[(i * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new SSLRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
-            k + 1, dir, turn_on);
+            k + 1, dir);
     }
 
     this->physics->initAllObjects();
@@ -165,14 +165,6 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
         {
             this->physics->createSurface(wheel->cyl, this->ball);
             PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
-            w_g->surface = wheelswithground.surface;
-            w_g->usefdir1 = true;
-            w_g->callback = wheelCallBack;
-        }
-        for (auto &b : robots[k]->balls)
-        {
-            //            this->physics->createSurface(b->pBall,this->ball);
-            PSurface *w_g = this->physics->createSurface(b->pBall, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
