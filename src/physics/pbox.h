@@ -25,11 +25,9 @@ class PBox : public PObject
 {
 private:
     dReal m_w, m_h, m_l;
-    int m_texid;
-    bool m_robot;
 
 public:
-    PBox(dReal x, dReal y, dReal z, dReal w, dReal h, dReal l, dReal mass, int tex_id = -1, bool robot = false);
+    PBox(dReal x, dReal y, dReal z, dReal w, dReal h, dReal l, dReal mass);
     ~PBox() override;
     void setMass(dReal mass) override;
     void init() override;
