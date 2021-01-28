@@ -10,86 +10,88 @@ namespace Config
     class Field
     {
     private:
-        int RobotsCount = 3;
-        int RobotsBlueCount = 3;
-        int RobotsYellowCount = 3;
-        int FieldType = 0;
-        double FieldLineWidth = 0.003;
-        double FieldLength = 1.50;
-        double FieldWidth = 1.300;
-        double FieldRad = 0.200;
-        double FieldFreeKick = 0.200;
-        double FieldPenaltyWidth = 0.70;
-        double FieldPenaltyDepth = 0.15;
-        double FieldPenaltyPoint = 0.35;
-        double FieldMargin = 0.3;
-        double FieldRefereeMargin = 0.4;
-        double WallThickness = 0.025;
-        double GoalThickness = 0.025;
-        double GoalDepth = 0.10;
-        double GoalWidth = 0.40;
-        double GoalHeight = 0.05;
-        void setFieldLineWidth(double value) { this->FieldLineWidth = value; }
-        void setFieldLength(double value) { this->FieldLength = value; }
-        void setFieldWidth(double value) { this->FieldWidth = value; }
-        void setFieldRad(double value) { this->FieldRad = value; }
-        void setFieldFreeKick(double value) { this->FieldFreeKick = value; }
-        void setFieldPenaltyWidth(double value) { this->FieldPenaltyWidth = value; }
-        void setFieldPenaltyDepth(double value) { this->FieldPenaltyDepth = value; }
-        void setFieldPenaltyPoint(double value) { this->FieldPenaltyPoint = value; }
-        void setFieldMargin(double value) { this->FieldMargin = value; }
-        void setFieldRefereeMargin(double value) { this->FieldRefereeMargin = value; }
-        void setWallThickness(double value) { this->WallThickness = value; }
-        void setGoalThickness(double value) { this->GoalThickness = value; }
-        void setGoalDepth(double value) { this->GoalDepth = value; }
-        void setGoalWidth(double value) { this->GoalWidth = value; }
-        void setGoalHeight(double value) { this->GoalHeight = value; }
+        int robotsCount = 22;
+        int robotsBlueCount = 11;
+        int robotsYellowCount = 11;
+        int fieldType = 0;
+        double fieldLineWidth = 0.01;
+        double fieldLength = 12.00;
+        double fieldWidth = 9.00;
+        double fieldRad = 0.50;
+        double fieldFreeKick = 0.70;
+        double fieldPenaltyWidth = 3.60;
+        double fieldPenaltyDepth = 1.80;
+        double fieldPenaltyPoint = 8.00;
+        double fieldMargin = 0.3;
+        double fieldRefereeMargin = 0.0;
+        double wallThickness = 0.05;
+        double goalThickness = 0.02;
+        double goalDepth = 0.18;
+        double goalWidth = 1.8;
+        double goalHeight = 0.16;
+        void setFieldLineWidth(double value) { this->fieldLineWidth = value; }
+        void setFieldLength(double value) { this->fieldLength = value; }
+        void setFieldWidth(double value) { this->fieldWidth = value; }
+        void setFieldRad(double value) { this->fieldRad = value; }
+        void setFieldFreeKick(double value) { this->fieldFreeKick = value; }
+        void setFieldPenaltyWidth(double value) { this->fieldPenaltyWidth = value; }
+        void setFieldPenaltyDepth(double value) { this->fieldPenaltyDepth = value; }
+        void setFieldPenaltyPoint(double value) { this->fieldPenaltyPoint = value; }
+        void setFieldMargin(double value) { this->fieldMargin = value; }
+        void setFieldRefereeMargin(double value) { this->fieldRefereeMargin = value; }
+        void setWallThickness(double value) { this->wallThickness = value; }
+        void setGoalThickness(double value) { this->goalThickness = value; }
+        void setGoalDepth(double value) { this->goalDepth = value; }
+        void setGoalWidth(double value) { this->goalWidth = value; }
+        void setGoalHeight(double value) { this->goalHeight = value; }
 
     public:
-        int getRobotsCount() { return this->RobotsCount; }
-        int getRobotsBlueCount() { return this->RobotsBlueCount; }
-        int getRobotsYellowCount() { return this->RobotsYellowCount; }
-        double getFieldLineWidth() { return this->FieldLineWidth; }
-        double getFieldLength() { return this->FieldLength; }
-        double getFieldWidth() { return this->FieldWidth; }
-        double getFieldRad() { return this->FieldRad; }
-        double getFieldFreeKick() { return this->FieldFreeKick; }
-        double getFieldPenaltyWidth() { return this->FieldPenaltyWidth; }
-        double getFieldPenaltyDepth() { return this->FieldPenaltyDepth; }
-        double getFieldPenaltyPoint() { return this->FieldPenaltyPoint; }
-        double getFieldMargin() { return this->FieldMargin; }
-        double getFieldRefereeMargin() { return this->FieldRefereeMargin; }
-        double getWallThickness() { return this->WallThickness; }
-        double getGoalThickness() { return this->GoalThickness; }
-        double getGoalDepth() { return this->GoalDepth; }
-        double getGoalWidth() { return this->GoalWidth; }
-        double getGoalHeight() { return this->GoalHeight; }
-        int getFieldType() { return this->FieldType; }
-        void setRobotsCount(int value) { this->RobotsCount = value; }
-        void setRobotsBlueCount(int value) { this->RobotsBlueCount = value; }
-        void setRobotsYellowCount(int value) { this->RobotsYellowCount = value; }
+        int getRobotsCount() { return this->robotsCount; }
+        int getRobotsBlueCount() { return this->robotsBlueCount; }
+        int getRobotsYellowCount() { return this->robotsYellowCount; }
+        double getFieldLineWidth() { return this->fieldLineWidth; }
+        double getFieldLength() { return this->fieldLength; }
+        double getFieldWidth() { return this->fieldWidth; }
+        double getFieldRad() { return this->fieldRad; }
+        double getFieldFreeKick() { return this->fieldFreeKick; }
+        double getFieldPenaltyWidth() { return this->fieldPenaltyWidth; }
+        double getFieldPenaltyDepth() { return this->fieldPenaltyDepth; }
+        double getFieldPenaltyPoint() { return this->fieldPenaltyPoint; }
+        double getFieldMargin() { return this->fieldMargin; }
+        double getFieldRefereeMargin() { return this->fieldRefereeMargin; }
+        double getWallThickness() { return this->wallThickness; }
+        double getGoalThickness() { return this->goalThickness; }
+        double getGoalDepth() { return this->goalDepth; }
+        double getGoalWidth() { return this->goalWidth; }
+        double getGoalHeight() { return this->goalHeight; }
+        int getFieldType() { return this->fieldType; }
+        void setRobotsCount(int value) { this->robotsCount = value; }
+        void setRobotsBlueCount(int value) { this->robotsBlueCount = value; }
+        void setRobotsYellowCount(int value) { this->robotsYellowCount = value; }
         void setFieldType(int value)
         {
-            this->FieldType = value;
-            switch (this->FieldType)
+            this->fieldType = value;
+            switch (this->fieldType)
             {
-            case 0: // 3x3
-                setFieldLength(1.50);
-                setFieldWidth(1.300);
-                setFieldRad(0.200);
-                setFieldFreeKick(0.200);
-                setFieldPenaltyWidth(0.70);
-                setFieldPenaltyDepth(0.15);
-                setFieldPenaltyPoint(0.35);
+            case 0: // Division A
+                setRobotsCount(22);
+                setRobotsBlueCount(11);
+                setRobotsYellowCount(11);
+                setFieldLength(12.00);
+                setFieldWidth(9.00);
+                setFieldPenaltyWidth(3.60);
+                setFieldPenaltyDepth(1.80);
+                setFieldPenaltyPoint(8.00);
                 break;
-            case 1: // 5x5
-                setFieldLength(2.2);
-                setFieldWidth(1.8);
-                setFieldRad(0.25);
-                setFieldFreeKick(0.25);
-                setFieldPenaltyWidth(0.8);
-                setFieldPenaltyDepth(0.35);
-                setFieldPenaltyPoint(0.375);
+            case 1: // Division B
+                setRobotsCount(12);
+                setRobotsBlueCount(6);
+                setRobotsYellowCount(6);
+                setFieldLength(9.00);
+                setFieldWidth(6.00);
+                setFieldPenaltyWidth(2.00);
+                setFieldPenaltyDepth(1.00);
+                setFieldPenaltyPoint(6.00);
                 break;
             default:
                 break;
@@ -100,32 +102,28 @@ namespace Config
     class World
     {
     private:
-        double BallRadius = 0.0215;
-        int DesiredFPS = 60;
-        double DeltaTime = 0.016;
-        double Gravity = 9.8;
-        bool ResetTurnOver = true;
-        double BallMass = 0.043;
-        double BallFriction = 0.05;
-        int BallSlip = 1;
-        double BallBounce = 0.5;
-        double BallBounceVel = 0.1;
-        double BallLinearDamp = 0.004;
-        double BallAngularDamp = 0.004;
+        int ballSlip = 1;
+        bool resetTurnOver = true;
+        double ballRadius = 0.0215;
+        double gravity = 9.81;
+        double ballMass = 0.043;
+        double ballFriction = 0.05;
+        double ballBounce = 0.5;
+        double ballBounceVel = 0.1;
+        double ballLinearDamp = 0.004;
+        double ballAngularDamp = 0.004;
 
     public:
-        double getBallRadius() { return this->BallRadius; }
-        int getDesiredFPS() { return this->DesiredFPS; }
-        double getDeltaTime() { return this->DeltaTime; }
-        double getGravity() { return this->Gravity; }
-        bool getResetTurnOver() { return this->ResetTurnOver; }
-        double getBallMass() { return this->BallMass; }
-        double getBallFriction() { return this->BallFriction; }
-        int getBallSlip() { return this->BallSlip; }
-        double getBallBounce() { return this->BallBounce; }
-        double getBallBounceVel() { return this->BallBounceVel; }
-        double getBallLinearDamp() { return this->BallLinearDamp; }
-        double getBallAngularDamp() { return this->BallAngularDamp; }
+        int getBallSlip() { return this->ballSlip; }
+        bool getResetTurnOver() { return this->resetTurnOver; }
+        double getBallRadius() { return this->ballRadius; }
+        double getGravity() { return this->gravity; }
+        double getBallMass() { return this->ballMass; }
+        double getBallFriction() { return this->ballFriction; }
+        double getBallBounce() { return this->ballBounce; }
+        double getBallBounceVel() { return this->ballBounceVel; }
+        double getBallLinearDamp() { return this->ballLinearDamp; }
+        double getBallAngularDamp() { return this->ballAngularDamp; }
     };
 
     class Communication
@@ -182,38 +180,60 @@ namespace Config
     class Robot
     {
     private:
-        double Radius = 0.0375;
-        double Height = 0.056;
-        double BottomHeight = 0.002;
-        double WheelRadius = 0.026;
-        double WheelThickness = 0.005;
-        int Wheel1Angle = 90;
-        int Wheel2Angle = 270;
-        double BodyMass = 0.120;
-        double WheelMass = 0.015;
-        double WheelTangentFriction = 0.8;
-        double WheelPerpendicularFriction = 1;
-        double WheelMotorMaxTorque = 0.0725;
-        double WheelMotorMaxRPM = 630.0;
-        double casterWheelsRadius = 0.002;
-        double casterWheelsMass = 0.001;
+        double distanceCenterKicker = 0.073;
+        double kickerZ = 0.005;
+        double kickerThickness = 0.005;
+        double kickerWidth = 0.080;
+        double kickerHeight = 0.040;
+        double kickerMass = 0.020;
+        double kickerDampFactor = 0.200;
+        double KickerFriction = 0.800;
+        double rollerTorqueFactor = 0.060;
+        double rollerPerpendicularTorqueFactor = 0.005;
+
+        int wheel1Angle = 60;
+        int wheel2Angle = 135;
+        int wheel3Angle = 225;
+        int wheel4Angle = 300;
+        double radius = 0.090;
+        double height = 0.147;
+        double bottomHeight = 0.020;
+        double wheelRadius = 0.027;
+        double wheelThickness = 0.005;
+        double bodyMass = 2.000;
+        double wheelMass = 0.200;
+        double wheelTangentFriction = 0.800;
+        double wheelPerpendicularFriction = 0.050;
+        double wheelMotorMaxTorque = 0.200;
+        double wheelMotorMaxRPM = 630.000; // TODO
+
 
     public:
-        double getRadius() { return this->Radius; }
-        double getHeight() { return this->Height; }
-        double getBottomHeight() { return this->BottomHeight; }
-        double getWheelRadius() { return this->WheelRadius; }
-        double getWheelThickness() { return this->WheelThickness; }
-        int getWheel1Angle() { return this->Wheel1Angle; }
-        int getWheel2Angle() { return this->Wheel2Angle; }
-        double getBodyMass() { return this->BodyMass; }
-        double getWheelMass() { return this->WheelMass; }
-        double getWheelTangentFriction() { return this->WheelTangentFriction; }
-        double getWheelPerpendicularFriction() { return this->WheelPerpendicularFriction; }
-        double getWheelMotorMaxTorque() { return this->WheelMotorMaxTorque; }
-        double getWheelMotorMaxRPM() { return this->WheelMotorMaxRPM; }
-        double getCasterWheelsRadius() { return this->casterWheelsRadius; }
-        double getCasterWheelsMass() { return this->casterWheelsMass; }
+        int getWheel1Angle() { return this->wheel1Angle; }
+        int getWheel2Angle() { return this->wheel2Angle; }
+        int getWheel3Angle() { return this->wheel3Angle; }
+        int getWheel4Angle() { return this->wheel4Angle; }
+        double distanceCenterKicker() { return this->distanceCenterKicker; }
+        double kickerZ() { return this->kickerZ; }
+        double kickerThickness() { return this->kickerThickness; }
+        double kickerWidth() { return this->kickerWidth; }
+        double kickerHeight() { return this->kickerHeight; }
+        double kickerMass() { return this->kickerMass; }
+        double kickerDampFactor() { return this->kickerDampFactor; }
+        double KickerFriction() { return this->KickerFriction; }
+        double rollerTorqueFactor() { return this->rollerTorqueFactor; }
+        double rollerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
+        double getRadius() { return this->radius; }
+        double getHeight() { return this->height; }
+        double getBottomHeight() { return this->bottomHeight; }
+        double getWheelRadius() { return this->wheelRadius; }
+        double getWheelThickness() { return this->wheelThickness; }
+        double getBodyMass() { return this->bodyMass; }
+        double getWheelMass() { return this->wheelMass; }
+        double getWheelTangentFriction() { return this->wheelTangentFriction; }
+        double getWheelPerpendicularFriction() { return this->wheelPerpendicularFriction; }
+        double getWheelMotorMaxTorque() { return this->wheelMotorMaxTorque; }
+        double getWheelMotorMaxRPM() { return this->wheelMotorMaxRPM; }
 
     };
 
