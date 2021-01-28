@@ -31,21 +31,20 @@ enum KickStatus {
     CHIP_KICK = 2,
 };
 
-class CRobot
+class SSLRobot
 {
     PWorld *physics;
-    PBall *m_ball;
-    dReal m_x, m_y, m_z;
-    dReal m_r, m_g, m_b;
-    dReal m_dir;
-    int m_rob_id;
-    bool last_state{};
+    PBall *ball;
+    int rob_id;
 
 public:
+    dReal _x, _y, _z;
+    dReal _dir;
     dSpaceID space;
     PObject *chassis;
-    PBox *boxes[3]{};
-    bool on;
+    PBall* dummy;
+    dJointID dummy_to_chassis;
+
     class Wheel
     {
     public:
@@ -83,13 +82,12 @@ public:
         Robot* rob;
     } *kicker;
 
-    CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-           int rob_id, int dir, bool turn_on);
-    ~CRobot();
+    SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+           int robot_id, dReal dir);
+    ~SSLRobot();
     void step();
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
-    dReal getSpeed(int i);
     void incSpeed(int i, dReal v);
     void resetSpeeds();
     void resetRobot();
