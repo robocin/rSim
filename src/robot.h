@@ -25,7 +25,11 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pball.h"
 #include "config.h"
 
-#define ROBOT_GRAY 0.4
+enum KickStatus {
+    NO_KICK   = 0,
+    FLAT_KICK = 1,
+    CHIP_KICK = 2,
+};
 
 class CRobot
 {
@@ -42,9 +46,6 @@ public:
     PObject *chassis;
     PBox *boxes[3]{};
     bool on;
-    //these values are not controled by this class
-    bool selected{};
-    dReal select_x{}, select_y{}, select_z{};
     class Wheel
     {
     public:
@@ -56,18 +57,31 @@ public:
         PCylinder *cyl;
         dReal desiredAngularSpeed; // Degrees/s
         CRobot *rob;
-    } * wheels[2]{};
-
-    class RBall
+    } * wheels[4]{};
+    class Kicker
     {
-    public:
-        int id;
-        RBall(CRobot *robot, int _id, dReal ang, dReal ang2);
+      private:
+        KickStatus kicking;
+        int rolling;
+        int kickstate;
+        dReal m_kickspeed,m_kicktime;
+        bool holdingBall;
+      public:
+        Kicker(Robot* robot);
         void step();
+        void kick(dReal kickspeedx, dReal kickspeedz);
+        void setRoller(int roller);
+        int getRoller();
+        void toggleRoller();
+        bool isTouchingBall();
+        KickStatus isKicking();
+        void holdBall();
+        void unholdBall();
         dJointID joint;
-        PBall *pBall;
-        CRobot *rob;
-    } * balls[4]{};
+        dJointID robot_to_ball;
+        PBox* box;
+        Robot* rob;
+    } *kicker;
 
     CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
            int rob_id, int dir, bool turn_on);

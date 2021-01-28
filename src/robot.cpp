@@ -62,35 +62,167 @@ void CRobot::Wheel::step()
     dJointSetAMotorParam(this->motor, dParamFMax, Config::Robot().getWheelMotorMaxTorque());
 }
 
-CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
+
+Robot::Kicker::Kicker(Robot* robot) : holdingBall(false)
 {
-    id = _id;
-    rob = robot;
-    dReal rad = Config::Robot().getRadius() - Config::Robot().getCasterWheelsRadius();
-    rad = sqrt((rad * rad) + (rad * rad));
-    ang *= M_PI / 180.0f;
-    ang2 *= M_PI / 180.0f;
-    dReal x = rob->m_x;
-    dReal y = rob->m_y;
-    dReal z = rob->m_z;
-    dReal centerx = x + rad * cos(ang2);
-    dReal centery = y + rad * sin(ang2);
-    dReal centerz = z - Config::Robot().getHeight() * 0.5 + Config::Robot().getCasterWheelsRadius() - Config::Robot().getBottomHeight() + 0.0001;
-    pBall = new PBall(centerx, centery, centerz, Config::Robot().getCasterWheelsRadius(), Config::Robot().getCasterWheelsMass());
-    pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
-    pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
-    pBall->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    pBall->space = rob->space;
+    this->rob = robot;
 
-    rob->physics->addObject(pBall);
+    dReal x = this->rob->m_x;
+    dReal y = this->rob->m_y;
+    dReal z = this->rob->m_z;
 
-    joint = dJointCreateHinge(rob->physics->world, nullptr);
+    dReal centerX = x + (Config::Robot().getDistanceCenterKicker() + Config::Robot().getKickerThickness());
+    dReal centerY = y;
+    dReal centerZ = z - (Config::Robot().getRobotHeight()) * 0.5f + Config::Robot().getWheelRadius() - Config::Robot().getBottomHeight() + Config::Robot().getKickerZ();
+    
+    this->box = new PBox(
+        centerX, centerY, centerZ, 
+        Config::Robot().getkickerThickness(), Config::Robot().getKickerWidth(),
+        Config::Robot().getKickerHeight(),Config::Robot().getKickerMass(),
+        );
+    this->box->setBodyPosition(centerX - x, centerY - y, centerZ - z, true);
+    this->box->space = this->rob->space;
 
-    dJointAttach(joint, rob->chassis->body, pBall->body);
-    const dReal *a = dBodyGetPosition(pBall->body);
-    dJointSetHingeAxis(joint, cos(ang), sin(ang), 0);
-    dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
+    this->rob->physics->addObject(this->box);
+
+    this->joint = dJointCreateHinge(this->rob->physics->world, 0);
+    dJointAttach(this->joint,this->rob->chassis->body,this->box->body);
+    
+    const dReal *aa = dBodyGetPosition(this->box->body);
+    dJointSetHingeAnchor(this->joint, aa[0], aa[1], aa[2]);
+    dJointSetHingeAxis(this->joint, 0, -1,0);
+
+    dJointSetHingeParam(this->joint,dParamVel,0);
+    dJointSetHingeParam(this->joint,dParamLoStop,0);
+    dJointSetHingeParam(this->joint,dParamHiStop,0);
+
+    this->rolling = 0;
+    this->kicking = NO_KICK;
 }
+
+void Robot::Kicker::step()
+{
+    if (!isTouchingBall() || this->rolling == 0) unholdBall();
+    if (this->kicking != NO_KICK)
+    {
+        this->kickstate--;
+        if (this->kickstate<=0) this->kicking = NO_KICK;
+    }
+    else if (this->rolling ! =0)
+    {
+        if (isTouchingBall())
+        {
+            holdBall();
+        }
+    }
+}
+
+bool Robot::Kicker::isTouchingBall()
+{
+    dReal vx,vy,vz;
+    dReal bx,by,bz;
+    dReal kx,ky,kz;
+
+    this->rob->chassis->getBodyDirection(vx,vy,vz);
+    this->rob->getBall()->getBodyPosition(bx,by,bz);
+    this->box->getBodyPosition(kx,ky,kz);
+
+    kx += vx * Config::Robot().getkickerThickness()*0.5f;
+    ky += vy * Config::Robot().getkickerThickness()*0.5f;
+
+    dReal xx = fabs((kx-bx)*vx + (ky-by)*vy);
+    dReal yy = fabs(-(kx-bx)*vy + (ky-by)*vx);
+    dReal zz = fabs(kz-bz);
+
+    return ((xx < Config::Robot().getkickerThickness() * 2.0f + Config::World().getBallRadius()) && (yy < Config::Robot().getKickerWidth()*0.5f) && (zz < Config::Robot().getKickerHeight() * 0.5f));
+}
+
+KickStatus Robot::Kicker::isKicking()
+{
+    return this->kicking;
+}
+
+void Robot::Kicker::setRoller(int roller)
+{
+    this->rolling = roller;
+}
+
+int Robot::Kicker::getRoller()
+{
+    return this->rolling;
+}
+
+void Robot::Kicker::toggleRoller()
+{
+    if (this->rolling == 0)
+        this->rolling = 1;
+    else this->rolling = 0;
+}
+
+void Robot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
+{    
+    dReal dx,dy,dz;
+    dReal vx,vy,vz;
+
+    this->rob->chassis->getBodyDirection(dx,dy,dz);
+    dz = 0;
+
+    unholdBall();
+
+    if (isTouchingBall())
+    {
+        dReal dlen = dx*dx + dy*dy + dz*dz; // TODO NAO ENTENDI
+        dlen = sqrt(dlen);
+
+        vx = dx*kickSpeedX/dlen;
+        vy = dy*kickSpeedX/dlen;
+        vz = kickSpeedZ;
+
+        const dReal* vball = dBodyGetLinearVel(rob->getBall()->body);
+        dReal vn = -(vball[0]*dx + vball[1]*dy) * Config::Robot().getKickerDampFactor();
+        dReal vt = -(vball[0]*dy - vball[1]*dx);
+        vx += vn * dx - vt * dy;
+        vy += vn * dy + vt * dx;
+        dBodySetLinearVel(this->rob->getBall()->body,vx,vy,vz);
+
+        if (kickSpeedZ >= 1)
+            this->kicking = CHIP_KICK;
+        else
+            this->kicking = FLAT_KICK;
+
+        this->kickstate = 10;
+    }
+}
+
+void Robot::Kicker::holdBall(){
+    dReal vx,vy,vz;
+    dReal bx,by,bz;
+    dReal kx,ky,kz;
+
+    this->rob->chassis->getBodyDirection(vx,vy,vz);
+    this->rob->getBall()->getBodyPosition(bx,by,bz);
+    this->box->getBodyPosition(kx,ky,kz);
+
+    kx += vx * Config::Robot().getKickerThickness()*0.5f;
+    ky += vy * Config::Robot().getKickerThickness()*0.5f;
+
+    dReal xx = fabs((kx-bx)*vx + (ky-by)*vy);
+    dReal yy = fabs(-(kx-bx)*vy + (ky-by)*vx);
+
+    if(this->holdingBall || xx - Config::World().getBallRadius() < 0) return;
+    dBodySetLinearVel(this->rob->getBall()->body,0,0,0);
+    this->robot_to_ball = dJointCreateHinge(this->rob->getWorld()->world, 0);
+    dJointAttach(this->robot_to_ball, this->box->body, this->rob->getBall()->body);
+    this->holdingBall = true;
+}
+
+void Robot::Kicker::unholdBall(){
+    if(this->holdingBall) {
+        dJointDestroy(this->robot_to_ball);
+        this->holdingBall = false;
+    }
+}
+
 
 CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
                int rob_id, int dir, bool turn_on)
@@ -98,14 +230,14 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     m_x = x;
     m_y = y;
     m_z = z;
-    physics = world;
+    this->physics = world;
     m_ball = ball;
     m_dir = dir;
     m_rob_id = rob_id;
 
     space = physics->space;
 
-    chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, rob_id, true);
+    chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, true);
     chassis->space = space;
     physics->addObject(chassis);
 
