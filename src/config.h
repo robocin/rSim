@@ -213,16 +213,16 @@ namespace Config
         int getWheel2Angle() { return this->wheel2Angle; }
         int getWheel3Angle() { return this->wheel3Angle; }
         int getWheel4Angle() { return this->wheel4Angle; }
-        double distanceCenterKicker() { return this->distanceCenterKicker; }
-        double kickerZ() { return this->kickerZ; }
-        double kickerThickness() { return this->kickerThickness; }
-        double kickerWidth() { return this->kickerWidth; }
-        double kickerHeight() { return this->kickerHeight; }
-        double kickerMass() { return this->kickerMass; }
-        double kickerDampFactor() { return this->kickerDampFactor; }
-        double KickerFriction() { return this->KickerFriction; }
-        double rollerTorqueFactor() { return this->rollerTorqueFactor; }
-        double rollerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
+        double getDistanceCenterKicker() { return this->distanceCenterKicker; }
+        double getKickerZ() { return this->kickerZ; }
+        double getKickerThickness() { return this->kickerThickness; }
+        double getKickerWidth() { return this->kickerWidth; }
+        double getKickerHeight() { return this->kickerHeight; }
+        double getKickerMass() { return this->kickerMass; }
+        double getKickerDampFactor() { return this->kickerDampFactor; }
+        double getKickerFriction() { return this->KickerFriction; }
+        double getRollerTorqueFactor() { return this->rollerTorqueFactor; }
+        double getRollerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
         double getRadius() { return this->radius; }
         double getHeight() { return this->height; }
         double getBottomHeight() { return this->bottomHeight; }
