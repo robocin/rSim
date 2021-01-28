@@ -18,15 +18,13 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "pbox.h"
 
-PBox::PBox(dReal x, dReal y, dReal z, dReal w, dReal h, dReal l, dReal mass, int tex_id, bool robot)
+PBox::PBox(dReal x, dReal y, dReal z, dReal w, dReal h, dReal l, dReal mass)
     : PObject(x, y, z, mass)
 {
 
   m_w = w;
   m_h = h;
   m_l = l;
-  m_texid = tex_id;
-  m_robot = robot;
 }
 
 PBox::~PBox() = default;

@@ -25,11 +25,9 @@ class PCylinder : public PObject
 {
 private:
     dReal m_radius, m_length;
-    int m_texid;
-    bool m_robot;
 
 public:
-    PCylinder(dReal x, dReal y, dReal z, dReal radius, dReal length, dReal mass, int tex_id = -1, bool robot = false);
+    PCylinder(dReal x, dReal y, dReal z, dReal radius, dReal length, dReal mass);
     ~PCylinder() override;
     void setMass(dReal mass) override;
     void init() override;

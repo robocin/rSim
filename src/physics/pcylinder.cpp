@@ -18,13 +18,11 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "pcylinder.h"
 
-PCylinder::PCylinder(dReal x, dReal y, dReal z, dReal radius, dReal length, dReal mass, int texid, bool robot)
+PCylinder::PCylinder(dReal x, dReal y, dReal z, dReal radius, dReal length, dReal mass)
     : PObject(x, y, z, mass)
 {
   m_radius = radius;
   m_length = length;
-  m_texid = texid;
-  m_robot = robot;
 }
 
 PCylinder::~PCylinder() = default;
