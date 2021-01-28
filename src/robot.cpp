@@ -20,7 +20,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 // ang2 = position angle
 // ang  = rotation angle
-CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
+SSLRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
 {
     this->id = _id;
     this->rob = robot;
@@ -56,14 +56,13 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     this->desiredAngularSpeed = 0;
 }
 
-void CRobot::Wheel::step()
+void SSLRobot::Wheel::step()
 {
     dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
     dJointSetAMotorParam(this->motor, dParamFMax, Config::Robot().getWheelMotorMaxTorque());
 }
 
-
-Robot::Kicker::Kicker(Robot* robot) : holdingBall(false)
+SSLRobot::Kicker::Kicker(Robot* robot) : holdingBall(false)
 {
     this->rob = robot;
 
@@ -100,7 +99,7 @@ Robot::Kicker::Kicker(Robot* robot) : holdingBall(false)
     this->kicking = NO_KICK;
 }
 
-void Robot::Kicker::step()
+void SSLRobot::Kicker::step()
 {
     if (!isTouchingBall() || this->rolling == 0) unholdBall();
     if (this->kicking != NO_KICK)
@@ -117,7 +116,7 @@ void Robot::Kicker::step()
     }
 }
 
-bool Robot::Kicker::isTouchingBall()
+bool SSLRobot::Kicker::isTouchingBall()
 {
     dReal vx,vy,vz;
     dReal bx,by,bz;
@@ -137,29 +136,29 @@ bool Robot::Kicker::isTouchingBall()
     return ((xx < Config::Robot().getkickerThickness() * 2.0f + Config::World().getBallRadius()) && (yy < Config::Robot().getKickerWidth()*0.5f) && (zz < Config::Robot().getKickerHeight() * 0.5f));
 }
 
-KickStatus Robot::Kicker::isKicking()
+KickStatus SSLRobot::Kicker::isKicking()
 {
     return this->kicking;
 }
 
-void Robot::Kicker::setRoller(int roller)
+void SSLRobot::Kicker::setRoller(int roller)
 {
     this->rolling = roller;
 }
 
-int Robot::Kicker::getRoller()
+int SSLRobot::Kicker::getRoller()
 {
     return this->rolling;
 }
 
-void Robot::Kicker::toggleRoller()
+void SSLRobot::Kicker::toggleRoller()
 {
     if (this->rolling == 0)
         this->rolling = 1;
     else this->rolling = 0;
 }
 
-void Robot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
+void SSLRobot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
 {    
     dReal dx,dy,dz;
     dReal vx,vy,vz;
@@ -194,7 +193,7 @@ void Robot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
     }
 }
 
-void Robot::Kicker::holdBall(){
+void SSLRobot::Kicker::holdBall(){
     dReal vx,vy,vz;
     dReal bx,by,bz;
     dReal kx,ky,kz;
@@ -216,153 +215,159 @@ void Robot::Kicker::holdBall(){
     this->holdingBall = true;
 }
 
-void Robot::Kicker::unholdBall(){
+void SSLRobot::Kicker::unholdBall(){
     if(this->holdingBall) {
         dJointDestroy(this->robot_to_ball);
         this->holdingBall = false;
     }
 }
 
-
-CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-               int rob_id, int dir, bool turn_on)
+SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+               int robot_id, dReal dir)
 {
-    m_x = x;
-    m_y = y;
-    m_z = z;
+    this->_x = x;
+    this->_y = y;
+    this->_z = z;
     this->physics = world;
-    m_ball = ball;
-    m_dir = dir;
-    m_rob_id = rob_id;
+    this->ball = ball;
+    this->_dir = dir;
+    this->rob_id = robot_id;
 
-    space = physics->space;
+    this->space = physics->space;
 
-    chassis = new PBox(x, y, z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f, true);
-    chassis->space = space;
-    physics->addObject(chassis);
+    this->chassis = new PBox(this->_x, this->_y, this->_z, Config::Robot().getRadius() * 2, Config::Robot().getRadius() * 2, Config::Robot().getHeight(), Config::Robot().getBodyMass() * 0.99f);
+    this->chassis->space = this->space;
+    this->physics->addObject(chassis);
+
+    this->dummy = new PBall(this->_x, this->_y, this->_z, Config::Robot().getDistanceCenterKicker(), Config::Robot().getBodyMass()*0.01f);
+    this->dummy->space = this->space;
+    this->physics->addObject(this->dummy);
+
+    this->dummy_to_chassis = dJointCreateFixed(this->physics->world,0);
+    dJointAttach(this->dummy_to_chassis, this->chassis->body, this->dummy->body);
+
+    this->kicker = new Kicker(this);
 
     wheels[0] = new Wheel(this, 0, Config::Robot().getWheel1Angle(), Config::Robot().getWheel1Angle());
     wheels[1] = new Wheel(this, 1, Config::Robot().getWheel2Angle(), Config::Robot().getWheel2Angle());
-    balls[0] = new RBall(this, 0, 45, 45);
-    balls[1] = new RBall(this, 1, -45, -45);
-    balls[2] = new RBall(this, 2, 135, 135);
-    balls[3] = new RBall(this, 3, -135, -135);
-    setDir(m_dir);
-    on = turn_on;
+    wheels[2] = new Wheel(this, 2, Config::Robot().getWheel3Angle(), Config::Robot().getWheel3Angle());
+    wheels[3] = new Wheel(this, 3, Config::Robot().getWheel4Angle(), Config::Robot().getWheel4Angle());
+
+    setDir(this->_dir);
 }
 
-CRobot::~CRobot() = default;
+SSLRobot::~SSLRobot() = default;
 
-PBall *CRobot::getBall()
+PBall *SSLRobot::getBall()
 {
-    return m_ball;
+    return this->ball;
 }
 
-PWorld *CRobot::getWorld()
+PWorld *SSLRobot::getWorld()
 {
-    return physics;
+    return this->physics;
 }
 
-int CRobot::getID()
+int SSLRobot::getID()
 {
-    return m_rob_id - 1;
+    return this->rob_id - 1;
 }
 
-void normalizeVector(dReal &x, dReal &y, dReal &z)
+void SSLRobot::step()
 {
-    dReal d = sqrt(x * x + y * y + z * z);
-    x /= d;
-    y /= d;
-    z /= d;
-}
-
-void CRobot::step()
-{
-    if (!on)
-    {
-        if (last_state)
-            wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
-    }
-    for (auto &wheel : wheels)
+    for (auto &wheel : this->wheels)
         wheel->step();
-    last_state = on;
+    this->kicker->step();
 }
 
-void CRobot::resetSpeeds()
+void SSLRobot::resetSpeeds()
 {
-    wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
+    for (auto &wheel : this->wheels)
+        wheel->desiredAngularSpeed = 0;
 }
 
-void CRobot::resetRobot()
+void SSLRobot::resetRobot()
 {
     resetSpeeds();
-    dBodySetLinearVel(chassis->body, 0, 0, 0);
-    dBodySetAngularVel(chassis->body, 0, 0, 0);
-    for (auto &wheel : wheels)
+    dBodySetLinearVel(this->chassis->body, 0, 0, 0);
+    dBodySetAngularVel(this->chassis->body, 0, 0, 0);
+    for (auto &wheel : this->wheels)
     {
-        dBodySetLinearVel(wheel->cyl->body, 0, 0, 0);
-        dBodySetAngularVel(wheel->cyl->body, 0, 0, 0);
+        dBodySetLinearVel(this->wheel->cyl->body, 0, 0, 0);
+        dBodySetAngularVel(this->wheel->cyl->body, 0, 0, 0);
     }
     dReal x, y;
     getXY(x, y);
     setXY(x, y);
-    setDir(m_dir);
+    setDir(this->_dir);
 }
 
-void CRobot::getXY(dReal &x, dReal &y)
+void SSLRobot::getXY(dReal &x, dReal &y)
 {
     dReal xx, yy, zz;
-    chassis->getBodyPosition(xx, yy, zz);
+    this->chassis->getBodyPosition(xx, yy, zz);
     x = xx;
     y = yy;
 }
 
-dReal CRobot::getDir()
+dReal SSLRobot::getDir()
 {
     dReal x, y, z;
-    chassis->getBodyDirection(x, y, z);
+    this->chassis->getBodyDirection(x, y, z);
+
     dReal dot = x; //zarb dar (1.0,0.0,0.0)
     dReal length = sqrt(x * x + y * y);
     auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
+    
     return (y > 0) ? absAng : -absAng;
 }
 
-dReal CRobot::getDir(dReal &k)
+dReal SSLRobot::getDir(dReal &k)
 {
     dReal x, y, z;
-    chassis->getBodyDirection(x, y, z, k);
+    this->chassis->getBodyDirection(x, y, z, k);
+
     dReal dot = x; //zarb dar (1.0,0.0,0.0)
     dReal length = sqrt(x * x + y * y);
     auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
+    
     return (y > 0) ? absAng : 360-absAng;
 }
 
-void CRobot::setXY(dReal x, dReal y)
+void SSLRobot::setXY(dReal x, dReal y)
 {
     dReal xx, yy, zz, kx, ky, kz;
     dReal height = ROBOT_START_Z();
-    chassis->getBodyPosition(xx, yy, zz);
-    chassis->setBodyPosition(x, y, height);
-    for (auto &wheel : wheels)
+    this->chassis->getBodyPosition(xx, yy, zz);
+    this->chassis->setBodyPosition(x, y, height);
+    this->dummy->setBodyPosition(x,y,height);
+    this->kicker->box->getBodyPosition(kx,ky,kz);
+    this->kicker->box->setBodyPosition(kx-xx+x,ky-yy+y,kz-zz+height);
+
+    for (auto &wheel : this->wheels)
     {
         wheel->cyl->getBodyPosition(kx, ky, kz);
         wheel->cyl->setBodyPosition(kx - xx + x, ky - yy + y, kz - zz + height);
     }
 }
 
-void CRobot::setDir(dReal ang)
+void SSLRobot::setDir(dReal ang)
 {
-    ang *= M_PI / 180.0f;
-    chassis->setBodyRotation(0, 0, 1, ang);
     dMatrix3 wLocalRot, wRot, cRot;
     dVector3 localPos, finalPos, cPos;
-    chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
-    chassis->getBodyRotation(cRot, false);
+    ang *= M_PI / 180.0f;
+
+    this->chassis->setBodyRotation(0, 0, 1, ang);
+    this->kicker->box->setBodyRotation(0,0,1,ang);
+    this->dummy->setBodyRotation(0,0,1,ang);
+    
+    this->chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
+    this->chassis->getBodyRotation(cRot, false);
     dMultiply0(finalPos, cRot, localPos, 4, 3, 1);
     finalPos[0] += cPos[0];
     finalPos[1] += cPos[1];
     finalPos[2] += cPos[2];
-    for (auto &wheel : wheels)
+    for (auto &wheel : this->wheels)
     {
         wheel->cyl->getBodyRotation(wLocalRot, true);
         dMultiply0(wRot, cRot, wLocalRot, 3, 3, 3);
@@ -376,21 +381,25 @@ void CRobot::setDir(dReal ang)
     }
 }
 
-void CRobot::setWheelDesiredAngularSpeed(int i, dReal s)
+void SSLRobot::setWheelDesiredAngularSpeed(int i, dReal s)
 {
-    if (!((i >= 2) || (i < 0)))
-        wheels[i]->desiredAngularSpeed = s;
+    if (!((i >= 4) || (i < 0)))
+        this->wheels[i]->desiredAngularSpeed = s;
 }
 
-dReal CRobot::getSpeed(int i)
+void SSLRobot::setDesiredSpeed(dReal vx, dReal vy, dReal vw)
 {
-    if ((i >= 2) || (i < 0))
-        return -1;
-    return wheels[i]->desiredAngularSpeed;
-}
+    // Calculate Motor Speeds
+    dReal _DEG2RAD = M_PI / 180.0;
+    dReal motorAlpha[4] = {Config::Robot().getWheel1Angle() * _DEG2RAD, Config::Robot().getWheel2Angle() * _DEG2RAD, Config::Robot().getWheel3Angle() * _DEG2RAD, Config::Robot().getWheel4Angle() * _DEG2RAD};
 
-void CRobot::incSpeed(int i, dReal v)
-{
-    if (!((i >= 2) || (i < 0)))
-        wheels[i]->desiredAngularSpeed += v;
+    dReal dw1 =  (1.0 / Config::Robot().getWheelRadius()) * (( (Config::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
+    dReal dw2 =  (1.0 / Config::Robot().getWheelRadius()) * (( (Config::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
+    dReal dw3 =  (1.0 / Config::Robot().getWheelRadius()) * (( (Config::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
+    dReal dw4 =  (1.0 / Config::Robot().getWheelRadius()) * (( (Config::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))) );
+
+    setSpeed(0 , dw1);
+    setSpeed(1 , dw2);
+    setSpeed(2 , dw3);
+    setSpeed(3 , dw4);
 }
