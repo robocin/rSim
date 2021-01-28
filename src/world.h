@@ -57,7 +57,7 @@ public:
     PFixedBox *walls[WALL_COUNT]{};
     dReal cursor_x{}, cursor_y{}, cursor_z{};
     dReal cursor_radius{};
-    CRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    SSLRobot *robots[MAX_ROBOT_COUNT * 2]{};
     QElapsedTimer *timer, *timer_fault;
     dReal last_speed = 0.0;
 

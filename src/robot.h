@@ -49,13 +49,13 @@ public:
     {
     public:
         int id;
-        Wheel(CRobot *robot, int _id, dReal ang, dReal ang2);
+        Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
         dReal desiredAngularSpeed; // Degrees/s
-        CRobot *rob;
+        SSLRobot *rob;
     } * wheels[4]{};
     class Kicker
     {
@@ -66,7 +66,7 @@ public:
         dReal m_kickspeed,m_kicktime;
         bool holdingBall;
       public:
-        Kicker(Robot* robot);
+        Kicker(SSLRobot* robot);
         void step();
         void kick(dReal kickspeedx, dReal kickspeedz);
         void setRoller(int roller);
@@ -79,13 +79,14 @@ public:
         dJointID joint;
         dJointID robot_to_ball;
         PBox* box;
-        Robot* rob;
+        SSLRobot* rob;
     } *kicker;
 
     SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
            int robot_id, dReal dir);
     ~SSLRobot();
     void step();
+    void setDesiredSpeed(dReal vx, dReal vy, dReal vw);
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     void incSpeed(int i, dReal v);
