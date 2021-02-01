@@ -102,24 +102,24 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
     this->ball = new PBall(ballPos[0], ballPos[1], Config::World().getBallRadius(), Config::World().getBallRadius(), Config::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
-                               this->field.getFieldLineWidth(), 0);
+                               this->field.getFieldLineWidth());
 
     initWalls();
 
     this->physics->addObject(this->ground);
     this->physics->addObject(this->ball);
+
     for (auto &wall : this->walls)
         this->physics->addObject(wall);
 
     // TODO: entender daqui pra baixo
-    srand(static_cast<unsigned>(time(0)));
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
         float x = blueRobotsPos[k * 3];
         float y = blueRobotsPos[(k * 3) + 1];
         float dir = blueRobotsPos[(k * 3) + 2];
-        robots[k] = new SSLRobot(
+        this->robots[k] = new SSLRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir);
     }
@@ -130,7 +130,7 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
         float x = yellowRobotsPos[i * 3];
         float y = yellowRobotsPos[(i * 3) + 1];
         float dir = yellowRobotsPos[(i * 3) + 2];
-        robots[k] = new SSLRobot(
+        this->robots[k] = new SSLRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir);
     }
@@ -150,18 +150,24 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
     ball_ground->surface = ballwithwall.surface;
     ball_ground->callback = ballCallBack;
 
+    PSurface ballwithkicker;
+    ballwithkicker.surface.mode = dContactApprox1;
+    ballwithkicker.surface.mu = fric(Config::Robot().getKickerFriction());
+    ballwithkicker.surface.slip1 = 5;
+
     for (auto &wall : walls)
         this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
-        this->physics->createSurface(robots[k]->chassis, this->ground);
+        this->physics->createSurface(this->robots[k]->chassis, this->ground);
         for (auto &wall : walls)
         {
-            this->physics->createSurface(robots[k]->chassis, wall);
+            this->physics->createSurface(this->robots[k]->chassis, wall);
         }
-        this->physics->createSurface(robots[k]->chassis, this->ball);
-        for (auto &wheel : robots[k]->wheels)
+        this->physics->createSurface(this->robots[k]->dummy, this->ball);
+        this->physics->createSurface(this->robots[k]->kicker->box, this->ball)->surface = ballwithkicker.surface;
+        for (auto &wheel : this->robots[k]->wheels)
         {
             this->physics->createSurface(wheel->cyl, this->ball);
             PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
@@ -173,7 +179,8 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
         {
             if (k != j)
             {
-                this->physics->createSurface(robots[k]->chassis, robots[j]->chassis); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(this->robots[k]->dummy, this->robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(this->robots[k]->chassis, this->robots[j]->kicker->box);
             }
         }
     }
@@ -182,92 +189,63 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
 void World::initWalls()
 {
     const double thick = this->field.getWallThickness();
-    const double increment = thick / 2; //cfg->Field_Margin() + cfg->Field_Referee_Margin() + thick / 2;
+    const double increment = this->field.getFieldMargin() + this->field.getFieldRefereeMargin() + thick / 2;
     const double pos_x = this->field.getFieldLength() / 2.0 + increment;
     const double pos_y = this->field.getFieldWidth() / 2.0 + increment;
     const double pos_z = 0.0;
     const double siz_x = 2.0 * pos_x;
     const double siz_y = 2.0 * pos_y;
     const double siz_z = 0.4;
-    const double tone = 1.0;
 
-    const double gthick = this->field.getWallThickness();
+    const double gthick = this->field.getGoalThickness();
     const double gpos_x = (this->field.getFieldLength() + gthick) / 2.0 + this->field.getGoalDepth();
     const double gpos_y = (this->field.getGoalWidth() + gthick) / 2.0;
-    const double gpos_z = 0; //this->field.getGoalHeight() / 2.0;
+    const double gpos_z = this->field.getGoalHeight() / 2.0;
     const double gsiz_x = this->field.getGoalDepth() + gthick;
     const double gsiz_y = this->field.getGoalWidth();
-    const double gsiz_z = siz_z; //this->field.getGoalHeight();
+    const double gsiz_z = this->field.getGoalHeight();
     const double gpos2_x = (this->field.getFieldLength() + gsiz_x) / 2.0;
 
-    this->walls[0] = new PFixedBox(thick / 2, pos_y, pos_z,
-                                   siz_x, thick, siz_z);
+    this->walls[0] = new PFixedBox(thick/2, pos_y, pos_z,
+                             siz_x, thick, siz_z);
 
-    this->walls[1] = new PFixedBox(-thick / 2, -pos_y, pos_z,
-                                   siz_x, thick, siz_z);
+    this->walls[1] = new PFixedBox(-thick/2, -pos_y, pos_z,
+                             siz_x, thick, siz_z);
+    
+    this->walls[2] = new PFixedBox(pos_x, -thick/2, pos_z,
+                             thick, siz_y, siz_z);
 
-    this->walls[2] = new PFixedBox(pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                                   thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    this->walls[10] = new PFixedBox(pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                                    thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    this->walls[3] = new PFixedBox(-pos_x, gpos_y + (siz_y - gsiz_y) / 4, pos_z,
-                                   thick, (siz_y - gsiz_y) / 2, siz_z);
-
-    this->walls[11] = new PFixedBox(-pos_x, -gpos_y - (siz_y - gsiz_y) / 4, pos_z,
-                                    thick, (siz_y - gsiz_y) / 2, siz_z);
+    this->walls[3] = new PFixedBox(-pos_x, thick/2, pos_z,
+                             thick, siz_y, siz_z);
 
     // Goal walls
+    
     this->walls[4] = new PFixedBox(gpos_x, 0.0, gpos_z,
-                                   gthick, gsiz_y, gsiz_z);
-
+                             gthick, gsiz_y, gsiz_z);
+    
     this->walls[5] = new PFixedBox(gpos2_x, -gpos_y, gpos_z,
-                                   gsiz_x, gthick, gsiz_z);
-
+                             gsiz_x, gthick, gsiz_z);
+    
     this->walls[6] = new PFixedBox(gpos2_x, gpos_y, gpos_z,
-                                   gsiz_x, gthick, gsiz_z);
+                             gsiz_x, gthick, gsiz_z);
 
     this->walls[7] = new PFixedBox(-gpos_x, 0.0, gpos_z,
-                                   gthick, gsiz_y, gsiz_z);
-
+                             gthick, gsiz_y, gsiz_z);
+    
     this->walls[8] = new PFixedBox(-gpos2_x, -gpos_y, gpos_z,
-                                   gsiz_x, gthick, gsiz_z);
-
+                             gsiz_x, gthick, gsiz_z);
+    
     this->walls[9] = new PFixedBox(-gpos2_x, gpos_y, gpos_z,
-                                   gsiz_x, gthick, gsiz_z);
-
-    // Corner Wall
-    this->walls[12] = new PFixedBox(-pos_x + gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                                    gsiz_x, gthick, gsiz_z);
-    this->walls[12]->setRotation(0, 0, 1, M_PI / 4);
-
-    this->walls[13] = new PFixedBox(pos_x - gsiz_x / 2.8, pos_y - gsiz_x / 2.8, pos_z,
-                                    gsiz_x, gthick, gsiz_z);
-    this->walls[13]->setRotation(0, 0, 1, -M_PI / 4);
-
-    this->walls[14] = new PFixedBox(pos_x - gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                                    gsiz_x, gthick, gsiz_z);
-    this->walls[14]->setRotation(0, 0, 1, M_PI / 4);
-
-    this->walls[15] = new PFixedBox(-pos_x + gsiz_x / 2.8, -pos_y + gsiz_x / 2.8, pos_z,
-                                    gsiz_x, gthick, gsiz_z);
-    this->walls[15]->setRotation(0, 0, 1, -M_PI / 4);
+                             gsiz_x, gthick, gsiz_z);
 }
 
-int World::robotIndex(unsigned int robot, int team)
-{
-    if (robot >= this->field.getRobotsCount())
-        return -1;
-    return robot + team * this->field.getRobotsBlueCount();
-}
 
 World::~World()
 {
     delete this->physics;
 }
 
-void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
+void World::step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
 {
     setActions(actions);
 
@@ -282,25 +260,16 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
     {
         const dReal *ballvel = dBodyGetLinearVel(this->ball->body);
         // Norma do vetor velocidade da bola
-        dReal ballspeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
-        ballspeed = sqrt(ballspeed);
+        dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
+        ballSpeed = sqrt(ballSpeed);
         dReal ballfx = 0, ballfy = 0, ballfz = 0;
         dReal balltx = 0, ballty = 0, balltz = 0;
-        if (ballspeed < 0.01)
+        if (ballSpeed > 0.01)
         {
-            ; //const dReal* ballAngVel = dBodyGetAngularVel(this->ball->body);
-            //TODO: what was supposed to be here?
-        }
-        else
-        {
-            // Velocidade real  normalizada (com atrito envolvido) da bola
-            dReal accel = last_speed - ballspeed;
-            accel = -accel / dt;
-            last_speed = ballspeed;
-            dReal fk = accel * Config::World().getBallFriction() * Config::World().getBallMass() * Config::World().getGravity();
-            ballfx = -fk * ballvel[0] / ballspeed;
-            ballfy = -fk * ballvel[1] / ballspeed;
-            ballfz = -fk * ballvel[2] / ballspeed;
+            dReal fk = Config::World().getBallFriction() * Config::World().getBallMass() * Config::World().getGravity();
+            ballfx = -fk * ballvel[0] / ballSpeed;
+            ballfy = -fk * ballvel[1] / ballSpeed;
+            ballfz = -fk * ballvel[2] / ballSpeed;
             balltx = -ballfy * Config::World().getBallRadius();
             ballty = ballfx * Config::World().getBallRadius();
             balltz = 0;
@@ -308,32 +277,50 @@ void World::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         }
         dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
-        this->physics->step(dt * 0.2, fullSpeed);
+        this->physics->step(dt * 0.2, this->fullSpeed);
     }
 
     this->episodeSteps++;
 }
 
-void World::setActions(std::vector<std::tuple<double, double>> actions)
+// TODO : Decidir se vai implementar o RobotStatus
+
+// TODO : Vector de tuples é o melhor formato?
+// TODO : Precisa dividir em outra função para vx, vy e vtheta e coord locais e globais
+void World::setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
 {
     int id = 0;
     for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
-        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(0, std::get<0>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(2, std::get<2>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(3, std::get<3>(actions[i]));
+        if (std::get<4>(actions[i])) {
+            this->robots[i]->kicker->kick(std::get<5>(actions[i]), std::get<6>(actions[i]));
+        }
+        this->robots[i]->kicker->setRoller(std::get<7>(actions[i]));
     }
     for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
     {
-        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(0, std::get<0>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(2, std::get<2>(actions[i]));
+        this->robots[i]->setWheelDesiredAngularSpeed(3, std::get<3>(actions[i]));
+        if (std::get<4>(actions[i])) {
+            this->robots[i]->kicker->kick(std::get<5>(actions[i]), std::get<6>(actions[i]));
+        }
+        this->robots[i]->kicker->setRoller(std::get<7>(actions[i]));
     }
 }
 
+// TODO : NÃO ESTA SENDO USADO ATUALMENTE
 int World::getEpisodeTime()
 {
     return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
 }
 
+// TODO : NÃO ESTA SENDO USADO ATUALMENTE
 const std::vector<int> World::getGoals()
 {
     std::vector<int> goal = std::vector<int>(static_cast<std::size_t>(2));
@@ -343,6 +330,7 @@ const std::vector<int> World::getGoals()
     return goal;
 }
 
+// TODO : ESTA SENDO UTILIZADO?
 const std::vector<double> World::getFieldParams()
 {
     std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
