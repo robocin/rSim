@@ -18,7 +18,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "pground.h"
 
-PGround::PGround(dReal field_radius, dReal field_length, dReal field_width, dReal field_penalty_rad, dReal field_penalty_line_length, dReal field_penalty_point, dReal field_line_width, int tex_id)
+PGround::PGround(dReal field_radius, dReal field_length, dReal field_width, dReal field_penalty_rad, dReal field_penalty_line_length, dReal field_penalty_point, dReal field_line_width)
     : PObject(0, 0, 0, 0)
 {
     rad = field_radius;
@@ -27,7 +27,6 @@ PGround::PGround(dReal field_radius, dReal field_length, dReal field_width, dRea
     pdep = field_penalty_rad;
     pwid = field_penalty_line_length;
     ppoint = field_penalty_point;
-    tex = tex_id;
     lwidth = field_line_width;
 }
 

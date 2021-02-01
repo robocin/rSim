@@ -25,10 +25,9 @@ class PGround : public PObject
 {
 private:
     dReal rad, len, wid, pdep, pwid, ppoint, lwidth;
-    int tex;
 
 public:
-    PGround(dReal field_radius, dReal field_length, dReal field_width, dReal field_penalty_rad, dReal field_penalty_line_length, dReal field_penalty_point, dReal field_line_width, int tex_id);
+    PGround(dReal field_radius, dReal field_length, dReal field_width, dReal field_penalty_rad, dReal field_penalty_line_length, dReal field_penalty_point, dReal field_line_width);
     ~PGround() override;
     void init() override;
 };
