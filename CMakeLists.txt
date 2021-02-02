@@ -94,7 +94,9 @@ set(SOURCES
     src/physics/pcylinder.cpp
     src/physics/pbox.cpp
     src/sslconfig.cpp
-    src/robot.cpp
+    src/vssconfig.cpp
+    src/vssrobot.cpp
+    src/sslrobot.cpp
     src/utils.cpp
 )
 
@@ -106,8 +108,10 @@ set(HEADERS
     src/physics/pfixedbox.h
     src/physics/pcylinder.h
     src/physics/pbox.h
-    src/config.h
+    src/sslconfig.h
+    src/vssconfig.h
     src/sslrobot.h
+    src/vssrobot.h
     src/utils.h
 )
 
@@ -120,15 +124,26 @@ set(srcs
 add_library(robosim_core STATIC ${srcs})
 target_link_libraries(robosim_core ${libs})
 
-add_library(robosim SHARED src/sslworld.cpp)
+add_library(robosim_vss SHARED src/vssworld.cpp)
+add_library(robosim_ssl SHARED src/sslworld.cpp)
 
-add_library(robosim_c SHARED robosim/robosim_c_wrapper.cpp src/sslworld.cpp)
-set_target_properties(robosim_c PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robosim)
+add_library(robosim_c_ssl SHARED robosim/robosim_c_wrapper_ssl.cpp src/sslworld.cpp)
+add_library(robosim_c_vss SHARED robosim/robosim_c_wrapper_vss.cpp src/vssworld.cpp)
 
-add_dependencies(robosim robosim_core)
-add_dependencies(robosim_c robosim_core)
+set_target_properties(robosim_c_ssl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robosim)
+set_target_properties(robosim_c_vss PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robosim)
 
-target_link_libraries(robosim ${libs})
-target_link_libraries(robosim robosim_core)
-target_link_libraries(robosim_c ${libs})
-target_link_libraries(robosim_c robosim_core)
+add_dependencies(robosim_vss robosim_core)
+add_dependencies(robosim_c_vss robosim_core)
+add_dependencies(robosim_ssl robosim_core)
+add_dependencies(robosim_c_ssl robosim_core)
+
+target_link_libraries(robosim_ssl ${libs})
+target_link_libraries(robosim_ssl robosim_core)
+target_link_libraries(robosim_c_ssl ${libs})
+target_link_libraries(robosim_c_ssl robosim_core)
+
+target_link_libraries(robosim_vss ${libs})
+target_link_libraries(robosim_vss robosim_core)
+target_link_libraries(robosim_c_vss ${libs})
+target_link_libraries(robosim_c_vss robosim_core)

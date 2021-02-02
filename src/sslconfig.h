@@ -1,11 +1,11 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef SSLCONFIG_H
+#define SSLCONFIG_H
 
 #include <vector>
 #include <string>
 #include <iostream>
 
-namespace Config
+namespace SSLConfig
 {
     class Field
     {

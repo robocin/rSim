@@ -16,79 +16,66 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SSLROBOT_H
-#define SSLROBOT_H
+#ifndef VSSROBOT_H
+#define VSSROBOT_H
 
 #include "physics/pworld.h"
 #include "physics/pcylinder.h"
 #include "physics/pbox.h"
 #include "physics/pball.h"
-#include "sslconfig.h"
+#include "vssconfig.h"
 
-enum KickStatus {
-    NO_KICK   = 0,
-    FLAT_KICK = 1,
-    CHIP_KICK = 2,
-};
+#define ROBOT_GRAY 0.4
 
-class SSLRobot
+class CRobot
 {
     PWorld *physics;
-    PBall *ball;
-    int rob_id;
+    PBall *m_ball;
+    dReal m_x, m_y, m_z;
+    dReal m_r, m_g, m_b;
+    dReal m_dir;
+    int m_rob_id;
+    bool last_state{};
 
 public:
-    dReal _x, _y, _z;
-    dReal _dir;
     dSpaceID space;
     PObject *chassis;
-    PBall* dummy;
-    dJointID dummy_to_chassis;
-
+    PBox *boxes[3]{};
+    bool on;
+    //these values are not controled by this class
+    bool selected{};
+    dReal select_x{}, select_y{}, select_z{};
     class Wheel
     {
     public:
         int id;
-        Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2);
+        Wheel(CRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
         dReal desiredAngularSpeed; // Degrees/s
-        SSLRobot *rob;
-    } * wheels[4]{};
-    class Kicker
-    {
-      private:
-        KickStatus kicking;
-        int rolling;
-        int kickstate;
-        dReal m_kickspeed,m_kicktime;
-        bool holdingBall;
-      public:
-        Kicker(SSLRobot* robot);
-        void step();
-        void kick(dReal kickspeedx, dReal kickspeedz);
-        void setRoller(int roller);
-        int getRoller();
-        void toggleRoller();
-        bool isTouchingBall();
-        KickStatus isKicking();
-        void holdBall();
-        void unholdBall();
-        dJointID joint;
-        dJointID robot_to_ball;
-        PBox* box;
-        SSLRobot* rob;
-    } *kicker;
+        CRobot *rob;
+    } * wheels[2]{};
 
-    SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
-           int robot_id, dReal dir);
-    ~SSLRobot();
+    class RBall
+    {
+    public:
+        int id;
+        RBall(CRobot *robot, int _id, dReal ang, dReal ang2);
+        void step();
+        dJointID joint;
+        PBall *pBall;
+        CRobot *rob;
+    } * balls[4]{};
+
+    CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+           int rob_id, int dir, bool turn_on);
+    ~CRobot();
     void step();
-    void setDesiredSpeed(dReal vx, dReal vy, dReal vw);
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
+    dReal getSpeed(int i);
     void incSpeed(int i, dReal v);
     void resetSpeeds();
     void resetRobot();
@@ -102,6 +89,6 @@ public:
     PWorld *getWorld();
 };
 
-#define ROBOT_START_Z() (SSLConfig::Robot().getHeight() * 0.5 + SSLConfig::Robot().getBottomHeight())
+#define ROBOT_START_Z() (VSSConfig::Robot().getHeight() * 0.5 + VSSConfig::Robot().getBottomHeight())
 
-#endif // SSLROBOT_H
+#endif // ROBOT_H
