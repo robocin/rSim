@@ -16,8 +16,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SSLWORLD_H
-#define SSLWORLD_H
+#ifndef VSSWORLD_H
+#define VSSWORLD_H
 
 #include <QList>
 #include <QElapsedTimer>
@@ -27,22 +27,21 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pground.h"
 #include "physics/pfixedbox.h"
 
-#include "sslrobot.h"
+#include "vssrobot.h"
 #include "utils.h"
 
-#define WALL_COUNT 10
+#define WALL_COUNT 16
 #define MAX_ROBOT_COUNT 12 //don't change
 #define TEAM_COUNT 2
-// TODO : VALOR NÃO FIXO
 #define STATE_SIZE 41 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY)
 
-class SSLWorld
+class VSSWorld
 {
 private:
     int episodeSteps;
     double timeStep;
     std::vector<double> state = std::vector<double>(static_cast<std::size_t>(STATE_SIZE));
-    SSLConfig::Field field = SSLConfig::Field();
+    VSSConfig::Field field = VSSConfig::Field();
 
 public:
     int goalsYellow = 0;
@@ -58,17 +57,18 @@ public:
     PFixedBox *walls[WALL_COUNT]{};
     dReal cursor_x{}, cursor_y{}, cursor_z{};
     dReal cursor_radius{};
-    SSLRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    CRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    QElapsedTimer *timer, *timer_fault;
+    dReal last_speed = 0.0;
 
-    SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+    VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
-    ~SSLWorld();
+    ~VSSWorld();
     void simStep(dReal dt = -1);
-    void step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions);
+    void step(dReal dt, std::vector<std::tuple<double, double>> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
     void replace_with_vel(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
-    // TODO : USED?
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
     double getTimeStep() { return this->timeStep; }
@@ -99,9 +99,10 @@ public:
     */
     const std::vector<double> &getState();
 
-    void setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions);
+    int robotIndex(unsigned int robot, int team);
+    void setActions(std::vector<std::tuple<double, double>> actions);
 };
 
 dReal fric(dReal f);
 
-#endif // SSLWorld_H
+#endif // World_H

@@ -14,7 +14,7 @@ extern "C"
         std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions;
         actions.clear();
         
-        for (int i = 0; i < Config::Field().getRobotsCount(); i = i + 8)
+        for (int i = 0; i < SSLConfig::Field().getRobotsCount(); i = i + 8)
         {
             std::tuple<double, double, double, double, bool, double, double, bool> action(act[i], act[i + 1], act[i + 2], act[i + 3], act[i + 4], act[i + 5], act[i + 6], act[i + 7]);
             actions.push_back(action);

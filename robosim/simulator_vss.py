@@ -7,7 +7,7 @@ from numpy.ctypeslib import as_ctypes
 
 
 robosim_lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__),
-                                            'librobosim_c.so'))
+                                            'librobosim_c_vss.so'))
 
 robosim_lib.newWorld.argtypes = None
 robosim_lib.newWorld.restype = c_void_p
