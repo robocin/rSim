@@ -185,16 +185,6 @@ void CRobot::getXY(dReal &x, dReal &y)
     y = yy;
 }
 
-dReal CRobot::getDir()
-{
-    dReal x, y, z;
-    chassis->getBodyDirection(x, y, z);
-    dReal dot = x; //zarb dar (1.0,0.0,0.0)
-    dReal length = sqrt(x * x + y * y);
-    auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
-    return (y > 0) ? absAng : -absAng;
-}
-
 dReal CRobot::getDir(dReal &k)
 {
     dReal x, y, z;

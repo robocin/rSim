@@ -310,18 +310,6 @@ void SSLRobot::getXY(dReal &x, dReal &y)
     y = yy;
 }
 
-dReal SSLRobot::getDir()
-{
-    dReal x, y, z;
-    this->chassis->getBodyDirection(x, y, z);
-
-    dReal dot = x; //zarb dar (1.0,0.0,0.0)
-    dReal length = sqrt(x * x + y * y);
-    auto absAng = (dReal)(acos((dReal)(dot / length)) * (180.0f / M_PI));
-    
-    return (y > 0) ? absAng : -absAng;
-}
-
 dReal SSLRobot::getDir(dReal &k)
 {
     dReal x, y, z;
@@ -387,7 +375,7 @@ void SSLRobot::setWheelDesiredAngularSpeed(int i, dReal s)
         this->wheels[i]->desiredAngularSpeed = s;
 }
 
-void SSLRobot::setDesiredSpeed(dReal vx, dReal vy, dReal vw)
+void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
 {
     // Calculate Motor Speeds
     dReal _DEG2RAD = M_PI / 180.0;
@@ -403,4 +391,19 @@ void SSLRobot::setDesiredSpeed(dReal vx, dReal vy, dReal vw)
     setWheelDesiredAngularSpeed(1 , dw2);
     setWheelDesiredAngularSpeed(2 , dw3);
     setWheelDesiredAngularSpeed(3 , dw4);
+}
+
+void SSLRobot::setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw)
+{
+    dReal k, angle;
+    dReal localVx, localVy;
+    dReal _DEG2RAD = M_PI / 180.0;
+
+    angle = getDir(k);
+    angle = angle * _DEG2RAD;
+
+    localVx = vx * cos(angle) + vy * sin(angle);
+    localVy = -vx * sin(angle) + vy * cos(angle);
+
+    setDesiredSpeedLocal(localVx, localVy, vw);
 }

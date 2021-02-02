@@ -64,7 +64,7 @@ public:
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
     ~SSLWorld();
     void simStep(dReal dt = -1);
-    void step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions);
+    void step(dReal dt, std::vector<double*> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
     void replace_with_vel(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
@@ -99,7 +99,7 @@ public:
     */
     const std::vector<double> &getState();
 
-    void setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions);
+    void setActions(std::vector<double*> actions);
 };
 
 dReal fric(dReal f);

@@ -86,14 +86,14 @@ public:
            int robot_id, dReal dir);
     ~SSLRobot();
     void step();
-    void setDesiredSpeed(dReal vx, dReal vy, dReal vw);
+    void setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw);
+    void setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw);
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     void incSpeed(int i, dReal v);
     void resetSpeeds();
     void resetRobot();
     void getXY(dReal &x, dReal &y);
-    dReal getDir();
     dReal getDir(dReal &k);
     void setXY(dReal x, dReal y);
     void setDir(dReal ang);

@@ -94,6 +94,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
+    // fieldType = 0 for Div A, fieldType = 1 for Div B
     this->field.setFieldType(fieldType);
     this->timeStep = timeStep;
     this->episodeSteps = 0;
@@ -245,7 +246,7 @@ SSLWorld::~SSLWorld()
     delete this->physics;
 }
 
-void SSLWorld::step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
+void SSLWorld::step(dReal dt, std::vector<double*> actions)
 {
     setActions(actions);
 
@@ -285,32 +286,18 @@ void SSLWorld::step(dReal dt, std::vector<std::tuple<double, double, double, dou
 
 // TODO : Decidir se vai implementar o RobotStatus
 
-// TODO : Vector de tuples é o melhor formato?
-// TODO : Precisa dividir em outra função para vx, vy e vtheta e coord locais e globais
-void SSLWorld::setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
+void SSLWorld::setActions(std::vector<double*> actions)
 {
-    int id = 0;
-    for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
+    int i = 0;
+
+    for (double* action : actions) 
     {
-        this->robots[i]->setWheelDesiredAngularSpeed(0, std::get<0>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(2, std::get<2>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(3, std::get<3>(actions[i]));
-        if (std::get<4>(actions[i])) {
-            this->robots[i]->kicker->kick(std::get<5>(actions[i]), std::get<6>(actions[i]));
+        this->robots[i]->setDesiredSpeedGlobal(action[0], action[1], action[2]);
+        if (action[3] > 0 || action[4] > 0) {
+            this->robots[i]->kicker->kick(action[3], action[4]);
         }
-        this->robots[i]->kicker->setRoller(std::get<7>(actions[i]));
-    }
-    for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
-    {
-        this->robots[i]->setWheelDesiredAngularSpeed(0, std::get<0>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(2, std::get<2>(actions[i]));
-        this->robots[i]->setWheelDesiredAngularSpeed(3, std::get<3>(actions[i]));
-        if (std::get<4>(actions[i])) {
-            this->robots[i]->kicker->kick(std::get<5>(actions[i]), std::get<6>(actions[i]));
-        }
-        this->robots[i]->kicker->setRoller(std::get<7>(actions[i]));
+        if (action[5] > 0) this->robots[i]->kicker->setRoller(true);
+        i++;
     }
 }
 
