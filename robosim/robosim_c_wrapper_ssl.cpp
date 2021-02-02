@@ -33,9 +33,6 @@ extern "C"
         const double *params_features = params.data();
         memcpy(params_data, params_features, params.size() * sizeof(double));
     }
-    int getEpisodeTime(SSLWorld *world) { return world->getEpisodeTime(); }
-    int getGoalsBlue(SSLWorld *world) { return world->getGoals()[0]; }
-    int getGoalsYellow(SSLWorld *world) { return world->getGoals()[1]; }
     void replace(SSLWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
     {
         world->replace(ball_data, pos_blue_data, pos_yellow_data);

@@ -94,9 +94,10 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
+    this->stateSize = 5 + nRobotsBlue * 6 + nRobotsYellow * 6;
+    this->state.reserve(this->stateSize);
     this->field.setFieldType(fieldType);
     this->timeStep = timeStep;
-    this->episodeSteps = 0;
     _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(ballPos[0], ballPos[1], VSSConfig::World().getBallRadius(), VSSConfig::World().getBallRadius(), VSSConfig::World().getBallMass());
@@ -111,8 +112,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (auto &wall : this->walls)
         this->physics->addObject(wall);
 
-    // TODO: entender daqui pra baixo
-    srand(static_cast<unsigned>(time(0)));
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
@@ -305,6 +304,7 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
             dReal accel = last_speed - ballspeed;
             accel = -accel / dt;
             last_speed = ballspeed;
+            // TODO : bug de bola que não para, deve ser aqui
             dReal fk = accel * VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
             ballfx = -fk * ballvel[0] / ballspeed;
             ballfy = -fk * ballvel[1] / ballspeed;
@@ -319,7 +319,6 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         this->physics->step(dt * 0.2, fullSpeed);
     }
 
-    this->episodeSteps++;
 }
 
 void VSSWorld::setActions(std::vector<std::tuple<double, double>> actions)
@@ -337,20 +336,6 @@ void VSSWorld::setActions(std::vector<std::tuple<double, double>> actions)
     }
 }
 
-int VSSWorld::getEpisodeTime()
-{
-    return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
-}
-
-const std::vector<int> VSSWorld::getGoals()
-{
-    std::vector<int> goal = std::vector<int>(static_cast<std::size_t>(2));
-    goal.clear();
-    goal.push_back(this->goalsBlue);
-    goal.push_back(this->goalsYellow);
-    return goal;
-}
-
 const std::vector<double> VSSWorld::getFieldParams()
 {
     std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
@@ -366,9 +351,10 @@ const std::vector<double> VSSWorld::getFieldParams()
 
 const std::vector<double> &VSSWorld::getState()
 {
-    std::vector<double> last_state = this->state;
-
+    std::vector<double> lastState;
+    lastState = this->state;
     this->state.clear();
+
     dReal ballX, ballY, ballZ;
     dReal robotX, robotY, robotDir, robotK;
     const dReal *ballVel, *robotVel, *robotVelDir;
@@ -391,10 +377,10 @@ const std::vector<double> &VSSWorld::getState()
     this->state.push_back(randn_notrig(ballX, devX));
     this->state.push_back(randn_notrig(ballY, devY));
     this->state.push_back(ballZ);
-    if (last_state.size() > 0)
+    if (lastState.size() > 0)
     {
-        this->state.push_back((ballX - last_state[0]) / this->timeStep);
-        this->state.push_back((ballY - last_state[1]) / this->timeStep);
+        this->state.push_back((ballX - lastState[0]) / this->timeStep);
+        this->state.push_back((ballY - lastState[1]) / this->timeStep);
     }
     else
     {
@@ -423,11 +409,11 @@ const std::vector<double> &VSSWorld::getState()
         this->state.push_back(robotX);
         this->state.push_back(robotY);
         this->state.push_back(robotDir);
-        if (last_state.size() > 0)
+        if (lastState.size() > 0)
         {
-            this->state.push_back((robotX - last_state[5 + (6 * i) + 0]) / this->timeStep);
-            this->state.push_back((robotY - last_state[5 + (6 * i) + 1]) / this->timeStep);
-            this->state.push_back(smallestAngleDiff(robotDir, last_state[5 + (6 * i) + 2]) / this->timeStep);
+            this->state.push_back((robotX - lastState[5 + (6 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - lastState[5 + (6 * i) + 1]) / this->timeStep);
+            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (6 * i) + 2]) / this->timeStep);
         }
         else
         {
@@ -436,6 +422,7 @@ const std::vector<double> &VSSWorld::getState()
             this->state.push_back(0.);
         }
     }
+
     return this->state;
 }
 
