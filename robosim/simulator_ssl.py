@@ -96,8 +96,8 @@ class SimulatorSSL():
                                                   )
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
-            + (self.n_robots_blue * 6)\
-            + (self.n_robots_yellow * 6)
+            + (self.n_robots_blue * 7)\
+            + (self.n_robots_yellow * 7)
 
     def __del__(self):
         robosim_lib.delWorld(self.world)

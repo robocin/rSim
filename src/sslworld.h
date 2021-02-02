@@ -93,8 +93,9 @@ public:
 
     /**
     \brief State has [ballX, ballY, ballZ, ballVx, ballVy,
-                    robotBlueX, robotBlueY, robotBlueVx, robotBlueVy,
-                    robotYellowX, robotYellowY, robotYellowVx, robotYellowVy]
+                    robotBlueX, robotBlueY, robotBlueVx, robotBlueVy, 
+                    robotBlueInfrared, robotYellowX, robotYellowY,
+                    robotYellowVx, robotYellowVy, robotYellowInfrared]
     \return return std::vector of float representing the state
     */
     const std::vector<double> &getState();
