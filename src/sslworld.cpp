@@ -284,8 +284,6 @@ void SSLWorld::step(dReal dt, std::vector<double*> actions)
     this->episodeSteps++;
 }
 
-// TODO : Decidir se vai implementar o RobotStatus
-
 void SSLWorld::setActions(std::vector<double*> actions)
 {
     int i = 0;
@@ -402,6 +400,7 @@ const std::vector<double> &SSLWorld::getState()
             this->state.push_back(0.);
             this->state.push_back(0.);
         }
+        this->state.push_back(static_cast<double>(this->robots[i]->kicker->isTouchingBall()));
     }
     return this->state;
 }
