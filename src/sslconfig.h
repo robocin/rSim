@@ -221,8 +221,8 @@ namespace SSLConfig
         double getKickerMass() { return this->kickerMass; }
         double getKickerDampFactor() { return this->kickerDampFactor; }
         double getKickerFriction() { return this->KickerFriction; }
-        double getRollerTorqueFactor() { return this->rollerTorqueFactor; }
-        double getRollerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
+        double getDribblerTorqueFactor() { return this->rollerTorqueFactor; }
+        double getDribblerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
         double getRadius() { return this->radius; }
         double getHeight() { return this->height; }
         double getBottomHeight() { return this->bottomHeight; }

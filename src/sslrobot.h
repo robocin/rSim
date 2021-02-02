@@ -60,20 +60,19 @@ public:
     class Kicker
     {
       private:
-        KickStatus kicking;
-        int rolling;
-        int kickstate;
-        dReal m_kickspeed,m_kicktime;
+        KickStatus kickerState;
+        bool dribblerOn;
+        int kickerCounter;
         bool holdingBall;
       public:
         Kicker(SSLRobot* robot);
         void step();
-        void kick(dReal kickspeedx, dReal kickspeedz);
-        void setRoller(int roller);
-        int getRoller();
-        void toggleRoller();
+        void kick(dReal kickSpeedX, dReal kickSpeedZ);
+        void setDribbler(bool dribbler);
+        bool getDribbler();
+        void toggleDribbler();
         bool isTouchingBall();
-        KickStatus isKicking();
+        KickStatus getKickerStatus();
         void holdBall();
         void unholdBall();
         dJointID joint;

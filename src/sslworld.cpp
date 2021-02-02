@@ -296,7 +296,7 @@ void SSLWorld::setActions(std::vector<double*> actions)
         if (action[3] > 0 || action[4] > 0) {
             this->robots[i]->kicker->kick(action[3], action[4]);
         }
-        if (action[5] > 0) this->robots[i]->kicker->setRoller(true);
+        if (action[5] > 0) this->robots[i]->kicker->setDribbler(true);
         i++;
     }
 }
