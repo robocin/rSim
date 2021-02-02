@@ -93,7 +93,7 @@ set(SOURCES
     src/physics/pfixedbox.cpp
     src/physics/pcylinder.cpp
     src/physics/pbox.cpp
-    src/config.cpp
+    src/sslconfig.cpp
     src/robot.cpp
     src/utils.cpp
 )
@@ -107,7 +107,7 @@ set(HEADERS
     src/physics/pcylinder.h
     src/physics/pbox.h
     src/config.h
-    src/robot.h
+    src/sslrobot.h
     src/utils.h
 )
 
@@ -120,9 +120,9 @@ set(srcs
 add_library(robosim_core STATIC ${srcs})
 target_link_libraries(robosim_core ${libs})
 
-add_library(robosim SHARED src/world.cpp)
+add_library(robosim SHARED src/sslworld.cpp)
 
-add_library(robosim_c SHARED robosim/robosim_c_wrapper.cpp src/world.cpp)
+add_library(robosim_c SHARED robosim/robosim_c_wrapper.cpp src/sslworld.cpp)
 set_target_properties(robosim_c PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robosim)
 
 add_dependencies(robosim robosim_core)

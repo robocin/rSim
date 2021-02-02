@@ -1,15 +1,15 @@
-#include "../src/world.h"
+#include "../src/sslworld.h"
 
 extern "C"
 {
-    World *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, int timeStep_ms,
+    SSLWorld *newWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, int timeStep_ms,
                     double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
     {
-        return new World(fieldType, nRobotsBlue, nRobotsYellow, timeStep_ms / 1000.0,
+        return new SSLWorld(fieldType, nRobotsBlue, nRobotsYellow, timeStep_ms / 1000.0,
                          ballPos, blueRobotsPos, yellowRobotsPos);
     }
-    void delWorld(World *world) { delete world; }
-    void step(World *world, double *act)
+    void delWorld(SSLWorld *world) { delete world; }
+    void step(SSLWorld *world, double *act)
     {
         std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions;
         actions.clear();
@@ -21,26 +21,26 @@ extern "C"
         }
         world->step(world->getTimeStep(), actions);
     }
-    void getState(World *world, double *state_data)
+    void getState(SSLWorld *world, double *state_data)
     {
         const std::vector<double> state = world->getState();
         const double *state_features = state.data();
         memcpy(state_data, state_features, state.size() * sizeof(double));
     }
-    void getFieldParams(World *world, double *params_data)
+    void getFieldParams(SSLWorld *world, double *params_data)
     {
         const std::vector<double> params = world->getFieldParams();
         const double *params_features = params.data();
         memcpy(params_data, params_features, params.size() * sizeof(double));
     }
-    int getEpisodeTime(World *world) { return world->getEpisodeTime(); }
-    int getGoalsBlue(World *world) { return world->getGoals()[0]; }
-    int getGoalsYellow(World *world) { return world->getGoals()[1]; }
-    void replace(World *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
+    int getEpisodeTime(SSLWorld *world) { return world->getEpisodeTime(); }
+    int getGoalsBlue(SSLWorld *world) { return world->getGoals()[0]; }
+    int getGoalsYellow(SSLWorld *world) { return world->getGoals()[1]; }
+    void replace(SSLWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
     {
         world->replace(ball_data, pos_blue_data, pos_yellow_data);
     }
-    void replace_with_vel(World *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
+    void replace_with_vel(SSLWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
     {
         world->replace_with_vel(ball_data, pos_blue_data, pos_yellow_data);
     }
