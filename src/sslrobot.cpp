@@ -95,19 +95,19 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
     dJointSetHingeParam(this->joint,dParamLoStop,0);
     dJointSetHingeParam(this->joint,dParamHiStop,0);
 
-    this->rolling = 0;
-    this->kicking = NO_KICK;
+    this->dribblerOn = false;
+    this->kickerState = NO_KICK;
 }
 
 void SSLRobot::Kicker::step()
 {
-    if (!isTouchingBall() || this->rolling == 0) unholdBall();
-    if (this->kicking != NO_KICK)
+    if (!isTouchingBall() || !this->dribblerOn) unholdBall();
+    if (this->kickerState != NO_KICK)
     {
-        this->kickstate--;
-        if (this->kickstate<=0) this->kicking = NO_KICK;
+        this->kickerCounter--;
+        if (this->kickerCounter<=0) this->kickerState = NO_KICK;
     }
-    else if (this->rolling !=0)
+    else if (this->dribblerOn)
     {
         if (isTouchingBall())
         {
@@ -136,26 +136,24 @@ bool SSLRobot::Kicker::isTouchingBall()
     return ((xx < SSLConfig::Robot().getKickerThickness() * 2.0f + SSLConfig::World().getBallRadius()) && (yy < SSLConfig::Robot().getKickerWidth()*0.5f) && (zz < SSLConfig::Robot().getKickerHeight() * 0.5f));
 }
 
-KickStatus SSLRobot::Kicker::isKicking()
+KickStatus SSLRobot::Kicker::getKickerStatus()
 {
-    return this->kicking;
+    return this->kickerState;
 }
 
-void SSLRobot::Kicker::setRoller(int roller)
+void SSLRobot::Kicker::setDribbler(bool dribbler)
 {
-    this->rolling = roller;
+    this->dribblerOn = dribbler;
 }
 
-int SSLRobot::Kicker::getRoller()
+bool SSLRobot::Kicker::getDribbler()
 {
-    return this->rolling;
+    return this->dribblerOn;
 }
 
-void SSLRobot::Kicker::toggleRoller()
+void SSLRobot::Kicker::toggleDribbler()
 {
-    if (this->rolling == 0)
-        this->rolling = 1;
-    else this->rolling = 0;
+    this->dribblerOn != this->dribblerOn;
 }
 
 void SSLRobot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
@@ -185,11 +183,11 @@ void SSLRobot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
         dBodySetLinearVel(this->rob->getBall()->body,vx,vy,vz);
 
         if (kickSpeedZ >= 1)
-            this->kicking = CHIP_KICK;
+            this->kickerState = CHIP_KICK;
         else
-            this->kicking = FLAT_KICK;
+            this->kickerState = FLAT_KICK;
 
-        this->kickstate = 10;
+        this->kickerCounter = 10;
     }
 }
 
