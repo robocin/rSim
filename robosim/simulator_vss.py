@@ -19,12 +19,6 @@ robosim_lib.getState.argtypes = [c_void_p, c_void_p]
 robosim_lib.getState.restype = None
 robosim_lib.getFieldParams.argtypes = [c_void_p, c_void_p]
 robosim_lib.getFieldParams.restype = None
-robosim_lib.getEpisodeTime.argtypes = [c_void_p]
-robosim_lib.getEpisodeTime.restype = int
-robosim_lib.getGoalsBlue.argtypes = [c_void_p]
-robosim_lib.getGoalsBlue.restype = int
-robosim_lib.getGoalsYellow.argtypes = [c_void_p]
-robosim_lib.getGoalsYellow.restype = int
 robosim_lib.replace.argtypes = [c_void_p, c_void_p, c_void_p, c_void_p]
 robosim_lib.replace.restype = None
 robosim_lib.replace_with_vel.argtypes = [
@@ -202,27 +196,6 @@ class SimulatorVSS():
                 'penalty_width', 'penalty_length', 'goal_width', 'goal_depth']
         robosim_lib.getFieldParams(self.world, as_ctypes(params))
         return {key: param for key, param in zip(keys, params)}
-
-    def get_status(self) -> Dict[str, int]:
-        '''
-        Returns the game status.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        dict
-            goals_blue, goals_yellow, time
-
-        '''
-        status: Dict[str, int] = {
-            'goals_blue': 0, 'goals_yellow': 0, 'time': 0}
-        status['goals_blue'] = robosim_lib.getGoalsBlue(self.world)
-        status['goals_yellow'] = robosim_lib.getGoalsYellow(self.world)
-        status['time_ms'] = robosim_lib.getEpisodeTime(self.world)
-        return status
 
     def replace(self, ball_pos: np.ndarray,
                 blue_pos: np.ndarray, yellow_pos: np.ndarray):

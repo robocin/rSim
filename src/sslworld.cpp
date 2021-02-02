@@ -94,10 +94,11 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
+    this->stateSize = 5 + nRobotsBlue * 7 + nRobotsYellow * 7;
+    this->state.reserve(this->stateSize);
     // fieldType = 0 for Div A, fieldType = 1 for Div B
     this->field.setFieldType(fieldType);
     this->timeStep = timeStep;
-    this->episodeSteps = 0;
     _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(ballPos[0], ballPos[1], SSLConfig::World().getBallRadius(), SSLConfig::World().getBallRadius(), SSLConfig::World().getBallMass());
@@ -113,7 +114,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (auto &wall : this->walls)
         this->physics->addObject(wall);
 
-    // TODO: entender daqui pra baixo
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
@@ -281,7 +281,6 @@ void SSLWorld::step(dReal dt, std::vector<double*> actions)
         this->physics->step(dt * 0.2, this->fullSpeed);
     }
 
-    this->episodeSteps++;
 }
 
 void SSLWorld::setActions(std::vector<double*> actions)
@@ -299,23 +298,6 @@ void SSLWorld::setActions(std::vector<double*> actions)
     }
 }
 
-// TODO : NÃO ESTA SENDO USADO ATUALMENTE
-int SSLWorld::getEpisodeTime()
-{
-    return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
-}
-
-// TODO : NÃO ESTA SENDO USADO ATUALMENTE
-const std::vector<int> SSLWorld::getGoals()
-{
-    std::vector<int> goal = std::vector<int>(static_cast<std::size_t>(2));
-    goal.clear();
-    goal.push_back(this->goalsBlue);
-    goal.push_back(this->goalsYellow);
-    return goal;
-}
-
-// TODO : ESTA SENDO UTILIZADO?
 const std::vector<double> SSLWorld::getFieldParams()
 {
     std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
@@ -331,9 +313,10 @@ const std::vector<double> SSLWorld::getFieldParams()
 
 const std::vector<double> &SSLWorld::getState()
 {
-    std::vector<double> last_state = this->state;
-
+    std::vector<double> lastState;
+    lastState = this->state;
     this->state.clear();
+
     dReal ballX, ballY, ballZ;
     dReal robotX, robotY, robotDir, robotK;
     const dReal *ballVel, *robotVel, *robotVelDir;
@@ -356,10 +339,10 @@ const std::vector<double> &SSLWorld::getState()
     this->state.push_back(randn_notrig(ballX, devX));
     this->state.push_back(randn_notrig(ballY, devY));
     this->state.push_back(ballZ);
-    if (last_state.size() > 0)
+    if (lastState.size() > 0)
     {
-        this->state.push_back((ballX - last_state[0]) / this->timeStep);
-        this->state.push_back((ballY - last_state[1]) / this->timeStep);
+        this->state.push_back((ballX - lastState[0]) / this->timeStep);
+        this->state.push_back((ballY - lastState[1]) / this->timeStep);
     }
     else
     {
@@ -388,11 +371,11 @@ const std::vector<double> &SSLWorld::getState()
         this->state.push_back(robotX);
         this->state.push_back(robotY);
         this->state.push_back(robotDir);
-        if (last_state.size() > 0)
+        if (lastState.size() > 0)
         {
-            this->state.push_back((robotX - last_state[5 + (6 * i) + 0]) / this->timeStep);
-            this->state.push_back((robotY - last_state[5 + (6 * i) + 1]) / this->timeStep);
-            this->state.push_back(smallestAngleDiff(robotDir, last_state[5 + (6 * i) + 2]) / this->timeStep);
+            this->state.push_back((robotX - lastState[5 + (6 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - lastState[5 + (6 * i) + 1]) / this->timeStep);
+            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (6 * i) + 2]) / this->timeStep);
         }
         else
         {
@@ -402,6 +385,7 @@ const std::vector<double> &SSLWorld::getState()
         }
         this->state.push_back(static_cast<double>(this->robots[i]->kicker->isTouchingBall()));
     }
+
     return this->state;
 }
 
