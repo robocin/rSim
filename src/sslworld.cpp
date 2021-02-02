@@ -16,8 +16,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "world.h"
-#include "config.h"
+#include "sslworld.h"
+#include "sslconfig.h"
 
 #include <QtGlobal>
 #include <QtNetwork>
@@ -28,7 +28,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #define WHEEL_COUNT 2
 
-World *_world;
+SSLWorld *_world;
 
 bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
@@ -88,7 +88,7 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     return true;
 }
 
-World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
 {
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
@@ -186,7 +186,7 @@ World::World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
     }
 }
 
-void World::initWalls()
+void SSLWorld::initWalls()
 {
     const double thick = this->field.getWallThickness();
     const double increment = this->field.getFieldMargin() + this->field.getFieldRefereeMargin() + thick / 2;
@@ -240,12 +240,12 @@ void World::initWalls()
 }
 
 
-World::~World()
+SSLWorld::~SSLWorld()
 {
     delete this->physics;
 }
 
-void World::step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
+void SSLWorld::step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
 {
     setActions(actions);
 
@@ -287,7 +287,7 @@ void World::step(dReal dt, std::vector<std::tuple<double, double, double, double
 
 // TODO : Vector de tuples é o melhor formato?
 // TODO : Precisa dividir em outra função para vx, vy e vtheta e coord locais e globais
-void World::setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
+void SSLWorld::setActions(std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions)
 {
     int id = 0;
     for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
@@ -315,13 +315,13 @@ void World::setActions(std::vector<std::tuple<double, double, double, double, bo
 }
 
 // TODO : NÃO ESTA SENDO USADO ATUALMENTE
-int World::getEpisodeTime()
+int SSLWorld::getEpisodeTime()
 {
     return this->episodeSteps * static_cast<int>(getTimeStep() * 1000);
 }
 
 // TODO : NÃO ESTA SENDO USADO ATUALMENTE
-const std::vector<int> World::getGoals()
+const std::vector<int> SSLWorld::getGoals()
 {
     std::vector<int> goal = std::vector<int>(static_cast<std::size_t>(2));
     goal.clear();
@@ -331,7 +331,7 @@ const std::vector<int> World::getGoals()
 }
 
 // TODO : ESTA SENDO UTILIZADO?
-const std::vector<double> World::getFieldParams()
+const std::vector<double> SSLWorld::getFieldParams()
 {
     std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
     field.clear();
@@ -344,7 +344,7 @@ const std::vector<double> World::getFieldParams()
     return field;
 }
 
-const std::vector<double> &World::getState()
+const std::vector<double> &SSLWorld::getState()
 {
     std::vector<double> last_state = this->state;
 
@@ -419,7 +419,7 @@ const std::vector<double> &World::getState()
     return this->state;
 }
 
-void World::replace(double *ball, double *pos_blue, double *pos_yellow)
+void SSLWorld::replace(double *ball, double *pos_blue, double *pos_yellow)
 {
     this->ball->setBodyPosition(ball[0], ball[1], 0);
     dBodySetLinearVel(this->ball->body, 0, 0, 0);
@@ -461,7 +461,7 @@ void World::replace(double *ball, double *pos_blue, double *pos_yellow)
     }
 }
 
-void World::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
+void SSLWorld::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
 {
     this->ball->setBodyPosition(ball[0], ball[1], 0);
     dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);

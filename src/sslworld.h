@@ -16,8 +16,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef WORLD_H
-#define WORLD_H
+#ifndef SSLWORLD_H
+#define SSLWORLD_H
 
 #include <QList>
 #include <QElapsedTimer>
@@ -27,7 +27,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pground.h"
 #include "physics/pfixedbox.h"
 
-#include "robot.h"
+#include "sslrobot.h"
 #include "utils.h"
 
 #define WALL_COUNT 10
@@ -36,7 +36,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 // TODO : VALOR NÃO FIXO
 #define STATE_SIZE 41 // BALL_XYZ, BALLV_XY, 3*(RBLUE_XY, RBLUEV_XY), 3*(RYELLOW_XY, RYELLOWV_XY)
 
-class World
+class SSLWorld
 {
 private:
     int episodeSteps;
@@ -60,9 +60,9 @@ public:
     dReal cursor_radius{};
     SSLRobot *robots[MAX_ROBOT_COUNT * 2]{};
 
-    World(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+    SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
-    ~World();
+    ~SSLWorld();
     void simStep(dReal dt = -1);
     void step(dReal dt, std::vector<std::tuple<double, double, double, double, bool, double, double, bool>> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
@@ -104,4 +104,4 @@ public:
 
 dReal fric(dReal f);
 
-#endif // World_H
+#endif // SSLWorld_H

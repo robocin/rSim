@@ -16,14 +16,14 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ROBOT_H
-#define ROBOT_H
+#ifndef SSLROBOT_H
+#define SSLROBOT_H
 
 #include "physics/pworld.h"
 #include "physics/pcylinder.h"
 #include "physics/pbox.h"
 #include "physics/pball.h"
-#include "config.h"
+#include "sslconfig.h"
 
 enum KickStatus {
     NO_KICK   = 0,
@@ -104,4 +104,4 @@ public:
 
 #define ROBOT_START_Z() (Config::Robot().getHeight() * 0.5 + Config::Robot().getBottomHeight())
 
-#endif // ROBOT_H
+#endif // SSLROBOT_H
