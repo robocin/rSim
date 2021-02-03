@@ -1,8 +1,8 @@
 # RoboSim
 
-Robot soccer simulator based on FiraSim and GrSim.
+Robot soccer simulator based on [FiraSim](https://github.com/fira-simurosot/FIRASim) and [GrSim](https://github.com/RoboCup-SSL/grSim).
 
-Simulates games from Very Small Size and Small Size leagues of RoboCup.
+Simulates games from LARC Very Small Size and RoboCup Small Size leagues.
 
 ## Install Requirements
 Debian:
@@ -27,6 +27,14 @@ $pip install -e .
 from robosim import SimulatorVSS
 
 sim = SimulatorVSS(field_type=0, n_robots_blue=3, n_robots_yellow=3)
+```
+
+
+## Usage SSL simulator
+```python
+from robosim import SimulatorSSL
+
+sim = SimulatorSSL(field_type=0, n_robots_blue=11, n_robots_yellow=11)
 ```
 
 ## Running with Docker
