@@ -91,12 +91,12 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
 VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
 {
+    this->field.setFieldType(fieldType);
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
     this->stateSize = 5 + nRobotsBlue * 6 + nRobotsYellow * 6;
     this->state.reserve(this->stateSize);
-    this->field.setFieldType(fieldType);
     this->timeStep = timeStep;
     _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
