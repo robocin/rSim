@@ -37,7 +37,6 @@ private:
     double timeStep;
     int stateSize;
     std::vector<double> state;
-    SSLConfig::Field field = SSLConfig::Field();
 
 public:
     bool fullSpeed = false;
@@ -46,6 +45,7 @@ public:
     PGround *ground;
     PFixedBox *walls[WALL_COUNT]{};
     SSLRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    SSLConfig::Field field = SSLConfig::Field();
 
     SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);

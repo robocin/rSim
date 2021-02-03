@@ -13,10 +13,10 @@ extern "C"
     {
         std::vector<double*> actions;
         actions.clear();
-        
-        for (int i = 0; i < SSLConfig::Field().getRobotsCount(); i = i + 6)
+        for (int i = 0; i < world->field.getRobotsCount(); i++)
         {
-            double a[] = {act[i], act[i + 1], act[i + 2], act[i + 3], act[i + 4], act[i + 5]};
+            double *a = new double[6];
+            for(int j = 0; j < 6; j++) a[j] = act[i*6 + j];
             actions.push_back(a);
         }
         world->step(world->getTimeStep(), actions);

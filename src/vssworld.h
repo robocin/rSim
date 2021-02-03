@@ -37,9 +37,9 @@ private:
     double timeStep;
     int stateSize;
     std::vector<double> state;
-    VSSConfig::Field field = VSSConfig::Field();
 
 public:
+    VSSConfig::Field field = VSSConfig::Field();
     bool fullSpeed = false;
     PWorld *physics;
     PBall *ball;
