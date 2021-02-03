@@ -13,9 +13,9 @@ extern "C"
     {
         std::vector<std::tuple<double, double>> actions;
         actions.clear();
-        for (int i = 0; i < world->field.getRobotsCount(); i = i + 2)
+        for (int i = 0; i < world->field.getRobotsCount(); i++)
         {
-            std::tuple<double, double> action(act[i], act[i + 1]);
+            std::tuple<double, double> action(act[i*2], act[i*2 + 1]);
             actions.push_back(action);
         }
         world->step(world->getTimeStep(), actions);
