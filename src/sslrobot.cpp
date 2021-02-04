@@ -233,7 +233,7 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
 
     this->space = physics->space;
 
-    this->chassis = new PBox(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius() * 2, SSLConfig::Robot().getRadius() * 2, SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass() * 0.99f);
+    this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass() * 0.99f);
     this->chassis->space = this->space;
     this->physics->addObject(chassis);
 
