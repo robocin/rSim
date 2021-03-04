@@ -380,10 +380,10 @@ void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
     dReal motorAlpha[4] = {SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD, SSLConfig::Robot().getWheel4Angle() * _DEG2RAD};
 
     // TODO checar qual a unidade desse valor calculado
-    dReal dw1 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( ((SSLConfig::Robot().getRadius() + SSLConfig::Robot().getWheelThickness()) * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
-    dReal dw2 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( ((SSLConfig::Robot().getRadius() + SSLConfig::Robot().getWheelThickness()) * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
-    dReal dw3 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( ((SSLConfig::Robot().getRadius() + SSLConfig::Robot().getWheelThickness()) * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
-    dReal dw4 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( ((SSLConfig::Robot().getRadius() + SSLConfig::Robot().getWheelThickness()) * vw) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))) );
+    dReal dw1 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
+    dReal dw2 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
+    dReal dw3 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
+    dReal dw4 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))) );
 
     setWheelDesiredAngularSpeed(0 , dw1);
     setWheelDesiredAngularSpeed(1 , dw2);
