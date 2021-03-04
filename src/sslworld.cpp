@@ -240,7 +240,6 @@ void SSLWorld::initWalls()
                              gsiz_x, gthick, gsiz_z);
 }
 
-
 SSLWorld::~SSLWorld()
 {
     delete this->physics;
@@ -263,20 +262,20 @@ void SSLWorld::step(dReal dt, std::vector<double*> actions)
         // Norma do vetor velocidade da bola
         dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
         ballSpeed = sqrt(ballSpeed);
-        dReal ballfx = 0, ballfy = 0, ballfz = 0;
-        dReal balltx = 0, ballty = 0, balltz = 0;
-        if (ballSpeed > 0.01)
-        {
+        if (ballSpeed > 0.01) {
             dReal fk = SSLConfig::World().getBallFriction() * SSLConfig::World().getBallMass() * SSLConfig::World().getGravity();
-            ballfx = -fk * ballvel[0] / ballSpeed;
-            ballfy = -fk * ballvel[1] / ballSpeed;
-            ballfz = -fk * ballvel[2] / ballSpeed;
-            balltx = -ballfy * SSLConfig::World().getBallRadius();
-            ballty = ballfx * SSLConfig::World().getBallRadius();
-            balltz = 0;
-            dBodyAddTorque(this->ball->body, balltx, ballty, balltz);
+            dReal ballfx = -fk * ballvel[0] / ballSpeed;
+            dReal ballfy = -fk * ballvel[1] / ballSpeed;
+            dReal ballfz = -fk * ballvel[2] / ballSpeed;
+            dReal balltx = -ballfy * SSLConfig::World().getBallRadius();
+            dReal ballty = ballfx * SSLConfig::World().getBallRadius();
+            dReal balltz = 0;
+            dBodyAddTorque(this->ball->body,balltx,ballty,balltz);
+            dBodyAddForce(this->ball->body,ballfx,ballfy,ballfz);
+        } else {
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
-        dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
         this->physics->step(dt * 0.2, this->fullSpeed);
     }
