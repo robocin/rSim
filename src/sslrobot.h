@@ -42,8 +42,6 @@ public:
     dReal _dir;
     dSpaceID space;
     PObject *chassis;
-    PBall* dummy;
-    dJointID dummy_to_chassis;
 
     class Wheel
     {

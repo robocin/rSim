@@ -194,7 +194,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         {
             if (k != j)
             {
-                this->physics->createSurface(this->robots[k]->dummy, this->robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
+                this->physics->createSurface(this->robots[k]->chassis, this->robots[j]->chassis);
             }
         }
     }

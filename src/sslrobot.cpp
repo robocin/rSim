@@ -233,16 +233,9 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
 
     this->space = physics->space;
 
-    this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass() * 0.99f);
+    this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass());
     this->chassis->space = this->space;
     this->physics->addObject(chassis);
-
-    this->dummy = new PBall(this->_x, this->_y, this->_z, SSLConfig::Robot().getDistanceCenterKicker(), SSLConfig::Robot().getBodyMass()*0.01f);
-    this->dummy->space = this->space;
-    this->physics->addObject(this->dummy);
-
-    this->dummy_to_chassis = dJointCreateFixed(this->physics->world,0);
-    dJointAttach(this->dummy_to_chassis, this->chassis->body, this->dummy->body);
 
     this->kicker = new Kicker(this);
 
@@ -326,7 +319,6 @@ void SSLRobot::setXY(dReal x, dReal y)
     dReal height = ROBOT_START_Z();
     this->chassis->getBodyPosition(xx, yy, zz);
     this->chassis->setBodyPosition(x, y, height);
-    this->dummy->setBodyPosition(x,y,height);
     this->kicker->box->getBodyPosition(kx,ky,kz);
     this->kicker->box->setBodyPosition(kx-xx+x,ky-yy+y,kz-zz+height);
 
@@ -345,7 +337,6 @@ void SSLRobot::setDir(dReal ang)
 
     this->chassis->setBodyRotation(0, 0, 1, ang);
     this->kicker->box->setBodyRotation(0,0,1,ang);
-    this->dummy->setBodyRotation(0,0,1,ang);
     
     this->chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
     this->chassis->getBodyRotation(cRot, false);
