@@ -150,9 +150,19 @@ PSurface *PWorld::createSurface(PObject *o1, PObject *o2)
     auto *s = new PSurface();
     s->id1 = o1->geom;
     s->id2 = o2->geom;
-    surfaces.append(s);
-    sur_matrix[o1->id][o2->id] =
-        sur_matrix[o2->id][o1->id] = surfaces.count() - 1;
+    this->surfaces.append(s);
+    this->sur_matrix[o1->id][o2->id] =
+        this->sur_matrix[o2->id][o1->id] = this->surfaces.count() - 1;
+    return s;
+}
+
+PSurface* PWorld::createOneWaySurface(PObject* o1,PObject* o2)
+{
+    PSurface *s = new PSurface();
+    s->id1 = o1->geom;
+    s->id2 = o2->geom;
+    this->surfaces.append(s);
+    this->sur_matrix[o1->id][o2->id] = this->surfaces.count() - 1;
     return s;
 }
 

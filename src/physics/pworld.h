@@ -41,6 +41,7 @@ public:
     void addObject(PObject *o);
     void initAllObjects();
     PSurface *createSurface(PObject *o1, PObject *o2);
+    PSurface* createOneWaySurface(PObject* o1,PObject* o2);
     PSurface *findSurface(PObject *o1, PObject *o2);
     void step(dReal dt = -1, bool sync = false);
     void handleCollisions(dGeomID o1, dGeomID o2);

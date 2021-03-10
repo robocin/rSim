@@ -71,7 +71,34 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
 
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
-    return true;
+    auto body = dGeomGetBody(o1);
+    const dReal *posBall = dBodyGetPosition(body);
+    std::cout << "x: " << posBall[0] << " y: " << posBall[1]<< " z: " << posBall[2] << std::endl;
+    body = dGeomGetBody(o2);
+    const dReal *posRobot = dBodyGetPosition(body);
+    const dReal *dirRobot = dBodyGetRotation(body);
+
+    // Get robot angle
+    dVector3 v={1,0,0};
+    dVector3 axis;
+    dMultiply0(axis,dirRobot,v,4,3,1);
+    dReal dot = axis[0];
+    dReal length = sqrt(axis[0]*axis[0] + axis[1]*axis[1]);
+    dReal absAng = (dReal)(acos((dReal)(dot/length)));
+    dReal angleRobot =  (axis[1] > 0) ? absAng : -absAng;
+
+    // Get angle between robot and ball
+    dReal angleRobotBall = atan((posBall[1] - posRobot[1])/(posBall[0]-posRobot[0]));
+    angleRobotBall = (posBall[0] > posRobot[0]) ? angleRobotBall : M_PI - angleRobotBall;
+
+    // This value is given by the acos(distance_center_kicker/robot_radius)
+    dReal angleKicker = 0.625;
+
+    dReal angleDiff = abs(angleRobotBall - angleRobot);
+
+    // If kicker is facing the ball, the collision with the chassis should not
+    // be considered
+    return (angleDiff < angleKicker) ? false : true;
 }
 
 SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
@@ -135,7 +162,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     PSurface wheelswithground;
     PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
-    ball_ground->callback = ballCallBack;
 
     PSurface ballwithkicker;
     ballwithkicker.surface.mode = dContactApprox1;
@@ -152,7 +178,11 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         {
             this->physics->createSurface(this->robots[k]->chassis, wall);
         }
-        this->physics->createSurface(this->robots[k]->dummy, this->ball);
+
+        // Create surface between ball and chassis
+        PSurface* ballChassis = this->physics->createOneWaySurface(this->robots[k]->chassis, this->ball);
+        ballChassis->callback = ballCallBack;
+
         this->physics->createSurface(this->robots[k]->kicker->box, this->ball)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
         {
