@@ -38,8 +38,8 @@ void nearCallback(void *data, dGeomID o1, dGeomID o2)
 PWorld::PWorld(dReal dt, dReal gravity, int _robot_count)
 {
     robot_count = _robot_count;
-    //dInitODE2(0);
-    dInitODE();
+    dInitODE2(0);
+    dAllocateODEDataForThread(dAllocateMaskAll);
     world = dWorldCreate();
     space = dHashSpaceCreate(nullptr);
     contactgroup = dJointGroupCreate(0);
