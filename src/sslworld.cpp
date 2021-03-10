@@ -173,7 +173,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
-        this->physics->createSurface(this->robots[k]->chassis, this->ground);
         for (auto &wall : walls)
         {
             this->physics->createOneWaySurface(this->robots[k]->chassis, wall);
@@ -186,7 +185,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         this->physics->createOneWaySurface(this->ball, this->robots[k]->kicker->box)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
         {
-            this->physics->createSurface(wheel->cyl, this->ball);
             PSurface *w_g = this->physics->createOneWaySurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
@@ -197,7 +195,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             if (k != j)
             {
                 this->physics->createSurface(this->robots[k]->dummy, this->robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
-                this->physics->createSurface(this->robots[k]->chassis, this->robots[j]->kicker->box);
             }
         }
     }
