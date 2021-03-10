@@ -183,7 +183,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         PSurface* ballChassis = this->physics->createOneWaySurface(this->robots[k]->chassis, this->ball);
         ballChassis->callback = ballCallBack;
 
-        this->physics->createSurface(this->robots[k]->kicker->box, this->ball)->surface = ballwithkicker.surface;
+        this->physics->createOneWaySurface(this->ball, this->robots[k]->kicker->box)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
         {
             this->physics->createSurface(wheel->cyl, this->ball);
