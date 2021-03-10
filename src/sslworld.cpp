@@ -71,20 +71,6 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
 
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
-    if (_world->ball->tag != -1) //spinner adjusting
-    {
-        dReal x, y, z;
-        _world->robots[_world->ball->tag]->chassis->getBodyDirection(x, y, z);
-        surface->fdir1[0] = x;
-        surface->fdir1[1] = y;
-        surface->fdir1[2] = 0;
-        surface->fdir1[3] = 0;
-        surface->usefdir1 = true;
-        surface->surface.mode = dContactMu2 | dContactFDir1 | dContactSoftCFM;
-        surface->surface.mu = SSLConfig::World().getBallFriction();
-        surface->surface.mu2 = 0.5;
-        surface->surface.soft_cfm = 0.002;
-    }
     return true;
 }
 
