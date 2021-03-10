@@ -160,7 +160,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     ballwithwall.surface.slip1 = 0; //cfg->ballslip();
 
     PSurface wheelswithground;
-    PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
+    PSurface *ball_ground = this->physics->createOneWaySurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
 
     PSurface ballwithkicker;
@@ -169,14 +169,14 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     ballwithkicker.surface.slip1 = 5;
 
     for (auto &wall : walls)
-        this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
+        this->physics->createOneWaySurface(this->ball, wall)->surface = ballwithwall.surface;
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
         this->physics->createSurface(this->robots[k]->chassis, this->ground);
         for (auto &wall : walls)
         {
-            this->physics->createSurface(this->robots[k]->chassis, wall);
+            this->physics->createOneWaySurface(this->robots[k]->chassis, wall);
         }
 
         // Create surface between ball and chassis
@@ -187,7 +187,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         for (auto &wheel : this->robots[k]->wheels)
         {
             this->physics->createSurface(wheel->cyl, this->ball);
-            PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
+            PSurface *w_g = this->physics->createOneWaySurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
