@@ -37,9 +37,8 @@ SSLRobot::Wheel::Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2)
     this->cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     this->cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     this->cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    this->cyl->space = this->rob->space;
 
-    this->rob->physics->addObject(this->cyl);
+    this->rob->physics->addWheelObject(this->cyl);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, nullptr);
 
@@ -80,9 +79,8 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
         SSLConfig::Robot().getKickerHeight(),SSLConfig::Robot().getKickerMass()
         );
     this->box->setBodyPosition(centerX - x, centerY - y, centerZ - z, true);
-    this->box->space = this->rob->space;
 
-    this->rob->physics->addObject(this->box);
+    this->rob->physics->addKickerObject(this->box);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, 0);
     dJointAttach(this->joint,this->rob->chassis->body,this->box->body);
@@ -231,11 +229,8 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     this->_dir = dir;
     this->rob_id = robot_id;
 
-    this->space = physics->space;
-
     this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass());
-    this->chassis->space = this->space;
-    this->physics->addObject(chassis);
+    this->physics->addChassisObject(chassis);
 
     this->kicker = new Kicker(this);
 

@@ -40,12 +40,17 @@ PWorld::PWorld(dReal dt, dReal gravity, int _robot_count)
     robot_count = _robot_count;
     dInitODE2(0);
     dAllocateODEDataForThread(dAllocateMaskAll);
-    world = dWorldCreate();
-    space = dHashSpaceCreate(nullptr);
-    contactgroup = dJointGroupCreate(0);
-    dWorldSetGravity(world, 0, 0, -gravity);
-    objects_count = 0;
-    sur_matrix = nullptr;
+    this->world = dWorldCreate();
+    // this->space = dHashSpaceCreate(nullptr);
+    this->space = dSimpleSpaceCreate(nullptr);
+    this->spaceChassis = dSimpleSpaceCreate(nullptr);
+    this->spaceKicker= dSimpleSpaceCreate(nullptr);
+    this->spaceWall= dSimpleSpaceCreate(nullptr);
+    this->spaceWheel= dSimpleSpaceCreate(nullptr);
+    this->contactgroup = dJointGroupCreate(0);
+    dWorldSetGravity(this->world, 0, 0, -gravity);
+    this->objects_count = 0;
+    this->sur_matrix = nullptr;
     //dAllocateODEDataForThread(dAllocateMaskAll);
     delta_time = dt;
 }
@@ -105,22 +110,110 @@ void PWorld::handleCollisions(dGeomID o1, dGeomID o2)
     }
 }
 
-void PWorld::addObject(PObject *o)
+int PWorld::addObject(PObject* o)
 {
-    int id = objects.count();
+    int id = this->objects.count();
     o->id = id;
     if (o->world == nullptr)
-        o->world = world;
+        o->world = this->world;
     if (o->space == nullptr)
-        o->space = space;
+        o->space = this->space;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    objects.append(o);
+    this->objects.append(o);
+    this->ball = o;
+    return id;
+}
+
+int PWorld::addBallObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->space;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    this->ball = o;
+    return id;
+}
+
+int PWorld::addGroundObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->space;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    this->ground = o;
+    return id;
+}
+
+int PWorld::addWallObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->spaceWall;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    return id;
+}
+
+int PWorld::addWheelObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->spaceWheel;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    return id;
+}
+
+int PWorld::addChassisObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->spaceChassis;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    return id;
+}
+
+int PWorld::addKickerObject(PObject* o)
+{
+    int id = this->objects.count();
+    o->id = id;
+    if (o->world == nullptr)
+        o->world = this->world;
+    if (o->space == nullptr)
+        o->space = this->spaceKicker;
+    o->init();
+    dGeomSetData(o->geom, (void *)(&(o->id)));
+    this->objects.append(o);
+    return id;
 }
 
 void PWorld::initAllObjects()
 {
-    objects_count = objects.count();
+    objects_count = this->objects.count();
     int c = objects_count;
     bool flag = false;
     if (sur_matrix != nullptr)
@@ -180,7 +273,30 @@ void PWorld::step(dReal dt, bool sync)
 {
     try
     {
-        dSpaceCollide(space, this, &nearCallback);
+        this->nearcallbacks_count = 0;
+        
+        // Collide wheels with ground
+        dSpaceCollide2((dGeomID)this->spaceWheel, this->ground->geom, this, &nearCallback);
+
+        // Collide Ball with ground
+        dSpaceCollide2(this->ball->geom, this->ground->geom, this, &nearCallback);
+
+        // // Collide ball with kicker
+        dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceKicker, this, &nearCallback);
+
+        // Collide ball with chassis
+        dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceChassis, this, &nearCallback);
+
+        // Collide ball with wall
+        dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceWall, this, &nearCallback);
+
+        // Collide chassis with wall
+        dSpaceCollide2((dGeomID)this->spaceChassis, (dGeomID)this->spaceWall, this, &nearCallback);
+
+        // Collide chassis with chassis
+        dSpaceCollide(this->spaceChassis, this, &nearCallback);
+
+        std::cout << "near callback count: " << this->nearcallbacks_count << std::endl;
         dWorldSetQuickStepNumIterations(world, 20);
         if (sync)
             dWorldQuickStep(world, (dt < 0) ? delta_time : dt);

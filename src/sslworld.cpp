@@ -121,11 +121,11 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
     initWalls();
 
-    this->physics->addObject(this->ground);
-    this->physics->addObject(this->ball);
+    this->physics->addGroundObject(this->ground);
+    this->physics->addBallObject(this->ball);
 
     for (auto &wall : this->walls)
-        this->physics->addObject(wall);
+        this->physics->addWallObject(wall);
 
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {

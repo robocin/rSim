@@ -38,7 +38,13 @@ public:
     PWorld(dReal dt, dReal gravity, int robot_count);
     ~PWorld();
     void setGravity(dReal gravity);
-    void addObject(PObject *o);
+    int addObject(PObject* o);
+    int addBallObject(PObject* o);
+    int addGroundObject(PObject* o);
+    int addWallObject(PObject* o);
+    int addWheelObject(PObject* o);
+    int addChassisObject(PObject* o);
+    int addKickerObject(PObject* o);
     void initAllObjects();
     PSurface *createSurface(PObject *o1, PObject *o2);
     PSurface* createOneWaySurface(PObject* o1,PObject* o2);
@@ -46,7 +52,8 @@ public:
     void step(dReal dt = -1, bool sync = false);
     void handleCollisions(dGeomID o1, dGeomID o2);
     dWorldID world;
-    dSpaceID space;
+    dSpaceID space, spaceChassis, spaceKicker, spaceWall, spaceWheel;
+    PObject *ball, *ground;
     int robot_count;
 };
 
