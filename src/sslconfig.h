@@ -82,6 +82,7 @@ namespace SSLConfig
                 setFieldPenaltyWidth(3.60);
                 setFieldPenaltyDepth(1.80);
                 setFieldPenaltyPoint(8.00);
+                setGoalWidth(1.80);
                 break;
             case 1: // Division B
                 setRobotsCount(12);
@@ -92,6 +93,7 @@ namespace SSLConfig
                 setFieldPenaltyWidth(2.00);
                 setFieldPenaltyDepth(1.00);
                 setFieldPenaltyPoint(6.00);
+                setGoalWidth(1.00);
                 break;
             default:
                 break;
