@@ -273,8 +273,6 @@ void PWorld::step(dReal dt, bool sync)
 {
     try
     {
-        this->nearcallbacks_count = 0;
-        
         // Collide wheels with ground
         dSpaceCollide2((dGeomID)this->spaceWheel, this->ground->geom, this, &nearCallback);
 
@@ -296,7 +294,6 @@ void PWorld::step(dReal dt, bool sync)
         // Collide chassis with chassis
         dSpaceCollide(this->spaceChassis, this, &nearCallback);
 
-        std::cout << "near callback count: " << this->nearcallbacks_count << std::endl;
         dWorldSetQuickStepNumIterations(world, 20);
         if (sync)
             dWorldQuickStep(world, (dt < 0) ? delta_time : dt);

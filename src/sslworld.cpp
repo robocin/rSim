@@ -60,9 +60,9 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     dVector3 v = {0, 0, 1, 1};
     dVector3 axis;
     dMultiply0(axis, r, v, 4, 3, 1);
-    dReal l = std::sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
-    surface->fdir1[0] = axis[0] / l;
-    surface->fdir1[1] = axis[1] / l;
+    // dReal l = sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
+    surface->fdir1[0] = axis[0];
+    surface->fdir1[1] = axis[1];
     surface->fdir1[2] = 0;
     surface->fdir1[3] = 0;
     surface->usefdir1 = true;
