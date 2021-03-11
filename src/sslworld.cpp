@@ -71,10 +71,9 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
 
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
-    auto body = dGeomGetBody(o1);
+    auto body = dGeomGetBody(o2);
     const dReal *posBall = dBodyGetPosition(body);
-    std::cout << "x: " << posBall[0] << " y: " << posBall[1]<< " z: " << posBall[2] << std::endl;
-    body = dGeomGetBody(o2);
+    body = dGeomGetBody(o1);
     const dReal *posRobot = dBodyGetPosition(body);
     const dReal *dirRobot = dBodyGetRotation(body);
 
@@ -88,17 +87,18 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     dReal angleRobot =  (axis[1] > 0) ? absAng : -absAng;
 
     // Get angle between robot and ball
-    dReal angleRobotBall = atan((posBall[1] - posRobot[1])/(posBall[0]-posRobot[0]));
-    angleRobotBall = (posBall[0] > posRobot[0]) ? angleRobotBall : M_PI - angleRobotBall;
+    dReal angleRobotBall = atan2(posBall[1] - posRobot[1],posBall[0]-posRobot[0]);
 
     // This value is given by the acos(distance_center_kicker/robot_radius)
     dReal angleKicker = 0.625;
 
-    dReal angleDiff = abs(angleRobotBall - angleRobot);
+    // Smallest angle diff
+    dReal angleDiff = angleRobotBall - angleRobot;
+    angleDiff += (angleDiff>M_PI) ? -2*M_PI : (angleDiff<-M_PI) ? 2*M_PI : 0;
 
     // If kicker is facing the ball, the collision with the chassis should not
     // be considered
-    return (angleDiff < angleKicker) ? false : true;
+    return (abs(angleDiff) < angleKicker) ? false : true;
 }
 
 SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,

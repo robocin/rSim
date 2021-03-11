@@ -283,7 +283,7 @@ void PWorld::step(dReal dt, bool sync)
         dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceKicker, this, &nearCallback);
 
         // Collide ball with chassis
-        dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceChassis, this, &nearCallback);
+        dSpaceCollide2((dGeomID)this->spaceChassis, this->ball->geom, this, &nearCallback);
 
         // Collide ball with wall
         dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceWall, this, &nearCallback);
