@@ -95,6 +95,17 @@ namespace SSLConfig
                 setFieldPenaltyPoint(6.00);
                 setGoalWidth(1.00);
                 break;
+            case 2: // Hardware challenge
+                setRobotsCount(12);
+                setRobotsBlueCount(6);
+                setRobotsYellowCount(6);
+                setFieldLength(6.00);
+                setFieldWidth(4.00);
+                setFieldPenaltyWidth(2.00);
+                setFieldPenaltyDepth(0.80);
+                setFieldPenaltyPoint(6.00);
+                setGoalWidth(0.70);
+                break;
             default:
                 break;
             }
