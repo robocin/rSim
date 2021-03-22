@@ -312,7 +312,7 @@ void SSLWorld::setActions(std::vector<double*> actions)
             if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
         } 
         else {
-            this->robots[i]->setDesiredSpeedGlobal(action[1], action[2], action[3]);
+            this->robots[i]->setDesiredSpeedLocal(action[1], action[2], action[3]);
             if (action[4] > 0 || action[5] > 0) {
                 this->robots[i]->kicker->kick(action[4], action[5]);
             }
