@@ -204,10 +204,10 @@ namespace SSLConfig
         double rollerTorqueFactor = 0.060;
         double rollerPerpendicularTorqueFactor = 0.005;
 
-        int wheel1Angle = 60;
-        int wheel2Angle = 135;
-        int wheel3Angle = 225;
-        int wheel4Angle = 300;
+        int wheel0Angle = 60;
+        int wheel1Angle = 135;
+        int wheel2Angle = 225;
+        int wheel3Angle = 300;
         double radius = 0.090;
         double height = 0.149;
         double bottomHeight = 0.004;
@@ -222,10 +222,10 @@ namespace SSLConfig
 
 
     public:
+        int getWheel0Angle() { return this->wheel0Angle; }
         int getWheel1Angle() { return this->wheel1Angle; }
         int getWheel2Angle() { return this->wheel2Angle; }
         int getWheel3Angle() { return this->wheel3Angle; }
-        int getWheel4Angle() { return this->wheel4Angle; }
         double getDistanceCenterKicker() { return this->distanceCenterKicker; }
         double getKickerZ() { return this->kickerZ; }
         double getKickerThickness() { return this->kickerThickness; }
