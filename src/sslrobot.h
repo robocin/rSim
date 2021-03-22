@@ -84,7 +84,6 @@ public:
     ~SSLRobot();
     void step();
     void setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw);
-    void setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw);
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     void incSpeed(int i, dReal v);

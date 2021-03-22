@@ -378,18 +378,3 @@ void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
     setWheelDesiredAngularSpeed(2 , dw2);
     setWheelDesiredAngularSpeed(3 , dw3);
 }
-
-void SSLRobot::setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw)
-{
-    dReal k, angle;
-    dReal localVx, localVy;
-    dReal _DEG2RAD = M_PI / 180.0;
-
-    angle = getDir(k);
-    angle = angle * _DEG2RAD;
-
-    localVx = vx * cos(angle) + vy * sin(angle);
-    localVy = -vx * sin(angle) + vy * cos(angle);
-
-    setDesiredSpeedLocal(localVx, localVy, vw);
-}
