@@ -398,7 +398,7 @@ const std::vector<double> &SSLWorld::getState()
         // reset when the robot has turned over
         if (SSLConfig::World().getResetTurnOver() && robotK < 0.9)
         {
-            std::cout << "turnover " << robotK << '\n';
+            std::cout << "turnover " << robotK << " robot x: " << robotX << " robot y: " << robotY << " ball x: " << ballX  << " ball y: " << ballY << '\n';
             this->robots[i]->resetRobot();
         }
 

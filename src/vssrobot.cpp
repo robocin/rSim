@@ -37,9 +37,8 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     this->cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     this->cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     this->cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    this->cyl->space = this->rob->space;
 
-    this->rob->physics->addObject(this->cyl);
+    this->rob->physics->addWheelObject(this->cyl);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, nullptr);
 
@@ -80,9 +79,8 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     pBall->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    pBall->space = rob->space;
 
-    rob->physics->addObject(pBall);
+    rob->physics->addWheelObject(pBall);
 
     joint = dJointCreateHinge(rob->physics->world, nullptr);
 
@@ -106,11 +104,10 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     space = physics->space;
 
     chassis = new PBox(x, y, z, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getHeight(), VSSConfig::Robot().getBodyMass() * 0.99f);
-    chassis->space = space;
-    physics->addObject(chassis);
+    physics->addChassisObject(chassis);
 
-    wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
-    wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel2Angle(), VSSConfig::Robot().getWheel2Angle());
+    wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel0Angle(), VSSConfig::Robot().getWheel0Angle());
+    wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
     balls[0] = new RBall(this, 0, 45, 45);
     balls[1] = new RBall(this, 1, -45, -45);
     balls[2] = new RBall(this, 2, 135, 135);

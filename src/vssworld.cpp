@@ -60,31 +60,11 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     dVector3 v = {0, 0, 1, 1};
     dVector3 axis;
     dMultiply0(axis, r, v, 4, 3, 1);
-    dReal l = std::sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
-    surface->fdir1[0] = axis[0] / l;
-    surface->fdir1[1] = axis[1] / l;
+    surface->fdir1[0] = axis[0];
+    surface->fdir1[1] = axis[1];
     surface->fdir1[2] = 0;
     surface->fdir1[3] = 0;
     surface->usefdir1 = true;
-    return true;
-}
-
-bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
-{
-    if (_world->ball->tag != -1) //spinner adjusting
-    {
-        dReal x, y, z;
-        _world->robots[_world->ball->tag]->chassis->getBodyDirection(x, y, z);
-        surface->fdir1[0] = x;
-        surface->fdir1[1] = y;
-        surface->fdir1[2] = 0;
-        surface->fdir1[3] = 0;
-        surface->usefdir1 = true;
-        surface->surface.mode = dContactMu2 | dContactFDir1 | dContactSoftCFM;
-        surface->surface.mu = VSSConfig::World().getBallFriction();
-        surface->surface.mu2 = 0.5;
-        surface->surface.soft_cfm = 0.002;
-    }
     return true;
 }
 
@@ -107,10 +87,10 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
     initWalls();
 
-    this->physics->addObject(this->ground);
-    this->physics->addObject(this->ball);
+    this->physics->addGroundObject(this->ground);
+    this->physics->addBallObject(this->ball);
     for (auto &wall : this->walls)
-        this->physics->addObject(wall);
+        this->physics->addWallObject(wall);
 
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
@@ -147,7 +127,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     PSurface wheelswithground;
     PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
-    ball_ground->callback = ballCallBack;
 
     for (auto &wall : walls)
         this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
@@ -276,6 +255,7 @@ VSSWorld::~VSSWorld()
 
 void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
 {
+
     setActions(actions);
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
@@ -336,14 +316,25 @@ void VSSWorld::setActions(std::vector<std::tuple<double, double>> actions)
 
 const std::vector<double> VSSWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
     field.clear();
-    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldPenaltyWidth());
+    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldPenaltyDepth());
+    field.push_back(this->field.getFieldPenaltyWidth());
     field.push_back(this->field.getGoalWidth());
     field.push_back(this->field.getGoalDepth());
+    field.push_back(VSSConfig::World().getBallRadius());
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(VSSConfig::Robot().getWheel0Angle());
+    field.push_back(VSSConfig::Robot().getWheel1Angle());
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(VSSConfig::Robot().getRadius());
+    field.push_back(VSSConfig::Robot().getWheelRadius());
+    field.push_back(VSSConfig::Robot().getWheelMotorMaxRPM());
     return field;
 }
 

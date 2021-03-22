@@ -17,6 +17,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 */
 
 #include "pworld.h"
+#include <iostream>
 
 PSurface::PSurface()
 {
@@ -279,7 +280,7 @@ void PWorld::step(dReal dt, bool sync)
         // Collide Ball with ground
         dSpaceCollide2(this->ball->geom, this->ground->geom, this, &nearCallback);
 
-        // // Collide ball with kicker
+        // Collide ball with kicker
         dSpaceCollide2(this->ball->geom, (dGeomID)this->spaceKicker, this, &nearCallback);
 
         // Collide ball with chassis
@@ -303,6 +304,6 @@ void PWorld::step(dReal dt, bool sync)
     }
     catch (...)
     {
-        //qDebug() << "Some Error Happened;";
+        std::cout << "step error\n";
     }
 }
