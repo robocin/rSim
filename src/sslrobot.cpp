@@ -236,10 +236,10 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
 
     this->kicker = new Kicker(this);
 
-    wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
-    wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
-    wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
-    wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel4Angle(), SSLConfig::Robot().getWheel4Angle());
+    wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel0Angle(), SSLConfig::Robot().getWheel0Angle());
+    wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
+    wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
+    wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
 
     setDir(this->_dir);
 }
@@ -365,7 +365,7 @@ void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
 {
     // Calculate Motor Speeds
     dReal _DEG2RAD = M_PI / 180.0;
-    dReal motorAlpha[4] = {SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD, SSLConfig::Robot().getWheel4Angle() * _DEG2RAD};
+    dReal motorAlpha[4] = {SSLConfig::Robot().getWheel0Angle() * _DEG2RAD, SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD};
 
     // Convert local robot speed to rad/s
     dReal dw0 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );

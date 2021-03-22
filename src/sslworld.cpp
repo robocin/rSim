@@ -324,14 +324,25 @@ void SSLWorld::setActions(std::vector<double*> actions)
 
 const std::vector<double> SSLWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
     field.clear();
-    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldPenaltyWidth());
+    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldPenaltyDepth());
+    field.push_back(this->field.getFieldPenaltyWidth());
     field.push_back(this->field.getGoalWidth());
     field.push_back(this->field.getGoalDepth());
+    field.push_back(SSLConfig::World().getBallRadius());
+    field.push_back(SSLConfig::Robot().getDistanceCenterKicker());
+    field.push_back(SSLConfig::Robot().getKickerThickness());
+    field.push_back(SSLConfig::Robot().getKickerWidth());
+    field.push_back(SSLConfig::Robot().getWheel0Angle());
+    field.push_back(SSLConfig::Robot().getWheel1Angle());
+    field.push_back(SSLConfig::Robot().getWheel2Angle());
+    field.push_back(SSLConfig::Robot().getWheel3Angle());
+    field.push_back(SSLConfig::Robot().getRadius());
+    field.push_back(SSLConfig::Robot().getWheelRadius());
+    field.push_back(SSLConfig::Robot().getWheelMotorMaxRPM());
     return field;
 }
 
