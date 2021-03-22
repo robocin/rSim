@@ -15,8 +15,8 @@ extern "C"
         actions.clear();
         for (int i = 0; i < world->field.getRobotsCount(); i++)
         {
-            double *a = new double[6];
-            for(int j = 0; j < 6; j++) a[j] = act[i*6 + j];
+            double *a = new double[8];
+            for(int j = 0; j < 8; j++) a[j] = act[i*8 + j];
             actions.push_back(a);
         }
         world->step(actions);
