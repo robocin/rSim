@@ -301,11 +301,23 @@ void SSLWorld::setActions(std::vector<double*> actions)
 
     for (double* action : actions) 
     {
-        this->robots[i]->setDesiredSpeedGlobal(action[0], action[1], action[2]);
-        if (action[3] > 0 || action[4] > 0) {
-            this->robots[i]->kicker->kick(action[3], action[4]);
+        if (action[0] > 0) {
+            this->robots[i]->setWheelDesiredAngularSpeed(0, action[1]);
+            this->robots[i]->setWheelDesiredAngularSpeed(1, action[2]);
+            this->robots[i]->setWheelDesiredAngularSpeed(2, action[3]);
+            this->robots[i]->setWheelDesiredAngularSpeed(3, action[4]);
+            if (action[5] > 0 || action[6] > 0) {
+                this->robots[i]->kicker->kick(action[5], action[6]);
+            }
+            if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
+        } 
+        else {
+            this->robots[i]->setDesiredSpeedGlobal(action[1], action[2], action[3]);
+            if (action[4] > 0 || action[5] > 0) {
+                this->robots[i]->kicker->kick(action[4], action[5]);
+            }
+            if (action[6] > 0) this->robots[i]->kicker->setDribbler(true);
         }
-        if (action[5] > 0) this->robots[i]->kicker->setDribbler(true);
         i++;
     }
 }
