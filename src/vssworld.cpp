@@ -274,7 +274,7 @@ VSSWorld::~VSSWorld()
     delete this->physics;
 }
 
-void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
+void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
 {
     setActions(actions);
 
@@ -283,8 +283,6 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         robots[k]->step();
     }
 
-    // Pq ele faz isso 5 vezes?
-    // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
     for (int kk = 0; kk < 5; kk++)
     {
         const dReal *ballvel = dBodyGetLinearVel(this->ball->body);
@@ -302,7 +300,7 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         {
             // Velocidade real  normalizada (com atrito envolvido) da bola
             dReal accel = last_speed - ballspeed;
-            accel = -accel / dt;
+            accel = -accel / this->timeStep;
             last_speed = ballspeed;
             // TODO : bug de bola que não para, deve ser aqui
             dReal fk = accel * VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
@@ -316,7 +314,7 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         }
         dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
-        this->physics->step(dt * 0.2, fullSpeed);
+        this->physics->step(this->timeStep * 0.2, fullSpeed);
     }
 
 }
