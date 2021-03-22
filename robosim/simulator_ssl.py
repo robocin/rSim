@@ -28,11 +28,12 @@ robosim_lib.replace_with_vel.restype = None
 
 class SimulatorSSL():
     '''
-    RoboSim SSL Simulator.
-    Based on GRSim. Transfers all the graphic functions
-    to handle in python, whenever the user wants to.
-    The SimulatorSSL uses a C++ interface to create the simulation
-    and physics of the simulator.
+        RoboSim SSL Simulator.
+
+        Based on GRSim. Transfers all the graphic functions
+        to handle in python, whenever the user wants to.
+        The SimulatorSSL uses a C++ interface to create the simulation
+        and physics of the simulator.
     '''
 
     def __init__(self, field_type: int = 0,
@@ -49,8 +50,9 @@ class SimulatorSSL():
             ----------
             field_type : int
                 The number corresponding to the type of the field
-                0 - 3x3 field
-                1 - 5x5 field
+                0 - Div A field
+                1 - Div B field
+                2 - HW Challenge field
 
             n_robots_blue : int
                 Number of blue robots
@@ -70,7 +72,6 @@ class SimulatorSSL():
             Returns
             -------
             None
-
         '''
         self.field_type: int = field_type
         self.n_robots_blue: int = n_robots_blue
@@ -98,28 +99,28 @@ class SimulatorSSL():
 
     def get_state(self) -> np.ndarray:
         '''
-        Returns the state array.
-        State:
-            - Ball: x, y, z, v_x, v_y
-            - Robots_blue: x, y, theta, v_x, v_y, v_theta
-            - Robots_yellow: x, y, theta, v_x, v_y, v_theta
-            Units:
-                x, y, z     -> meters
-                theta       -> degrees (0, 360)
-                v_x, v_y    -> meters/seconds
-                v_theta     -> degrees/seconds
+            Returns the state array.
+            State:
+                - Ball: x, y, z, v_x, v_y
+                - Robots_blue: x, y, theta, v_x, v_y, v_theta, ir
+                - Robots_yellow: x, y, theta, v_x, v_y, v_theta, ir
+                Units:
+                    x, y, z     -> meters
+                    theta       -> degrees (0, 360)
+                    v_x, v_y    -> meters/seconds
+                    v_theta     -> degrees/seconds
+                    ir          -> bool
 
-        State size: 5 + 6*n_robots_blue + 6*n_robots_yellow
+            State size: 5 + 7*n_robots_blue + 7*n_robots_yellow
 
-        Parameters
-        ----------
-        None
+            Parameters
+            ----------
+            None
 
-        Returns
-        -------
-        np.ndarray
-            State
-
+            Returns
+            -------
+            np.ndarray
+                State
         '''
         state = np.zeros(self.state_size, dtype=np.float64)
         robosim_lib.getState(self.world, as_ctypes(state))
@@ -127,18 +128,17 @@ class SimulatorSSL():
 
     def step(self, action: np.ndarray) -> None:
         '''
-        Steps the simulator given an action.
+            Steps the simulator given an action.
 
-        Parameters
-        ----------
-        action: np.ndarray
+            Parameters
+            ----------
+            action: np.ndarray
             Action of shape (6, 2),
             2 wheels' speed for 6 robots.
 
-        Returns
-        -------
-        None
-
+            Returns
+            -------
+            None
         '''
         action = np.array(action, dtype=np.float64)
         action = action.flatten()
@@ -149,18 +149,17 @@ class SimulatorSSL():
               blue_robots_pos: np.ndarray,
               yellow_robots_pos: np.ndarray) -> np.ndarray:
         '''
-        Resets the simulator and it's render view
-        if it's in use.
+            Resets the simulator and it's render view
+            if it's in use.
 
-        Parameters
-        ----------
-        None
+            Parameters
+            ----------
+            None
 
-        Returns
-        -------
-        np.ndarray
-            State
-
+            Returns
+            -------
+            np.ndarray
+                State
         '''
         robosim_lib.delWorld(self.world)
         self.world = robosim_lib.newWorld(self.field_type,
@@ -176,20 +175,19 @@ class SimulatorSSL():
 
     def get_field_params(self) -> Dict[str, float]:
         '''
-        Returns the field parameters from the given
-        field type.
+            Returns the field parameters from the given
+            field type.
 
-        Parameters
-        ----------
-        None
+            Parameters
+            ----------
+            None
 
-        Returns
-        -------
-        dict
-            field_width, field_length,
-            penalty_width, penalty_length,
-            goal_width
-
+            Returns
+            -------
+            dict
+                field_width, field_length,
+                penalty_width, penalty_length,
+                goal_width
         '''
         params = np.zeros(6, dtype=np.float64)
         keys = ['field_width', 'field_length',

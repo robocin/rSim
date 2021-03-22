@@ -18,7 +18,7 @@ extern "C"
             std::tuple<double, double> action(act[i*2], act[i*2 + 1]);
             actions.push_back(action);
         }
-        world->step(world->getTimeStep(), actions);
+        world->step(actions);
     }
     void getState(VSSWorld *world, double *state_data)
     {

@@ -50,15 +50,12 @@ public:
     SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
     ~SSLWorld();
-    void simStep(dReal dt = -1);
-    void step(dReal dt, std::vector<double*> actions);
+    void step(std::vector<double*> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
     void replace_with_vel(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
-    double getTimeStep() { return this->timeStep; }
-
     /**
     \brief FieldParams has [FieldWidth, FieldLenght, GoalDepth, GoalWidth]
     \return return std::vector of double representing field parameters

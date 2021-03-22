@@ -258,7 +258,7 @@ SSLWorld::~SSLWorld()
     delete this->physics;
 }
 
-void SSLWorld::step(dReal dt, std::vector<double*> actions)
+void SSLWorld::step(std::vector<double*> actions)
 {
     setActions(actions);
 
@@ -290,7 +290,7 @@ void SSLWorld::step(dReal dt, std::vector<double*> actions)
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
 
-        this->physics->step(dt * 0.2, this->fullSpeed);
+        this->physics->step(this->timeStep * 0.2, this->fullSpeed);
     }
 
 }

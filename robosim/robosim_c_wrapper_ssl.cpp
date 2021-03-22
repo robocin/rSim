@@ -19,7 +19,7 @@ extern "C"
             for(int j = 0; j < 6; j++) a[j] = act[i*6 + j];
             actions.push_back(a);
         }
-        world->step(world->getTimeStep(), actions);
+        world->step(actions);
     }
     void getState(SSLWorld *world, double *state_data)
     {
