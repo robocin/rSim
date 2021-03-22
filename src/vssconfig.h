@@ -187,8 +187,8 @@ namespace VSSConfig
         double BottomHeight = 0.002;
         double WheelRadius = 0.026;
         double WheelThickness = 0.005;
-        int Wheel1Angle = 90;
-        int Wheel2Angle = 270;
+        int Wheel0Angle = 90;
+        int Wheel1Angle = 270;
         double BodyMass = 0.120;
         double WheelMass = 0.015;
         double WheelTangentFriction = 0.8;
@@ -204,8 +204,8 @@ namespace VSSConfig
         double getBottomHeight() { return this->BottomHeight; }
         double getWheelRadius() { return this->WheelRadius; }
         double getWheelThickness() { return this->WheelThickness; }
+        int getWheel0Angle() { return this->Wheel0Angle; }
         int getWheel1Angle() { return this->Wheel1Angle; }
-        int getWheel2Angle() { return this->Wheel2Angle; }
         double getBodyMass() { return this->BodyMass; }
         double getWheelMass() { return this->WheelMass; }
         double getWheelTangentFriction() { return this->WheelTangentFriction; }

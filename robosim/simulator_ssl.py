@@ -61,7 +61,7 @@ class SimulatorSSL():
                 Number of blue robots
 
             time_step_ms : int
-                Simulation timestep in miliseconds
+                Simulation timestep in milliseconds
 
             ball_pos : np.ndarray
                 Ball position array [ballX, ballY, ballVx, ballVy]
