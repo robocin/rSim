@@ -52,7 +52,7 @@ public:
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
-        dReal desiredAngularSpeed; // Degrees/s
+        dReal desiredAngularSpeed, maxAngularSpeed; // rad/s
         SSLRobot *rob;
     } * wheels[4]{};
     class Kicker
