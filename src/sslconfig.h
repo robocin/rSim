@@ -209,16 +209,16 @@ namespace SSLConfig
         int wheel3Angle = 225;
         int wheel4Angle = 300;
         double radius = 0.090;
-        double height = 0.147;
-        double bottomHeight = 0.020;
-        double wheelRadius = 0.027;
+        double height = 0.149;
+        double bottomHeight = 0.004;
+        double wheelRadius = 0.02475;
         double wheelThickness = 0.005;
-        double bodyMass = 2.000;
-        double wheelMass = 0.200;
+        double bodyMass = 2.200;
+        double wheelMass = 0.050;
         double wheelTangentFriction = 0.800;
         double wheelPerpendicularFriction = 0.050;
-        double wheelMotorMaxTorque = 0.200;
-        double wheelMotorMaxRPM = 630.000; // TODO
+        double wheelMotorMaxTorque = 0.324; // Maxon EC45 flat 50w with 18:60 gear ratio
+        double wheelMotorMaxRPM = 1557.0; // Maxon EC45 flat 50w with 18:60 gear ratio
 
 
     public:

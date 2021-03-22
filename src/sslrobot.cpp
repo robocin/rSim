@@ -52,12 +52,14 @@ SSLRobot::Wheel::Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetAMotorNumAxes(this->motor, 1);
     dJointSetAMotorAxis(this->motor, 0, 1, cos(ang), sin(ang), 0);
     dJointSetAMotorParam(this->motor, dParamFMax, SSLConfig::Robot().getWheelMotorMaxTorque());
+    this->maxAngularSpeed = (SSLConfig::Robot().getWheelMotorMaxRPM() * 2 * M_PI) / 60;
     this->desiredAngularSpeed = 0;
 }
 
 void SSLRobot::Wheel::step()
 {
-    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamVel, sent_speed);
     dJointSetAMotorParam(this->motor, dParamFMax, SSLConfig::Robot().getWheelMotorMaxTorque());
 }
 
@@ -365,7 +367,7 @@ void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
     dReal _DEG2RAD = M_PI / 180.0;
     dReal motorAlpha[4] = {SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD, SSLConfig::Robot().getWheel4Angle() * _DEG2RAD};
 
-    // TODO checar qual a unidade desse valor calculado
+    // Convert local robot speed to rad/s
     dReal dw1 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
     dReal dw2 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
     dReal dw3 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
