@@ -32,12 +32,4 @@ extern "C"
         const double *params_features = params.data();
         memcpy(params_data, params_features, params.size() * sizeof(double));
     }
-    void replace(VSSWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace(ball_data, pos_blue_data, pos_yellow_data);
-    }
-    void replace_with_vel(VSSWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace_with_vel(ball_data, pos_blue_data, pos_yellow_data);
-    }
 }

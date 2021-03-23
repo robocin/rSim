@@ -55,19 +55,7 @@ public:
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
-    /**
-    \brief FieldParams has [FieldWidth, FieldLenght, GoalDepth, GoalWidth]
-    \return return std::vector of double representing field parameters
-    */
     const std::vector<double> getFieldParams();
-
-    /**
-    \brief State has [ballX, ballY, ballZ, ballVx, ballVy,
-                    robotBlueX, robotBlueY, robotBlueVx, robotBlueVy, 
-                    robotBlueInfrared, robotYellowX, robotYellowY,
-                    robotYellowVx, robotYellowVy, robotYellowInfrared]
-    \return return std::vector of float representing the state
-    */
     const std::vector<double> &getState();
 
     void setActions(std::vector<double*> actions);

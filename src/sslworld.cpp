@@ -19,9 +19,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "sslworld.h"
 #include "sslconfig.h"
 
-#include <QtGlobal>
-#include <QtNetwork>
-
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
@@ -433,26 +430,26 @@ const std::vector<double> &SSLWorld::getState()
     return this->state;
 }
 
-void SSLWorld::replace(double *ball, double *pos_blue, double *pos_yellow)
+void SSLWorld::replace(double *ball, double *posBlue, double *posYellow)
 {
     dReal xx, yy, zz;
     this->ball->getBodyPosition(xx, yy, zz);
     this->ball->setBodyPosition(ball[0], ball[1], zz);
     dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
 
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(pos_blue[(i*3)], pos_blue[(i*3) + 1]);
-        this->robots[i]->setDir(pos_blue[(i*3) + 2]);
+        this->robots[i]->setXY(posBlue[(i*3)], posBlue[(i*3) + 1]);
+        this->robots[i]->setDir(posBlue[(i*3) + 2]);
     }
+
     for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
     {
         uint32_t k = i - this->field.getRobotsBlueCount();
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(pos_yellow[(i*3)], pos_yellow[(i*3) + 1]);
-        this->robots[i]->setDir(pos_yellow[(i*3) + 2]);
+        this->robots[i]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
+        this->robots[i]->setDir(posYellow[(i*3) + 2]);
     }
 }

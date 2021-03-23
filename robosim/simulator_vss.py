@@ -19,11 +19,6 @@ robosim_lib.getState.argtypes = [c_void_p, c_void_p]
 robosim_lib.getState.restype = None
 robosim_lib.getFieldParams.argtypes = [c_void_p, c_void_p]
 robosim_lib.getFieldParams.restype = None
-robosim_lib.replace.argtypes = [c_void_p, c_void_p, c_void_p, c_void_p]
-robosim_lib.replace.restype = None
-robosim_lib.replace_with_vel.argtypes = [
-    c_void_p, c_void_p, c_void_p, c_void_p]
-robosim_lib.replace_with_vel.restype = None
 
 
 class SimulatorVSS():
@@ -199,20 +194,3 @@ class SimulatorVSS():
                 'rbt_wheel_radius', 'rbt_motor_max_rpm']
         robosim_lib.getFieldParams(self.world, as_ctypes(params))
         return {key: param for key, param in zip(keys, params)}
-
-    def replace(self, ball_pos: np.ndarray,
-                blue_pos: np.ndarray, yellow_pos: np.ndarray):
-        ball_pos = ball_pos.flatten()
-        blue_pos = blue_pos.flatten()
-        yellow_pos = yellow_pos.flatten()
-        robosim_lib.replace(self.world, as_ctypes(ball_pos),
-                            as_ctypes(blue_pos), as_ctypes(yellow_pos))
-
-    def replace_with_vel(self, ball: np.ndarray,
-                         blue_pos: np.ndarray, yellow_pos: np.ndarray):
-        ball = ball.flatten()
-        blue_pos = blue_pos.flatten()
-        yellow_pos = yellow_pos.flatten()
-        robosim_lib.replace_with_vel(self.world, as_ctypes(ball),
-                                     as_ctypes(blue_pos),
-                                     as_ctypes(yellow_pos))

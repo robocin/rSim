@@ -176,7 +176,7 @@ void SSLRobot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
 
     if (isTouchingBall())
     {
-        dReal dlen = dx*dx + dy*dy + dz*dz; // TODO NAO ENTENDI
+        dReal dlen = dx*dx + dy*dy + dz*dz;
         dlen = sqrt(dlen);
 
         vx = dx*kickSpeedX/dlen;
