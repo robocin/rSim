@@ -201,12 +201,12 @@ class SimulatorSSL():
         return {key: param for key, param in zip(keys, params)}
 
     def replace(self, ball_pos: np.ndarray,
-                blue_pos: np.ndarray, yellow_pos: np.ndarray):
+                blue_robots_pos: np.ndarray, yellow_robots_pos: np.ndarray):
         ball_pos = ball_pos.flatten()
-        blue_pos = blue_pos.flatten()
-        yellow_pos = yellow_pos.flatten()
+        blue_robots_pos = blue_robots_pos.flatten()
+        yellow_robots_pos = yellow_robots_pos.flatten()
         robosim_lib.replace(self.world, as_ctypes(ball_pos),
-                            as_ctypes(blue_pos), as_ctypes(yellow_pos))
+                            as_ctypes(blue_robots_pos), as_ctypes(yellow_robots_pos))
 
     def replace_with_vel(self, ball: np.ndarray,
                          blue_pos: np.ndarray, yellow_pos: np.ndarray):
