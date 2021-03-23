@@ -61,6 +61,10 @@ void CRobot::Wheel::step()
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
 }
 
+CRobot::Wheel::~Wheel() {
+    delete this->cyl;
+}
+
 CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
 {
     id = _id;
@@ -90,6 +94,11 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
 }
 
+CRobot::RBall::~RBall() {
+    delete this->pBall;
+}
+
+
 CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
                int rob_id, int dir, bool turn_on)
 {
@@ -106,17 +115,22 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     chassis = new PBox(x, y, z, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getHeight(), VSSConfig::Robot().getBodyMass() * 0.99f);
     physics->addChassisObject(chassis);
 
-    wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel0Angle(), VSSConfig::Robot().getWheel0Angle());
-    wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
-    balls[0] = new RBall(this, 0, 45, 45);
-    balls[1] = new RBall(this, 1, -45, -45);
-    balls[2] = new RBall(this, 2, 135, 135);
-    balls[3] = new RBall(this, 3, -135, -135);
+    this->wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel0Angle(), VSSConfig::Robot().getWheel0Angle());
+    this->wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
+    this->balls[0] = new RBall(this, 0, 45, 45);
+    this->balls[1] = new RBall(this, 1, -45, -45);
+    this->balls[2] = new RBall(this, 2, 135, 135);
+    this->balls[3] = new RBall(this, 3, -135, -135);
     setDir(m_dir);
     on = turn_on;
 }
 
-CRobot::~CRobot() = default;
+CRobot::~CRobot()
+{
+    delete this->chassis;
+    for (auto &wheel : this->wheels) delete(wheel);
+    for (auto &ball : this->balls) delete(ball);
+}
 
 PBall *CRobot::getBall()
 {

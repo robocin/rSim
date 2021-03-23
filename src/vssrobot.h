@@ -51,6 +51,7 @@ public:
         int id;
         Wheel(CRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
+        ~Wheel();
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
@@ -64,6 +65,7 @@ public:
         int id;
         RBall(CRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
+        ~RBall();
         dJointID joint;
         PBall *pBall;
         CRobot *rob;
