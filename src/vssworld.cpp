@@ -250,6 +250,10 @@ int VSSWorld::robotIndex(unsigned int robot, int team)
 
 VSSWorld::~VSSWorld()
 {
+    for (auto &wall : this->walls) delete(wall);
+    for (auto &robot : this->robots) delete(robot);
+    delete ball;
+    delete ground;
     delete this->physics;
 }
 
