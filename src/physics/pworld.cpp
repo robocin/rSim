@@ -58,8 +58,15 @@ PWorld::PWorld(dReal dt, dReal gravity, int _robot_count)
 
 PWorld::~PWorld()
 {
+    for(auto x: this->surfaces)
+        free(x);
+    delete[] this->sur_matrix;
     dJointGroupDestroy(contactgroup);
     dSpaceDestroy(space);
+    dSpaceDestroy(spaceChassis);
+    dSpaceDestroy(spaceKicker);
+    dSpaceDestroy(spaceWall);
+    dSpaceDestroy(spaceWheel);
     dWorldDestroy(world);
     dCloseODE();
 }

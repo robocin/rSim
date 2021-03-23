@@ -96,6 +96,7 @@ class SimulatorSSL():
 
     def __del__(self):
         robosim_lib.delWorld(self.world)
+        del self.world
 
     def get_state(self) -> np.ndarray:
         '''

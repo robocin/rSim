@@ -244,7 +244,21 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     setDir(this->_dir);
 }
 
-SSLRobot::~SSLRobot() = default;
+SSLRobot::~SSLRobot()
+{
+    for(auto x: this->wheels)
+    {
+        dJointDestroy(x->joint);
+        dJointDestroy(x->motor);
+        free(x->cyl);
+        free(x->rob);
+    }
+    free(this->wheels);
+    free(this->kicker->box);
+    free(this->kicker->rob);
+    free(this->kicker);
+
+}
 
 PBall *SSLRobot::getBall()
 {

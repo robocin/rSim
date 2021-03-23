@@ -147,3 +147,7 @@ target_link_libraries(robosim_vss ${libs})
 target_link_libraries(robosim_vss robosim_core)
 target_link_libraries(robosim_c_vss ${libs})
 target_link_libraries(robosim_c_vss robosim_core)
+
+add_executable(robosim_exec src/robosim.cpp)
+target_link_libraries(robosim_exec ${libs})
+target_link_libraries(robosim_exec robosim_ssl)
