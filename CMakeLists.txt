@@ -36,7 +36,7 @@ if(UNIX)
 endif()
 
 # set explicitly the c++ standard to use
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0 -pthread -g")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -pthread")
 
 # add src dir to included directories
 include_directories(${PROJECT_SOURCE_DIR})
@@ -147,7 +147,3 @@ target_link_libraries(robosim_vss ${libs})
 target_link_libraries(robosim_vss robosim_core)
 target_link_libraries(robosim_c_vss ${libs})
 target_link_libraries(robosim_c_vss robosim_core)
-
-add_executable(robosim_exec src/robosim.cpp)
-target_link_libraries(robosim_exec ${libs})
-target_link_libraries(robosim_exec robosim_ssl)
