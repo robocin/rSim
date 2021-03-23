@@ -102,11 +102,10 @@ namespace VSSConfig
     private:
         double BallRadius = 0.0215;
         int DesiredFPS = 60;
-        double DeltaTime = 0.016;
-        double Gravity = 9.8;
+        double Gravity = 9.81;
         bool ResetTurnOver = true;
         double BallMass = 0.043;
-        double BallFriction = 0.05;
+        double BallFriction = 0.02;
         int BallSlip = 1;
         double BallBounce = 0.5;
         double BallBounceVel = 0.1;
@@ -116,7 +115,6 @@ namespace VSSConfig
     public:
         double getBallRadius() { return this->BallRadius; }
         int getDesiredFPS() { return this->DesiredFPS; }
-        double getDeltaTime() { return this->DeltaTime; }
         double getGravity() { return this->Gravity; }
         bool getResetTurnOver() { return this->ResetTurnOver; }
         double getBallMass() { return this->BallMass; }
