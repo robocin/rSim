@@ -273,32 +273,22 @@ void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
     {
         const dReal *ballvel = dBodyGetLinearVel(this->ball->body);
         // Norma do vetor velocidade da bola
-        dReal ballspeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
-        ballspeed = sqrt(ballspeed);
-        dReal ballfx = 0, ballfy = 0, ballfz = 0;
-        dReal balltx = 0, ballty = 0, balltz = 0;
-        if (ballspeed < 0.01)
-        {
-            ; //const dReal* ballAngVel = dBodyGetAngularVel(this->ball->body);
-            //TODO: what was supposed to be here?
+        dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
+        ballSpeed = sqrt(ballSpeed);
+        if (ballSpeed > 0.01) {
+            dReal fk = VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
+            dReal ballfx = -fk * ballvel[0] / ballSpeed;
+            dReal ballfy = -fk * ballvel[1] / ballSpeed;
+            dReal ballfz = -fk * ballvel[2] / ballSpeed;
+            dReal balltx = -ballfy * VSSConfig::World().getBallRadius();
+            dReal ballty = ballfx * VSSConfig::World().getBallRadius();
+            dReal balltz = 0;
+            dBodyAddTorque(this->ball->body,balltx,ballty,balltz);
+            dBodyAddForce(this->ball->body,ballfx,ballfy,ballfz);
+        } else {
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
-        else
-        {
-            // Velocidade real  normalizada (com atrito envolvido) da bola
-            dReal accel = last_speed - ballspeed;
-            accel = -accel / this->timeStep;
-            last_speed = ballspeed;
-            // TODO : bug de bola que não para, deve ser aqui
-            dReal fk = accel * VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
-            ballfx = -fk * ballvel[0] / ballspeed;
-            ballfy = -fk * ballvel[1] / ballspeed;
-            ballfz = -fk * ballvel[2] / ballspeed;
-            balltx = -ballfy * VSSConfig::World().getBallRadius();
-            ballty = ballfx * VSSConfig::World().getBallRadius();
-            balltz = 0;
-            dBodyAddTorque(this->ball->body, balltx, ballty, balltz);
-        }
-        dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
         this->physics->step(this->timeStep * 0.2, fullSpeed);
     }
