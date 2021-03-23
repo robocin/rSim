@@ -209,7 +209,7 @@ namespace SSLConfig
         int wheel2Angle = 225;
         int wheel3Angle = 300;
         double radius = 0.090;
-        double height = 0.149;
+        double height = 0.146;
         double bottomHeight = 0.004;
         double wheelRadius = 0.02475;
         double wheelThickness = 0.005;
