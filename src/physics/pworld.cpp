@@ -59,8 +59,10 @@ PWorld::PWorld(dReal dt, dReal gravity, int _robot_count)
 PWorld::~PWorld()
 {
     for(auto x: this->surfaces)
-        free(x);
-    delete[] this->sur_matrix;
+        delete x;
+    for (int i = 0; i < this->objects_count; i++)
+        delete[] sur_matrix[i];
+    delete[] sur_matrix;
     dJointGroupDestroy(contactgroup);
     dSpaceDestroy(space);
     dSpaceDestroy(spaceChassis);

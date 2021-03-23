@@ -48,6 +48,7 @@ public:
     public:
         int id;
         Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2);
+        ~Wheel();
         void step();
         dJointID joint;
         dJointID motor;
@@ -64,6 +65,7 @@ public:
         bool holdingBall;
       public:
         Kicker(SSLRobot* robot);
+        ~Kicker();
         void step();
         void kick(dReal kickSpeedX, dReal kickSpeedZ);
         void setDribbler(bool dribbler);

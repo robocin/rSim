@@ -56,6 +56,10 @@ SSLRobot::Wheel::Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2)
     this->desiredAngularSpeed = 0;
 }
 
+SSLRobot::Wheel::~Wheel() {
+    delete this->cyl;
+}
+
 void SSLRobot::Wheel::step()
 {
     auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
@@ -97,6 +101,10 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
 
     this->dribblerOn = false;
     this->kickerState = NO_KICK;
+}
+
+SSLRobot::Kicker::~Kicker() {
+    delete this->box;
 }
 
 void SSLRobot::Kicker::step()
@@ -236,28 +244,18 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
 
     this->kicker = new Kicker(this);
 
-    wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel0Angle(), SSLConfig::Robot().getWheel0Angle());
-    wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
-    wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
-    wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
+    this->wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel0Angle(), SSLConfig::Robot().getWheel0Angle());
+    this->wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
+    this->wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
+    this->wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
 
     setDir(this->_dir);
 }
 
-SSLRobot::~SSLRobot()
-{
-    for(auto x: this->wheels)
-    {
-        dJointDestroy(x->joint);
-        dJointDestroy(x->motor);
-        free(x->cyl);
-        free(x->rob);
-    }
-    free(this->wheels);
-    free(this->kicker->box);
-    free(this->kicker->rob);
-    free(this->kicker);
-
+SSLRobot::~SSLRobot() {
+    delete this->chassis;
+    delete this->kicker;
+    for (auto &wheel : this->wheels) delete(wheel);
 }
 
 PBall *SSLRobot::getBall()
