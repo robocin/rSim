@@ -200,6 +200,15 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     }
 }
 
+SSLWorld::~SSLWorld()
+{
+    for (auto &wall : this->walls) delete(wall);
+    for (auto &robot : this->robots) delete(robot);
+    delete ball;
+    delete ground;
+    delete this->physics;
+}
+
 void SSLWorld::initWalls()
 {
     const double thick = this->field.getWallThickness();
@@ -253,12 +262,6 @@ void SSLWorld::initWalls()
                              gsiz_x, gthick, gsiz_z);
 }
 
-SSLWorld::~SSLWorld()
-{
-    delete ball;
-    delete ground;
-    delete this->physics;
-}
 
 void SSLWorld::step(std::vector<double*> actions)
 {

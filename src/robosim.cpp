@@ -1,5 +1,9 @@
 #include "sslworld.h"
+// #include <ode/ode.h>
 
+// void test() {
+//     dVector3 local_Pos{};
+// }
 
 int main()
 {
@@ -8,5 +12,7 @@ int main()
     double yellowRobotsPos[] = {};
 
     auto world = new SSLWorld(1, 1, 0, 16 / 1000.0, ballPos, blueRobotsPos, yellowRobotsPos);
+    delete world;
 
+    return 0;
 }
