@@ -52,7 +52,6 @@ public:
     ~SSLWorld();
     void step(std::vector<double*> actions);
     void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
-    void replace_with_vel(double *ball_pos, double *pos_blue, double *pos_yellow);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
