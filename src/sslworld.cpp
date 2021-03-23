@@ -255,6 +255,8 @@ void SSLWorld::initWalls()
 
 SSLWorld::~SSLWorld()
 {
+    delete ball;
+    delete ground;
     delete this->physics;
 }
 
