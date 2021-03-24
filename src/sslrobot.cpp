@@ -75,9 +75,9 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
     dReal y = this->rob->_y;
     dReal z = this->rob->_z;
 
-    dReal centerX = x + (SSLConfig::Robot().getDistanceCenterKicker() + SSLConfig::Robot().getKickerThickness());
+    dReal centerX = x + (SSLConfig::Robot().getDistanceCenterKicker() - SSLConfig::Robot().getKickerThickness()*0.5);
     dReal centerY = y;
-    dReal centerZ = z - (SSLConfig::Robot().getHeight()) * 0.5f + SSLConfig::Robot().getWheelRadius() - SSLConfig::Robot().getBottomHeight() + SSLConfig::Robot().getKickerZ();
+    dReal centerZ = z - (SSLConfig::Robot().getHeight()) * 0.5f  - SSLConfig::Robot().getBottomHeight() + SSLConfig::Robot().getKickerZ() + SSLConfig::Robot().getKickerHeight() * 0.5;
     
     this->box = new PBox(
         centerX, centerY, centerZ, 

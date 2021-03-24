@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <math.h>
 
 namespace SSLConfig
 {
@@ -193,17 +194,6 @@ namespace SSLConfig
     class Robot
     {
     private:
-        double distanceCenterKicker = 0.073;
-        double kickerZ = 0.005;
-        double kickerThickness = 0.005;
-        double kickerWidth = 0.080;
-        double kickerHeight = 0.040;
-        double kickerMass = 0.020;
-        double kickerDampFactor = 0.200;
-        double KickerFriction = 0.800;
-        double rollerTorqueFactor = 0.060;
-        double rollerPerpendicularTorqueFactor = 0.005;
-
         int wheel0Angle = 60;
         int wheel1Angle = 135;
         int wheel2Angle = 225;
@@ -217,8 +207,20 @@ namespace SSLConfig
         double wheelMass = 0.050;
         double wheelTangentFriction = 0.800;
         double wheelPerpendicularFriction = 0.050;
-        double wheelMotorMaxTorque = 0.324; // Maxon EC45 flat 50w with 18:60 gear ratio
+        double wheelMotorMaxTorque = 0.070; // Maxon EC45 flat 50w with 18:60 gear ratio, reduced to 3m/s2 accel
         double wheelMotorMaxRPM = 1557.0; // Maxon EC45 flat 50w with 18:60 gear ratio
+        
+        double distanceCenterKicker = 0.081;
+        double kickerZ = 0.005;
+        double kickerThickness = 0.005;
+        double kickerWidth = 0.080;
+        double kickerHeight = 0.040;
+        double kickerMass = 0.020;
+        double kickerDampFactor = 0.200;
+        double kickerFriction = 0.800;
+        double kickerAngle = acos(distanceCenterKicker/radius);
+        double rollerTorqueFactor = 0.060;
+        double rollerPerpendicularTorqueFactor = 0.005;
 
 
     public:
@@ -233,7 +235,8 @@ namespace SSLConfig
         double getKickerHeight() { return this->kickerHeight; }
         double getKickerMass() { return this->kickerMass; }
         double getKickerDampFactor() { return this->kickerDampFactor; }
-        double getKickerFriction() { return this->KickerFriction; }
+        double getKickerFriction() { return this->kickerFriction; }
+        double getKickerAngle() { return this->kickerAngle; }
         double getDribblerTorqueFactor() { return this->rollerTorqueFactor; }
         double getDribblerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
         double getRadius() { return this->radius; }

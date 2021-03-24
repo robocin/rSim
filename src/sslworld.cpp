@@ -87,7 +87,7 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     dReal angleRobotBall = atan2(posBall[1] - posRobot[1],posBall[0]-posRobot[0]);
 
     // This value is given by the acos(distance_center_kicker/robot_radius)
-    dReal angleKicker = 0.625;
+    dReal angleKicker = SSLConfig::Robot().getKickerAngle();
 
     // Smallest angle diff
     dReal angleDiff = angleRobotBall - angleRobot;
