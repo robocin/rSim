@@ -64,6 +64,4 @@ public:
     void setActions(std::vector<std::tuple<double, double>> actions);
 };
 
-dReal fric(dReal f);
-
 #endif // World_H

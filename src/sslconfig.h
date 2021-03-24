@@ -140,57 +140,6 @@ namespace SSLConfig
         double getBallAngularDamp() { return this->ballAngularDamp; }
     };
 
-    class Communication
-    {
-    private:
-        std::string VisionMulticastAddr = "127.0.0.1";
-        int VisionMulticastPort = 10020;
-        int CommandListenPort = 10021;
-        int BlueStatusSendPort = 30011;
-        int YellowStatusSendPort = 30012;
-        int sendDelay = 0;
-        int sendGeometryEvery = 120;
-
-    public:
-        std::string getVisionMulticastAddr() { return this->VisionMulticastAddr; }
-        int getVisionMulticastPort() { return this->VisionMulticastPort; }
-        int getCommandListenPort() { return this->CommandListenPort; }
-        int getBlueStatusSendPort() { return this->BlueStatusSendPort; }
-        int getYellowStatusSendPort() { return this->YellowStatusSendPort; }
-        int getSendDelay() { return this->sendDelay; }
-        int getSendGeometryEvery() { return this->sendGeometryEvery; }
-    };
-
-    class Noise
-    {
-    private:
-        bool noise = false;
-        int noiseDeviationX = 3;
-        int noiseDeviationY = 3;
-        int noiseDeviationAngle = 2;
-
-    public:
-        bool getNoise() { return this->noise; }
-        int getNoiseDeviationX() { return this->noiseDeviationX; }
-        int getNoiseDeviationY() { return this->noiseDeviationY; }
-        int getNoiseDeviationAngle() { return this->noiseDeviationAngle; }
-    };
-
-    class Vanishing
-    {
-    private:
-        bool vanishing = false;
-        int blueTeamVanishing = 0;
-        int yellowTeamVanishing = 0;
-        int ballVanishing = 0;
-
-    public:
-        bool getVanishing() { return this->vanishing; };
-        int getBlueTeamVanishing() { return this->blueTeamVanishing; };
-        int getYellowTeamVanishing() { return this->yellowTeamVanishing; };
-        int getBallVanishing() { return this->ballVanishing; };
-    };
-
     class Robot
     {
     private:

@@ -61,6 +61,4 @@ public:
     void setActions(std::vector<double*> actions);
 };
 
-dReal fric(dReal f);
-
 #endif // SSLWorld_H

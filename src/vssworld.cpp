@@ -344,23 +344,12 @@ const std::vector<double> &VSSWorld::getState()
     dReal robotX, robotY, robotDir, robotK;
     const dReal *ballVel, *robotVel, *robotVelDir;
 
-    // Set noise parameters
-    dReal devX = 0;
-    dReal devY = 0;
-    dReal devA = 0;
-    if (VSSConfig::Noise().getNoise())
-    {
-        devX = VSSConfig::Noise().getNoiseDeviationX();
-        devY = VSSConfig::Noise().getNoiseDeviationY();
-        devA = VSSConfig::Noise().getNoiseDeviationAngle();
-    }
-
     // Ball
     this->ball->getBodyPosition(ballX, ballY, ballZ);
 
     // Add ball position to state vector
-    this->state.push_back(randn_notrig(ballX, devX));
-    this->state.push_back(randn_notrig(ballY, devY));
+    this->state.push_back(ballX);
+    this->state.push_back(ballY);
     this->state.push_back(ballZ);
     if (lastState.size() > 0)
     {
