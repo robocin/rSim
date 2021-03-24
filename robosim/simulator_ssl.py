@@ -86,8 +86,8 @@ class SimulatorSSL():
                                                   )
         self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
-            + (self.n_robots_blue * 7)\
-            + (self.n_robots_yellow * 7)
+            + (self.n_robots_blue * 11)\
+            + (self.n_robots_yellow * 11)
 
     def __del__(self):
         robosim_lib.delWorld(self.world)
@@ -98,16 +98,17 @@ class SimulatorSSL():
             Returns the state array.
             State:
                 - Ball: x, y, z, v_x, v_y
-                - Robots_blue: x, y, theta, v_x, v_y, v_theta, ir
-                - Robots_yellow: x, y, theta, v_x, v_y, v_theta, ir
+                - Robots_blue: x, y, theta, v_x, v_y, v_theta, ir, v_wheel[0->3]
+                - Robots_yellow: x, y, theta, v_x, v_y, v_theta, ir, v_wheel[0->3]
                 Units:
                     x, y, z     -> meters
                     theta       -> degrees (0, 360)
                     v_x, v_y    -> meters/seconds
                     v_theta     -> degrees/seconds
                     ir          -> bool
+                    v_wheel     -> rad/s
 
-            State size: 5 + 7*n_robots_blue + 7*n_robots_yellow
+            State size: 5 + 11*n_robots_blue + 11*n_robots_yellow
 
             Parameters
             ----------
@@ -129,9 +130,19 @@ class SimulatorSSL():
             Parameters
             ----------
             action: np.ndarray
-            Action of shape (6, 2),
-            2 wheels' speed for 6 robots.
-
+            Action of shape (n_robots, 7),
+                [0] wheel_speeds
+                if wheel_speeds:
+                    [1->4] v_wheel[0->3]
+                else:
+                    [1] v_x
+                    [2] v_y
+                    [3] v_theta
+                    [4] unused
+                [5] kick_v_x
+                [6] kick_v_z
+                [7] dribbler
+                
             Returns
             -------
             None

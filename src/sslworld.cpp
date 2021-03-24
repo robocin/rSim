@@ -312,18 +312,13 @@ void SSLWorld::setActions(std::vector<double*> actions)
             this->robots[i]->setWheelDesiredAngularSpeed(1, action[2]);
             this->robots[i]->setWheelDesiredAngularSpeed(2, action[3]);
             this->robots[i]->setWheelDesiredAngularSpeed(3, action[4]);
-            if (action[5] > 0 || action[6] > 0) {
-                this->robots[i]->kicker->kick(action[5], action[6]);
-            }
-            if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
         } 
-        else {
-            this->robots[i]->setDesiredSpeedLocal(action[1], action[2], action[3]);
-            if (action[4] > 0 || action[5] > 0) {
-                this->robots[i]->kicker->kick(action[4], action[5]);
-            }
-            if (action[6] > 0) this->robots[i]->kicker->setDribbler(true);
+        else this->robots[i]->setDesiredSpeedLocal(action[1], action[2], action[3]);
+        if (action[5] > 0 || action[6] > 0) {
+            this->robots[i]->kicker->kick(action[5], action[6]);
         }
+        if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
+
         i++;
     }
 }
@@ -414,6 +409,12 @@ const std::vector<double> &SSLWorld::getState()
             this->state.push_back(0.);
         }
         this->state.push_back(static_cast<double>(this->robots[i]->kicker->isTouchingBall()));
+
+        // Get wheel speeds
+        this->state.push_back(this->robots[i]->wheels[0]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[1]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[2]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[3]->desiredAngularSpeed);
     }
 
     return this->state;
