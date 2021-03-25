@@ -435,11 +435,11 @@ void SSLWorld::replace(double *ball, double *posBlue, double *posYellow)
         this->robots[i]->setDir(posBlue[(i*3) + 2]);
     }
 
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
+    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        this->robots[i]->resetRobot();
-        this->robots[i]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
-        this->robots[i]->setDir(posYellow[(i*3) + 2]);
+        int i = k - this->field.getRobotsBlueCount();
+        this->robots[k]->resetRobot();
+        this->robots[k]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
+        this->robots[k]->setDir(posYellow[(i*3) + 2]);
     }
 }
