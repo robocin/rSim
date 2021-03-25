@@ -74,6 +74,9 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
     const dReal *posRobot = dBodyGetPosition(body);
     const dReal *dirRobot = dBodyGetRotation(body);
 
+    dReal distRbtBall = sqrt(pow(posRobot[0]-posBall[0],2) + pow(posRobot[1]-posBall[1],2));
+    if (distRbtBall < SSLConfig::Robot().getDistanceCenterKicker() + SSLConfig::World().getBallRadius()/2.) return true; 
+
     // Get robot angle
     dVector3 v={1,0,0};
     dVector3 axis;
