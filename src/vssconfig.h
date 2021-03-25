@@ -105,7 +105,7 @@ namespace VSSConfig
         double Gravity = 9.81;
         bool ResetTurnOver = true;
         double BallMass = 0.043;
-        double BallFriction = 0.02;
+        double BallFriction = 0.01;
         int BallSlip = 1;
         double BallBounce = 0.5;
         double BallBounceVel = 0.1;

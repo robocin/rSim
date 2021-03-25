@@ -407,7 +407,6 @@ void VSSWorld::replace(double *ball, double *posBlue, double *posYellow)
     this->ball->setBodyPosition(ball[0], ball[1], zz);
     dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
     
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
