@@ -95,7 +95,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         float x = blueRobotsPos[k * 3];
         float y = blueRobotsPos[(k * 3) + 1];
         float dir = blueRobotsPos[(k * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
@@ -106,7 +106,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         float x = yellowRobotsPos[i * 3];
         float y = yellowRobotsPos[(i * 3) + 1];
         float dir = yellowRobotsPos[(i * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }

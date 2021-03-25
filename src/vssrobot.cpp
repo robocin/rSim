@@ -20,7 +20,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 // ang2 = position angle
 // ang  = rotation angle
-CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
+VSSRobot::Wheel::Wheel(VSSRobot *robot, int _id, dReal ang, dReal ang2)
 {
     this->id = _id;
     this->rob = robot;
@@ -57,18 +57,18 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     this->desiredAngularSpeed = 0;
 }
 
-CRobot::Wheel::~Wheel() {
+VSSRobot::Wheel::~Wheel() {
     delete this->cyl;
 }
 
-void CRobot::Wheel::step()
+void VSSRobot::Wheel::step()
 {
     auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
     dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
 }
 
-CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
+VSSRobot::RBall::RBall(VSSRobot *robot, int _id, dReal ang, dReal ang2)
 {
     id = _id;
     rob = robot;
@@ -97,12 +97,12 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
 }
 
-CRobot::RBall::~RBall() {
+VSSRobot::RBall::~RBall() {
     delete this->pBall;
 }
 
 
-CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+VSSRobot::VSSRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
                int rob_id, int dir, bool turn_on)
 {
     m_x = x;
@@ -128,24 +128,24 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     on = turn_on;
 }
 
-CRobot::~CRobot()
+VSSRobot::~VSSRobot()
 {
     delete this->chassis;
     for (auto &wheel : this->wheels) delete(wheel);
     for (auto &ball : this->balls) delete(ball);
 }
 
-PBall *CRobot::getBall()
+PBall *VSSRobot::getBall()
 {
     return m_ball;
 }
 
-PWorld *CRobot::getWorld()
+PWorld *VSSRobot::getWorld()
 {
     return physics;
 }
 
-int CRobot::getID()
+int VSSRobot::getID()
 {
     return m_rob_id - 1;
 }
@@ -158,7 +158,7 @@ void normalizeVector(dReal &x, dReal &y, dReal &z)
     z /= d;
 }
 
-void CRobot::step()
+void VSSRobot::step()
 {
     if (!on)
     {
@@ -170,12 +170,12 @@ void CRobot::step()
     last_state = on;
 }
 
-void CRobot::resetSpeeds()
+void VSSRobot::resetSpeeds()
 {
     wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
 }
 
-void CRobot::resetRobot()
+void VSSRobot::resetRobot()
 {
     resetSpeeds();
     dBodySetLinearVel(chassis->body, 0, 0, 0);
@@ -191,7 +191,7 @@ void CRobot::resetRobot()
     setDir(m_dir);
 }
 
-void CRobot::getXY(dReal &x, dReal &y)
+void VSSRobot::getXY(dReal &x, dReal &y)
 {
     dReal xx, yy, zz;
     chassis->getBodyPosition(xx, yy, zz);
@@ -199,7 +199,7 @@ void CRobot::getXY(dReal &x, dReal &y)
     y = yy;
 }
 
-dReal CRobot::getDir(dReal &k)
+dReal VSSRobot::getDir(dReal &k)
 {
     dReal x, y, z;
     chassis->getBodyDirection(x, y, z, k);
@@ -209,7 +209,7 @@ dReal CRobot::getDir(dReal &k)
     return (y > 0) ? absAng : 360-absAng;
 }
 
-void CRobot::setXY(dReal x, dReal y)
+void VSSRobot::setXY(dReal x, dReal y)
 {
     dReal xx, yy, zz, kx, ky, kz;
     dReal height = ROBOT_START_Z();
@@ -222,7 +222,7 @@ void CRobot::setXY(dReal x, dReal y)
     }
 }
 
-void CRobot::setDir(dReal ang)
+void VSSRobot::setDir(dReal ang)
 {
     ang *= M_PI / 180.0f;
     chassis->setBodyRotation(0, 0, 1, ang);
@@ -248,20 +248,20 @@ void CRobot::setDir(dReal ang)
     }
 }
 
-void CRobot::setWheelDesiredAngularSpeed(int i, dReal s)
+void VSSRobot::setWheelDesiredAngularSpeed(int i, dReal s)
 {
     if (!((i >= 2) || (i < 0)))
         wheels[i]->desiredAngularSpeed = s;
 }
 
-dReal CRobot::getSpeed(int i)
+dReal VSSRobot::getSpeed(int i)
 {
     if ((i >= 2) || (i < 0))
         return -1;
     return wheels[i]->desiredAngularSpeed;
 }
 
-void CRobot::incSpeed(int i, dReal v)
+void VSSRobot::incSpeed(int i, dReal v)
 {
     if (!((i >= 2) || (i < 0)))
         wheels[i]->desiredAngularSpeed += v;
