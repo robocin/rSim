@@ -53,16 +53,19 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetAMotorAxis(this->motor, 0, 1, cos(ang), sin(ang), 0);
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
     this->desiredAngularSpeed = 0;
-}
-
-void CRobot::Wheel::step()
-{
-    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
-    dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
+    this->maxAngularSpeed = (VSSConfig::Robot().getWheelMotorMaxRPM() * 2 * M_PI) / 60;
+    this->desiredAngularSpeed = 0;
 }
 
 CRobot::Wheel::~Wheel() {
     delete this->cyl;
+}
+
+void CRobot::Wheel::step()
+{
+    auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
 }
 
 CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
