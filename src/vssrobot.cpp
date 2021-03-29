@@ -64,7 +64,7 @@ VSSRobot::Wheel::~Wheel() {
 void VSSRobot::Wheel::step()
 {
     auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
-    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamVel, sent_speed);
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
 }
 
