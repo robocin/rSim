@@ -19,9 +19,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "vssworld.h"
 #include "vssconfig.h"
 
-#include <QtGlobal>
-#include <QtNetwork>
-
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
@@ -60,31 +57,11 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     dVector3 v = {0, 0, 1, 1};
     dVector3 axis;
     dMultiply0(axis, r, v, 4, 3, 1);
-    dReal l = std::sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
-    surface->fdir1[0] = axis[0] / l;
-    surface->fdir1[1] = axis[1] / l;
+    surface->fdir1[0] = axis[0];
+    surface->fdir1[1] = axis[1];
     surface->fdir1[2] = 0;
     surface->fdir1[3] = 0;
     surface->usefdir1 = true;
-    return true;
-}
-
-bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
-{
-    if (_world->ball->tag != -1) //spinner adjusting
-    {
-        dReal x, y, z;
-        _world->robots[_world->ball->tag]->chassis->getBodyDirection(x, y, z);
-        surface->fdir1[0] = x;
-        surface->fdir1[1] = y;
-        surface->fdir1[2] = 0;
-        surface->fdir1[3] = 0;
-        surface->usefdir1 = true;
-        surface->surface.mode = dContactMu2 | dContactFDir1 | dContactSoftCFM;
-        surface->surface.mu = VSSConfig::World().getBallFriction();
-        surface->surface.mu2 = 0.5;
-        surface->surface.soft_cfm = 0.002;
-    }
     return true;
 }
 
@@ -107,10 +84,10 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
     initWalls();
 
-    this->physics->addObject(this->ground);
-    this->physics->addObject(this->ball);
+    this->physics->addGroundObject(this->ground);
+    this->physics->addBallObject(this->ball);
     for (auto &wall : this->walls)
-        this->physics->addObject(wall);
+        this->physics->addWallObject(wall);
 
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
@@ -118,7 +95,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         float x = blueRobotsPos[k * 3];
         float y = blueRobotsPos[(k * 3) + 1];
         float dir = blueRobotsPos[(k * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
@@ -129,7 +106,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         float x = yellowRobotsPos[i * 3];
         float y = yellowRobotsPos[(i * 3) + 1];
         float dir = yellowRobotsPos[(i * 3) + 2];
-        robots[k] = new CRobot(
+        robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
@@ -147,7 +124,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     PSurface wheelswithground;
     PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
-    ball_ground->callback = ballCallBack;
 
     for (auto &wall : walls)
         this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
@@ -184,6 +160,20 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             }
         }
     }
+
+    for (int i = 0; i < 30; i++)
+    this->physics->step(this->timeStep * 0.1, this->fullSpeed);
+    replace(ballPos, blueRobotsPos, yellowRobotsPos);
+
+}
+
+VSSWorld::~VSSWorld()
+{
+    for (auto &wall : this->walls) delete(wall);
+    for (auto &robot : this->robots) delete(robot);
+    delete ball;
+    delete ground;
+    delete this->physics;
 }
 
 void VSSWorld::initWalls()
@@ -269,13 +259,9 @@ int VSSWorld::robotIndex(unsigned int robot, int team)
     return robot + team * this->field.getRobotsBlueCount();
 }
 
-VSSWorld::~VSSWorld()
+void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
 {
-    delete this->physics;
-}
 
-void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
-{
     setActions(actions);
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
@@ -283,40 +269,28 @@ void VSSWorld::step(dReal dt, std::vector<std::tuple<double, double>> actions)
         robots[k]->step();
     }
 
-    // Pq ele faz isso 5 vezes?
-    // - Talvez mais precisao (Ele sempre faz um step de dt*0.2 )
     for (int kk = 0; kk < 5; kk++)
     {
         const dReal *ballvel = dBodyGetLinearVel(this->ball->body);
         // Norma do vetor velocidade da bola
-        dReal ballspeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
-        ballspeed = sqrt(ballspeed);
-        dReal ballfx = 0, ballfy = 0, ballfz = 0;
-        dReal balltx = 0, ballty = 0, balltz = 0;
-        if (ballspeed < 0.01)
-        {
-            ; //const dReal* ballAngVel = dBodyGetAngularVel(this->ball->body);
-            //TODO: what was supposed to be here?
+        dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
+        ballSpeed = sqrt(ballSpeed);
+        if (ballSpeed > 0.01) {
+            dReal fk = VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
+            dReal ballfx = -fk * ballvel[0] / ballSpeed;
+            dReal ballfy = -fk * ballvel[1] / ballSpeed;
+            dReal ballfz = -fk * ballvel[2] / ballSpeed;
+            dReal balltx = -ballfy * VSSConfig::World().getBallRadius();
+            dReal ballty = ballfx * VSSConfig::World().getBallRadius();
+            dReal balltz = 0;
+            dBodyAddTorque(this->ball->body,balltx,ballty,balltz);
+            dBodyAddForce(this->ball->body,ballfx,ballfy,ballfz);
+        } else {
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
-        else
-        {
-            // Velocidade real  normalizada (com atrito envolvido) da bola
-            dReal accel = last_speed - ballspeed;
-            accel = -accel / dt;
-            last_speed = ballspeed;
-            // TODO : bug de bola que não para, deve ser aqui
-            dReal fk = accel * VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
-            ballfx = -fk * ballvel[0] / ballspeed;
-            ballfy = -fk * ballvel[1] / ballspeed;
-            ballfz = -fk * ballvel[2] / ballspeed;
-            balltx = -ballfy * VSSConfig::World().getBallRadius();
-            ballty = ballfx * VSSConfig::World().getBallRadius();
-            balltz = 0;
-            dBodyAddTorque(this->ball->body, balltx, ballty, balltz);
-        }
-        dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
-        this->physics->step(dt * 0.2, fullSpeed);
+        this->physics->step(this->timeStep * 0.2, fullSpeed);
     }
 
 }
@@ -338,14 +312,25 @@ void VSSWorld::setActions(std::vector<std::tuple<double, double>> actions)
 
 const std::vector<double> VSSWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
     field.clear();
-    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldPenaltyWidth());
+    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldPenaltyDepth());
+    field.push_back(this->field.getFieldPenaltyWidth());
     field.push_back(this->field.getGoalWidth());
     field.push_back(this->field.getGoalDepth());
+    field.push_back(VSSConfig::World().getBallRadius());
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(VSSConfig::Robot().getWheel0Angle());
+    field.push_back(VSSConfig::Robot().getWheel1Angle());
+    field.push_back(-1.);
+    field.push_back(-1.);
+    field.push_back(VSSConfig::Robot().getRadius());
+    field.push_back(VSSConfig::Robot().getWheelRadius());
+    field.push_back(VSSConfig::Robot().getWheelMotorMaxRPM());
     return field;
 }
 
@@ -359,23 +344,12 @@ const std::vector<double> &VSSWorld::getState()
     dReal robotX, robotY, robotDir, robotK;
     const dReal *ballVel, *robotVel, *robotVelDir;
 
-    // Set noise parameters
-    dReal devX = 0;
-    dReal devY = 0;
-    dReal devA = 0;
-    if (VSSConfig::Noise().getNoise())
-    {
-        devX = VSSConfig::Noise().getNoiseDeviationX();
-        devY = VSSConfig::Noise().getNoiseDeviationY();
-        devA = VSSConfig::Noise().getNoiseDeviationAngle();
-    }
-
     // Ball
     this->ball->getBodyPosition(ballX, ballY, ballZ);
 
     // Add ball position to state vector
-    this->state.push_back(randn_notrig(ballX, devX));
-    this->state.push_back(randn_notrig(ballY, devY));
+    this->state.push_back(ballX);
+    this->state.push_back(ballY);
     this->state.push_back(ballZ);
     if (lastState.size() > 0)
     {
@@ -426,88 +400,26 @@ const std::vector<double> &VSSWorld::getState()
     return this->state;
 }
 
-void VSSWorld::replace(double *ball, double *pos_blue, double *pos_yellow)
+void VSSWorld::replace(double *ball, double *posBlue, double *posYellow)
 {
-    this->ball->setBodyPosition(ball[0], ball[1], 0);
-    dBodySetLinearVel(this->ball->body, 0, 0, 0);
-    dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
-    blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_blue[i]);
-        pos.push_back(pos_blue[i + 1]);
-        pos.push_back(pos_blue[i + 2]);
-        blues.push_back(pos);
-    }
-
-    std::vector<std::vector<double>> yellows;
-    yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_yellow[i]);
-        pos.push_back(pos_yellow[i + 1]);
-        pos.push_back(pos_yellow[i + 2]);
-        yellows.push_back(pos);
-    }
-
-    for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
-    {
-        this->robots[i]->setXY(blues[i][0], blues[i][1]);
-        this->robots[i]->setDir(blues[i][2]);
-    }
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
-    {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
-        this->robots[i]->setDir(yellows[k][2]);
-    }
-}
-
-void VSSWorld::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
-{
-    this->ball->setBodyPosition(ball[0], ball[1], 0);
+    dReal xx, yy, zz;
+    this->ball->getBodyPosition(xx, yy, zz);
+    this->ball->setBodyPosition(ball[0], ball[1], zz);
     dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
-    blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_blue[i]);
-        pos.push_back(pos_blue[i + 1]);
-        pos.push_back(pos_blue[i + 2]);
-        blues.push_back(pos);
-    }
-
-    std::vector<std::vector<double>> yellows;
-    yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_yellow[i]);
-        pos.push_back(pos_yellow[i + 1]);
-        pos.push_back(pos_yellow[i + 2]);
-        yellows.push_back(pos);
-    }
-
+    
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(blues[i][0], blues[i][1]);
-        this->robots[i]->setDir(blues[i][2]);
+        this->robots[i]->setXY(posBlue[(i*3)], posBlue[(i*3) + 1]);
+        this->robots[i]->setDir(posBlue[(i*3) + 2]);
     }
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
+    
+    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        this->robots[i]->resetRobot();
-        this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
-        this->robots[i]->setDir(yellows[k][2]);
+        int i = k - this->field.getRobotsBlueCount();
+        this->robots[k]->resetRobot();
+        this->robots[k]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
+        this->robots[k]->setDir(posYellow[(i*3) + 2]);
     }
 }

@@ -102,11 +102,10 @@ namespace VSSConfig
     private:
         double BallRadius = 0.0215;
         int DesiredFPS = 60;
-        double DeltaTime = 0.016;
-        double Gravity = 9.8;
+        double Gravity = 9.81;
         bool ResetTurnOver = true;
         double BallMass = 0.043;
-        double BallFriction = 0.05;
+        double BallFriction = 0.01;
         int BallSlip = 1;
         double BallBounce = 0.5;
         double BallBounceVel = 0.1;
@@ -116,7 +115,6 @@ namespace VSSConfig
     public:
         double getBallRadius() { return this->BallRadius; }
         int getDesiredFPS() { return this->DesiredFPS; }
-        double getDeltaTime() { return this->DeltaTime; }
         double getGravity() { return this->Gravity; }
         bool getResetTurnOver() { return this->ResetTurnOver; }
         double getBallMass() { return this->BallMass; }
@@ -128,57 +126,6 @@ namespace VSSConfig
         double getBallAngularDamp() { return this->BallAngularDamp; }
     };
 
-    class Communication
-    {
-    private:
-        std::string VisionMulticastAddr = "127.0.0.1";
-        int VisionMulticastPort = 10020;
-        int CommandListenPort = 10021;
-        int BlueStatusSendPort = 30011;
-        int YellowStatusSendPort = 30012;
-        int sendDelay = 0;
-        int sendGeometryEvery = 120;
-
-    public:
-        std::string getVisionMulticastAddr() { return this->VisionMulticastAddr; }
-        int getVisionMulticastPort() { return this->VisionMulticastPort; }
-        int getCommandListenPort() { return this->CommandListenPort; }
-        int getBlueStatusSendPort() { return this->BlueStatusSendPort; }
-        int getYellowStatusSendPort() { return this->YellowStatusSendPort; }
-        int getSendDelay() { return this->sendDelay; }
-        int getSendGeometryEvery() { return this->sendGeometryEvery; }
-    };
-
-    class Noise
-    {
-    private:
-        bool noise = false;
-        int noiseDeviationX = 3;
-        int noiseDeviationY = 3;
-        int noiseDeviationAngle = 2;
-
-    public:
-        bool getNoise() { return this->noise; }
-        int getNoiseDeviationX() { return this->noiseDeviationX; }
-        int getNoiseDeviationY() { return this->noiseDeviationY; }
-        int getNoiseDeviationAngle() { return this->noiseDeviationAngle; }
-    };
-
-    class Vanishing
-    {
-    private:
-        bool vanishing = false;
-        int blueTeamVanishing = 0;
-        int yellowTeamVanishing = 0;
-        int ballVanishing = 0;
-
-    public:
-        bool getVanishing() { return this->vanishing; };
-        int getBlueTeamVanishing() { return this->blueTeamVanishing; };
-        int getYellowTeamVanishing() { return this->yellowTeamVanishing; };
-        int getBallVanishing() { return this->ballVanishing; };
-    };
-
     class Robot
     {
     private:
@@ -187,8 +134,8 @@ namespace VSSConfig
         double BottomHeight = 0.002;
         double WheelRadius = 0.026;
         double WheelThickness = 0.005;
-        int Wheel1Angle = 90;
-        int Wheel2Angle = 270;
+        int Wheel0Angle = 90;
+        int Wheel1Angle = 270;
         double BodyMass = 0.120;
         double WheelMass = 0.015;
         double WheelTangentFriction = 0.8;
@@ -204,8 +151,8 @@ namespace VSSConfig
         double getBottomHeight() { return this->BottomHeight; }
         double getWheelRadius() { return this->WheelRadius; }
         double getWheelThickness() { return this->WheelThickness; }
+        int getWheel0Angle() { return this->Wheel0Angle; }
         int getWheel1Angle() { return this->Wheel1Angle; }
-        int getWheel2Angle() { return this->Wheel2Angle; }
         double getBodyMass() { return this->BodyMass; }
         double getWheelMass() { return this->WheelMass; }
         double getWheelTangentFriction() { return this->WheelTangentFriction; }

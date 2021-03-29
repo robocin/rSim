@@ -19,9 +19,6 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "sslworld.h"
 #include "sslconfig.h"
 
-#include <QtGlobal>
-#include <QtNetwork>
-
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
@@ -60,9 +57,9 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     dVector3 v = {0, 0, 1, 1};
     dVector3 axis;
     dMultiply0(axis, r, v, 4, 3, 1);
-    dReal l = std::sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
-    surface->fdir1[0] = axis[0] / l;
-    surface->fdir1[1] = axis[1] / l;
+    // dReal l = sqrt(axis[0] * axis[0] + axis[1] * axis[1]);
+    surface->fdir1[0] = axis[0];
+    surface->fdir1[1] = axis[1];
     surface->fdir1[2] = 0;
     surface->fdir1[3] = 0;
     surface->usefdir1 = true;
@@ -71,21 +68,37 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
 
 bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
-    if (_world->ball->tag != -1) //spinner adjusting
-    {
-        dReal x, y, z;
-        _world->robots[_world->ball->tag]->chassis->getBodyDirection(x, y, z);
-        surface->fdir1[0] = x;
-        surface->fdir1[1] = y;
-        surface->fdir1[2] = 0;
-        surface->fdir1[3] = 0;
-        surface->usefdir1 = true;
-        surface->surface.mode = dContactMu2 | dContactFDir1 | dContactSoftCFM;
-        surface->surface.mu = SSLConfig::World().getBallFriction();
-        surface->surface.mu2 = 0.5;
-        surface->surface.soft_cfm = 0.002;
-    }
-    return true;
+    auto body = dGeomGetBody(o2);
+    const dReal *posBall = dBodyGetPosition(body);
+    body = dGeomGetBody(o1);
+    const dReal *posRobot = dBodyGetPosition(body);
+    const dReal *dirRobot = dBodyGetRotation(body);
+
+    dReal distRbtBall = sqrt(pow(posRobot[0]-posBall[0],2) + pow(posRobot[1]-posBall[1],2));
+    if (distRbtBall < SSLConfig::Robot().getDistanceCenterKicker() + SSLConfig::World().getBallRadius()/2.) return true; 
+
+    // Get robot angle
+    dVector3 v={1,0,0};
+    dVector3 axis;
+    dMultiply0(axis,dirRobot,v,4,3,1);
+    dReal dot = axis[0];
+    dReal length = sqrt(axis[0]*axis[0] + axis[1]*axis[1]);
+    dReal absAng = (dReal)(acos((dReal)(dot/length)));
+    dReal angleRobot =  (axis[1] > 0) ? absAng : -absAng;
+
+    // Get angle between robot and ball
+    dReal angleRobotBall = atan2(posBall[1] - posRobot[1],posBall[0]-posRobot[0]);
+
+    // This value is given by the acos(distance_center_kicker/robot_radius)
+    dReal angleKicker = SSLConfig::Robot().getKickerAngle();
+
+    // Smallest angle diff
+    dReal angleDiff = angleRobotBall - angleRobot;
+    angleDiff += (angleDiff>M_PI) ? -2*M_PI : (angleDiff<-M_PI) ? 2*M_PI : 0;
+
+    // If kicker is facing the ball, the collision with the chassis should not
+    // be considered
+    return (abs(angleDiff) < angleKicker) ? false : true;
 }
 
 SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
@@ -108,11 +121,11 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
     initWalls();
 
-    this->physics->addObject(this->ground);
-    this->physics->addObject(this->ball);
+    this->physics->addGroundObject(this->ground);
+    this->physics->addBallObject(this->ball);
 
     for (auto &wall : this->walls)
-        this->physics->addObject(wall);
+        this->physics->addWallObject(wall);
 
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
@@ -147,9 +160,8 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     ballwithwall.surface.slip1 = 0; //cfg->ballslip();
 
     PSurface wheelswithground;
-    PSurface *ball_ground = this->physics->createSurface(this->ball, this->ground);
+    PSurface *ball_ground = this->physics->createOneWaySurface(this->ball, this->ground);
     ball_ground->surface = ballwithwall.surface;
-    ball_ground->callback = ballCallBack;
 
     PSurface ballwithkicker;
     ballwithkicker.surface.mode = dContactApprox1;
@@ -157,21 +169,23 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     ballwithkicker.surface.slip1 = 5;
 
     for (auto &wall : walls)
-        this->physics->createSurface(this->ball, wall)->surface = ballwithwall.surface;
+        this->physics->createOneWaySurface(this->ball, wall)->surface = ballwithwall.surface;
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
-        this->physics->createSurface(this->robots[k]->chassis, this->ground);
         for (auto &wall : walls)
         {
-            this->physics->createSurface(this->robots[k]->chassis, wall);
+            this->physics->createOneWaySurface(this->robots[k]->chassis, wall);
         }
-        this->physics->createSurface(this->robots[k]->dummy, this->ball);
-        this->physics->createSurface(this->robots[k]->kicker->box, this->ball)->surface = ballwithkicker.surface;
+
+        // Create surface between ball and chassis
+        PSurface* ballChassis = this->physics->createOneWaySurface(this->robots[k]->chassis, this->ball);
+        ballChassis->callback = ballCallBack;
+
+        this->physics->createOneWaySurface(this->ball, this->robots[k]->kicker->box)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
         {
-            this->physics->createSurface(wheel->cyl, this->ball);
-            PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
+            PSurface *w_g = this->physics->createOneWaySurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
             w_g->callback = wheelCallBack;
@@ -180,11 +194,23 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         {
             if (k != j)
             {
-                this->physics->createSurface(this->robots[k]->dummy, this->robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
-                this->physics->createSurface(this->robots[k]->chassis, this->robots[j]->kicker->box);
+                this->physics->createSurface(this->robots[k]->chassis, this->robots[j]->chassis);
             }
         }
     }
+
+    for (int i = 0; i < 30; i++)
+    this->physics->step(this->timeStep * 0.1, this->fullSpeed);
+    replace(ballPos, blueRobotsPos, yellowRobotsPos);
+}
+
+SSLWorld::~SSLWorld()
+{
+    for (auto &wall : this->walls) delete(wall);
+    for (auto &robot : this->robots) delete(robot);
+    delete ball;
+    delete ground;
+    delete this->physics;
 }
 
 void SSLWorld::initWalls()
@@ -241,12 +267,7 @@ void SSLWorld::initWalls()
 }
 
 
-SSLWorld::~SSLWorld()
-{
-    delete this->physics;
-}
-
-void SSLWorld::step(dReal dt, std::vector<double*> actions)
+void SSLWorld::step(std::vector<double*> actions)
 {
     setActions(actions);
 
@@ -263,22 +284,22 @@ void SSLWorld::step(dReal dt, std::vector<double*> actions)
         // Norma do vetor velocidade da bola
         dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
         ballSpeed = sqrt(ballSpeed);
-        dReal ballfx = 0, ballfy = 0, ballfz = 0;
-        dReal balltx = 0, ballty = 0, balltz = 0;
-        if (ballSpeed > 0.01)
-        {
+        if (ballSpeed > 0.01) {
             dReal fk = SSLConfig::World().getBallFriction() * SSLConfig::World().getBallMass() * SSLConfig::World().getGravity();
-            ballfx = -fk * ballvel[0] / ballSpeed;
-            ballfy = -fk * ballvel[1] / ballSpeed;
-            ballfz = -fk * ballvel[2] / ballSpeed;
-            balltx = -ballfy * SSLConfig::World().getBallRadius();
-            ballty = ballfx * SSLConfig::World().getBallRadius();
-            balltz = 0;
-            dBodyAddTorque(this->ball->body, balltx, ballty, balltz);
+            dReal ballfx = -fk * ballvel[0] / ballSpeed;
+            dReal ballfy = -fk * ballvel[1] / ballSpeed;
+            dReal ballfz = -fk * ballvel[2] / ballSpeed;
+            dReal balltx = -ballfy * SSLConfig::World().getBallRadius();
+            dReal ballty = ballfx * SSLConfig::World().getBallRadius();
+            dReal balltz = 0;
+            dBodyAddTorque(this->ball->body,balltx,ballty,balltz);
+            dBodyAddForce(this->ball->body,ballfx,ballfy,ballfz);
+        } else {
+            dBodySetAngularVel(this->ball->body, 0, 0, 0);
+            dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
-        dBodyAddForce(this->ball->body, ballfx, ballfy, ballfz);
 
-        this->physics->step(dt * 0.2, this->fullSpeed);
+        this->physics->step(this->timeStep * 0.2, this->fullSpeed);
     }
 
 }
@@ -289,25 +310,43 @@ void SSLWorld::setActions(std::vector<double*> actions)
 
     for (double* action : actions) 
     {
-        this->robots[i]->setDesiredSpeedGlobal(action[0], action[1], action[2]);
-        if (action[3] > 0 || action[4] > 0) {
-            this->robots[i]->kicker->kick(action[3], action[4]);
+        if (action[0] > 0) {
+            this->robots[i]->setWheelDesiredAngularSpeed(0, action[1]);
+            this->robots[i]->setWheelDesiredAngularSpeed(1, action[2]);
+            this->robots[i]->setWheelDesiredAngularSpeed(2, action[3]);
+            this->robots[i]->setWheelDesiredAngularSpeed(3, action[4]);
+        } 
+        else this->robots[i]->setDesiredSpeedLocal(action[1], action[2], action[3]);
+        if (action[5] > 0 || action[6] > 0) {
+            this->robots[i]->kicker->kick(action[5], action[6]);
         }
-        if (action[5] > 0) this->robots[i]->kicker->setDribbler(true);
+        if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
+
         i++;
     }
 }
 
 const std::vector<double> SSLWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(6));
+    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
     field.clear();
-    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldPenaltyWidth());
+    field.push_back(this->field.getFieldWidth());
     field.push_back(this->field.getFieldPenaltyDepth());
+    field.push_back(this->field.getFieldPenaltyWidth());
     field.push_back(this->field.getGoalWidth());
     field.push_back(this->field.getGoalDepth());
+    field.push_back(SSLConfig::World().getBallRadius());
+    field.push_back(SSLConfig::Robot().getDistanceCenterKicker());
+    field.push_back(SSLConfig::Robot().getKickerThickness());
+    field.push_back(SSLConfig::Robot().getKickerWidth());
+    field.push_back(SSLConfig::Robot().getWheel0Angle());
+    field.push_back(SSLConfig::Robot().getWheel1Angle());
+    field.push_back(SSLConfig::Robot().getWheel2Angle());
+    field.push_back(SSLConfig::Robot().getWheel3Angle());
+    field.push_back(SSLConfig::Robot().getRadius());
+    field.push_back(SSLConfig::Robot().getWheelRadius());
+    field.push_back(SSLConfig::Robot().getWheelMotorMaxRPM());
     return field;
 }
 
@@ -321,23 +360,12 @@ const std::vector<double> &SSLWorld::getState()
     dReal robotX, robotY, robotDir, robotK;
     const dReal *ballVel, *robotVel, *robotVelDir;
 
-    // Set noise parameters
-    dReal devX = 0;
-    dReal devY = 0;
-    dReal devA = 0;
-    if (SSLConfig::Noise().getNoise())
-    {
-        devX = SSLConfig::Noise().getNoiseDeviationX();
-        devY = SSLConfig::Noise().getNoiseDeviationY();
-        devA = SSLConfig::Noise().getNoiseDeviationAngle();
-    }
-
     // Ball
     this->ball->getBodyPosition(ballX, ballY, ballZ);
 
     // Add ball position to state vector
-    this->state.push_back(randn_notrig(ballX, devX));
-    this->state.push_back(randn_notrig(ballY, devY));
+    this->state.push_back(ballX);
+    this->state.push_back(ballY);
     this->state.push_back(ballZ);
     if (lastState.size() > 0)
     {
@@ -363,7 +391,7 @@ const std::vector<double> &SSLWorld::getState()
         // reset when the robot has turned over
         if (SSLConfig::World().getResetTurnOver() && robotK < 0.9)
         {
-            std::cout << "turnover " << robotK << '\n';
+            std::cout << "turnover " << robotK << " robot x: " << robotX << " robot y: " << robotY << " robot dir: " << robotDir << " ball x: " << ballX  << " ball y: " << ballY << '\n';
             this->robots[i]->resetRobot();
         }
 
@@ -373,9 +401,9 @@ const std::vector<double> &SSLWorld::getState()
         this->state.push_back(robotDir);
         if (lastState.size() > 0)
         {
-            this->state.push_back((robotX - lastState[5 + (6 * i) + 0]) / this->timeStep);
-            this->state.push_back((robotY - lastState[5 + (6 * i) + 1]) / this->timeStep);
-            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (6 * i) + 2]) / this->timeStep);
+            this->state.push_back((robotX - lastState[5 + (7 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - lastState[5 + (7 * i) + 1]) / this->timeStep);
+            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (7 * i) + 2]) / this->timeStep);
         }
         else
         {
@@ -384,93 +412,37 @@ const std::vector<double> &SSLWorld::getState()
             this->state.push_back(0.);
         }
         this->state.push_back(static_cast<double>(this->robots[i]->kicker->isTouchingBall()));
+
+        // Get wheel speeds
+        this->state.push_back(this->robots[i]->wheels[0]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[1]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[2]->desiredAngularSpeed);
+        this->state.push_back(this->robots[i]->wheels[3]->desiredAngularSpeed);
     }
 
     return this->state;
 }
 
-void SSLWorld::replace(double *ball, double *pos_blue, double *pos_yellow)
+void SSLWorld::replace(double *ball, double *posBlue, double *posYellow)
 {
-    this->ball->setBodyPosition(ball[0], ball[1], 0);
-    dBodySetLinearVel(this->ball->body, 0, 0, 0);
-    dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
-    blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_blue[i]);
-        pos.push_back(pos_blue[i + 1]);
-        pos.push_back(pos_blue[i + 2]);
-        blues.push_back(pos);
-    }
-
-    std::vector<std::vector<double>> yellows;
-    yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_yellow[i]);
-        pos.push_back(pos_yellow[i + 1]);
-        pos.push_back(pos_yellow[i + 2]);
-        yellows.push_back(pos);
-    }
-
-    for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
-    {
-        this->robots[i]->setXY(blues[i][0], blues[i][1]);
-        this->robots[i]->setDir(blues[i][2]);
-    }
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
-    {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
-        this->robots[i]->setDir(yellows[k][2]);
-    }
-}
-
-void SSLWorld::replace_with_vel(double *ball, double *pos_blue, double *pos_yellow)
-{
-    this->ball->setBodyPosition(ball[0], ball[1], 0);
+    dReal xx, yy, zz;
+    this->ball->getBodyPosition(xx, yy, zz);
+    this->ball->setBodyPosition(ball[0], ball[1], zz);
     dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    std::vector<std::vector<double>> blues;
-    blues.clear();
-    for (int i = 0; i < this->field.getRobotsBlueCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_blue[i]);
-        pos.push_back(pos_blue[i + 1]);
-        pos.push_back(pos_blue[i + 2]);
-        blues.push_back(pos);
-    }
-
-    std::vector<std::vector<double>> yellows;
-    yellows.clear();
-    for (int i = 0; i < this->field.getRobotsYellowCount() * 3; i = i + 3)
-    {
-        std::vector<double> pos;
-        pos.clear();
-        pos.push_back(pos_yellow[i]);
-        pos.push_back(pos_yellow[i + 1]);
-        pos.push_back(pos_yellow[i + 2]);
-        yellows.push_back(pos);
-    }
 
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(blues[i][0], blues[i][1]);
-        this->robots[i]->setDir(blues[i][2]);
+        this->robots[i]->setXY(posBlue[(i*3)], posBlue[(i*3) + 1]);
+        this->robots[i]->setDir(posBlue[(i*3) + 2]);
     }
-    for (uint32_t i = this->field.getRobotsBlueCount(); i < this->field.getRobotsYellowCount() + this->field.getRobotsBlueCount(); i++)
+
+    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
     {
-        uint32_t k = i - this->field.getRobotsBlueCount();
-        this->robots[i]->resetRobot();
-        this->robots[i]->setXY(yellows[k][0], yellows[k][1]);
-        this->robots[i]->setDir(yellows[k][2]);
+        int i = k - this->field.getRobotsBlueCount();
+        this->robots[k]->resetRobot();
+        this->robots[k]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
+        this->robots[k]->setDir(posYellow[(i*3) + 2]);
     }
 }

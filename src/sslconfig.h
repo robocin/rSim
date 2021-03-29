@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <math.h>
 
 namespace SSLConfig
 {
@@ -82,6 +83,7 @@ namespace SSLConfig
                 setFieldPenaltyWidth(3.60);
                 setFieldPenaltyDepth(1.80);
                 setFieldPenaltyPoint(8.00);
+                setGoalWidth(1.80);
                 break;
             case 1: // Division B
                 setRobotsCount(12);
@@ -92,6 +94,18 @@ namespace SSLConfig
                 setFieldPenaltyWidth(2.00);
                 setFieldPenaltyDepth(1.00);
                 setFieldPenaltyPoint(6.00);
+                setGoalWidth(1.00);
+                break;
+            case 2: // Hardware challenge
+                setRobotsCount(12);
+                setRobotsBlueCount(6);
+                setRobotsYellowCount(6);
+                setFieldLength(6.00);
+                setFieldWidth(4.00);
+                setFieldPenaltyWidth(2.00);
+                setFieldPenaltyDepth(0.80);
+                setFieldPenaltyPoint(6.00);
+                setGoalWidth(0.70);
                 break;
             default:
                 break;
@@ -126,93 +140,43 @@ namespace SSLConfig
         double getBallAngularDamp() { return this->ballAngularDamp; }
     };
 
-    class Communication
-    {
-    private:
-        std::string VisionMulticastAddr = "127.0.0.1";
-        int VisionMulticastPort = 10020;
-        int CommandListenPort = 10021;
-        int BlueStatusSendPort = 30011;
-        int YellowStatusSendPort = 30012;
-        int sendDelay = 0;
-        int sendGeometryEvery = 120;
-
-    public:
-        std::string getVisionMulticastAddr() { return this->VisionMulticastAddr; }
-        int getVisionMulticastPort() { return this->VisionMulticastPort; }
-        int getCommandListenPort() { return this->CommandListenPort; }
-        int getBlueStatusSendPort() { return this->BlueStatusSendPort; }
-        int getYellowStatusSendPort() { return this->YellowStatusSendPort; }
-        int getSendDelay() { return this->sendDelay; }
-        int getSendGeometryEvery() { return this->sendGeometryEvery; }
-    };
-
-    class Noise
-    {
-    private:
-        bool noise = false;
-        int noiseDeviationX = 3;
-        int noiseDeviationY = 3;
-        int noiseDeviationAngle = 2;
-
-    public:
-        bool getNoise() { return this->noise; }
-        int getNoiseDeviationX() { return this->noiseDeviationX; }
-        int getNoiseDeviationY() { return this->noiseDeviationY; }
-        int getNoiseDeviationAngle() { return this->noiseDeviationAngle; }
-    };
-
-    class Vanishing
-    {
-    private:
-        bool vanishing = false;
-        int blueTeamVanishing = 0;
-        int yellowTeamVanishing = 0;
-        int ballVanishing = 0;
-
-    public:
-        bool getVanishing() { return this->vanishing; };
-        int getBlueTeamVanishing() { return this->blueTeamVanishing; };
-        int getYellowTeamVanishing() { return this->yellowTeamVanishing; };
-        int getBallVanishing() { return this->ballVanishing; };
-    };
-
     class Robot
     {
     private:
-        double distanceCenterKicker = 0.073;
+        int wheel0Angle = 60;
+        int wheel1Angle = 135;
+        int wheel2Angle = 225;
+        int wheel3Angle = 300;
+        double radius = 0.090;
+        double height = 0.146;
+        double bottomHeight = 0.004;
+        double wheelRadius = 0.02475;
+        double wheelThickness = 0.005;
+        double bodyMass = 2.200;
+        double wheelMass = 0.050;
+        double wheelTangentFriction = 0.800;
+        double wheelPerpendicularFriction = 0.050;
+        double wheelMotorMaxTorque = 0.070; // Maxon EC45 flat 50w with 18:60 gear ratio, reduced to 3m/s2 accel
+        double wheelMotorMaxRPM = 1557.0; // Maxon EC45 flat 50w with 18:60 gear ratio
+        
+        double distanceCenterKicker = 0.081;
         double kickerZ = 0.005;
         double kickerThickness = 0.005;
         double kickerWidth = 0.080;
         double kickerHeight = 0.040;
         double kickerMass = 0.020;
         double kickerDampFactor = 0.200;
-        double KickerFriction = 0.800;
+        double kickerFriction = 0.800;
+        double kickerAngle = acos(distanceCenterKicker/radius);
         double rollerTorqueFactor = 0.060;
         double rollerPerpendicularTorqueFactor = 0.005;
 
-        int wheel1Angle = 60;
-        int wheel2Angle = 135;
-        int wheel3Angle = 225;
-        int wheel4Angle = 300;
-        double radius = 0.090;
-        double height = 0.147;
-        double bottomHeight = 0.020;
-        double wheelRadius = 0.027;
-        double wheelThickness = 0.005;
-        double bodyMass = 2.000;
-        double wheelMass = 0.200;
-        double wheelTangentFriction = 0.800;
-        double wheelPerpendicularFriction = 0.050;
-        double wheelMotorMaxTorque = 0.200;
-        double wheelMotorMaxRPM = 630.000; // TODO
-
 
     public:
+        int getWheel0Angle() { return this->wheel0Angle; }
         int getWheel1Angle() { return this->wheel1Angle; }
         int getWheel2Angle() { return this->wheel2Angle; }
         int getWheel3Angle() { return this->wheel3Angle; }
-        int getWheel4Angle() { return this->wheel4Angle; }
         double getDistanceCenterKicker() { return this->distanceCenterKicker; }
         double getKickerZ() { return this->kickerZ; }
         double getKickerThickness() { return this->kickerThickness; }
@@ -220,7 +184,8 @@ namespace SSLConfig
         double getKickerHeight() { return this->kickerHeight; }
         double getKickerMass() { return this->kickerMass; }
         double getKickerDampFactor() { return this->kickerDampFactor; }
-        double getKickerFriction() { return this->KickerFriction; }
+        double getKickerFriction() { return this->kickerFriction; }
+        double getKickerAngle() { return this->kickerAngle; }
         double getDribblerTorqueFactor() { return this->rollerTorqueFactor; }
         double getDribblerPerpendicularTorqueFactor() { return this->rollerPerpendicularTorqueFactor; }
         double getRadius() { return this->radius; }

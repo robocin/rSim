@@ -19,11 +19,6 @@ robosim_lib.getState.argtypes = [c_void_p, c_void_p]
 robosim_lib.getState.restype = None
 robosim_lib.getFieldParams.argtypes = [c_void_p, c_void_p]
 robosim_lib.getFieldParams.restype = None
-robosim_lib.replace.argtypes = [c_void_p, c_void_p, c_void_p, c_void_p]
-robosim_lib.replace.restype = None
-robosim_lib.replace_with_vel.argtypes = [
-    c_void_p, c_void_p, c_void_p, c_void_p]
-robosim_lib.replace_with_vel.restype = None
 
 
 class SimulatorVSS():
@@ -59,7 +54,7 @@ class SimulatorVSS():
                 Number of blue robots
 
             time_step_ms : int
-                Simulation timestep in miliseconds
+                Simulation timestep in milliseconds
 
             ball_pos : np.ndarray
                 Ball position array [ballX, ballY, ballVx, ballVy]
@@ -88,7 +83,6 @@ class SimulatorVSS():
                                                   as_ctypes(blue_robots_pos),
                                                   as_ctypes(yellow_robots_pos)
                                                   )
-        self.field_params: Dict[str, np.float64] = self.get_field_params()
         self.state_size: int = 5 \
             + (self.n_robots_blue * 6)\
             + (self.n_robots_yellow * 6)
@@ -191,25 +185,12 @@ class SimulatorVSS():
             goal_width
 
         '''
-        params = np.zeros(6, dtype=np.float64)
-        keys = ['field_width', 'field_length',
-                'penalty_width', 'penalty_length', 'goal_width', 'goal_depth']
+        params = np.zeros(17, dtype=np.float64)
+        keys = ['length', 'width', 'penalty_length', 'penalty_width',
+                'goal_width', 'goal_depth', 'ball_radius',
+                'rbt_distance_center_kicker', 'rbt_kicker_thickness',
+                'rbt_kicker_width', 'rbt_wheel0_angle', 'rbt_wheel1_angle',
+                'rbt_wheel2_angle', 'rbt_wheel3_angle', 'rbt_radius',
+                'rbt_wheel_radius', 'rbt_motor_max_rpm']
         robosim_lib.getFieldParams(self.world, as_ctypes(params))
         return {key: param for key, param in zip(keys, params)}
-
-    def replace(self, ball_pos: np.ndarray,
-                blue_pos: np.ndarray, yellow_pos: np.ndarray):
-        ball_pos = ball_pos.flatten()
-        blue_pos = blue_pos.flatten()
-        yellow_pos = yellow_pos.flatten()
-        robosim_lib.replace(self.world, as_ctypes(ball_pos),
-                            as_ctypes(blue_pos), as_ctypes(yellow_pos))
-
-    def replace_with_vel(self, ball: np.ndarray,
-                         blue_pos: np.ndarray, yellow_pos: np.ndarray):
-        ball = ball.flatten()
-        blue_pos = blue_pos.flatten()
-        yellow_pos = yellow_pos.flatten()
-        robosim_lib.replace_with_vel(self.world, as_ctypes(ball),
-                                     as_ctypes(blue_pos),
-                                     as_ctypes(yellow_pos))

@@ -18,7 +18,7 @@ extern "C"
             std::tuple<double, double> action(act[i*2], act[i*2 + 1]);
             actions.push_back(action);
         }
-        world->step(world->getTimeStep(), actions);
+        world->step(actions);
     }
     void getState(VSSWorld *world, double *state_data)
     {
@@ -31,13 +31,5 @@ extern "C"
         const std::vector<double> params = world->getFieldParams();
         const double *params_features = params.data();
         memcpy(params_data, params_features, params.size() * sizeof(double));
-    }
-    void replace(VSSWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace(ball_data, pos_blue_data, pos_yellow_data);
-    }
-    void replace_with_vel(VSSWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace_with_vel(ball_data, pos_blue_data, pos_yellow_data);
     }
 }

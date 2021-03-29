@@ -20,7 +20,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 // ang2 = position angle
 // ang  = rotation angle
-CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
+VSSRobot::Wheel::Wheel(VSSRobot *robot, int _id, dReal ang, dReal ang2)
 {
     this->id = _id;
     this->rob = robot;
@@ -37,9 +37,8 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     this->cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     this->cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     this->cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    this->cyl->space = this->rob->space;
 
-    this->rob->physics->addObject(this->cyl);
+    this->rob->physics->addWheelObject(this->cyl);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, nullptr);
 
@@ -54,15 +53,22 @@ CRobot::Wheel::Wheel(CRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetAMotorAxis(this->motor, 0, 1, cos(ang), sin(ang), 0);
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
     this->desiredAngularSpeed = 0;
+    this->maxAngularSpeed = (VSSConfig::Robot().getWheelMotorMaxRPM() * 2 * M_PI) / 60;
+    this->desiredAngularSpeed = 0;
 }
 
-void CRobot::Wheel::step()
+VSSRobot::Wheel::~Wheel() {
+    delete this->cyl;
+}
+
+void VSSRobot::Wheel::step()
 {
-    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamVel, sent_speed);
     dJointSetAMotorParam(this->motor, dParamFMax, VSSConfig::Robot().getWheelMotorMaxTorque());
 }
 
-CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
+VSSRobot::RBall::RBall(VSSRobot *robot, int _id, dReal ang, dReal ang2)
 {
     id = _id;
     rob = robot;
@@ -80,9 +86,8 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     pBall->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     pBall->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     pBall->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    pBall->space = rob->space;
 
-    rob->physics->addObject(pBall);
+    rob->physics->addWheelObject(pBall);
 
     joint = dJointCreateHinge(rob->physics->world, nullptr);
 
@@ -92,7 +97,12 @@ CRobot::RBall::RBall(CRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetHingeAnchor(joint, a[0], a[1], a[2]);
 }
 
-CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+VSSRobot::RBall::~RBall() {
+    delete this->pBall;
+}
+
+
+VSSRobot::VSSRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
                int rob_id, int dir, bool turn_on)
 {
     m_x = x;
@@ -106,32 +116,36 @@ CRobot::CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     space = physics->space;
 
     chassis = new PBox(x, y, z, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getHeight(), VSSConfig::Robot().getBodyMass() * 0.99f);
-    chassis->space = space;
-    physics->addObject(chassis);
+    physics->addChassisObject(chassis);
 
-    wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
-    wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel2Angle(), VSSConfig::Robot().getWheel2Angle());
-    balls[0] = new RBall(this, 0, 45, 45);
-    balls[1] = new RBall(this, 1, -45, -45);
-    balls[2] = new RBall(this, 2, 135, 135);
-    balls[3] = new RBall(this, 3, -135, -135);
+    this->wheels[0] = new Wheel(this, 0, VSSConfig::Robot().getWheel0Angle(), VSSConfig::Robot().getWheel0Angle());
+    this->wheels[1] = new Wheel(this, 1, VSSConfig::Robot().getWheel1Angle(), VSSConfig::Robot().getWheel1Angle());
+    this->balls[0] = new RBall(this, 0, 45, 45);
+    this->balls[1] = new RBall(this, 1, -45, -45);
+    this->balls[2] = new RBall(this, 2, 135, 135);
+    this->balls[3] = new RBall(this, 3, -135, -135);
     setDir(m_dir);
     on = turn_on;
 }
 
-CRobot::~CRobot() = default;
+VSSRobot::~VSSRobot()
+{
+    delete this->chassis;
+    for (auto &wheel : this->wheels) delete(wheel);
+    for (auto &ball : this->balls) delete(ball);
+}
 
-PBall *CRobot::getBall()
+PBall *VSSRobot::getBall()
 {
     return m_ball;
 }
 
-PWorld *CRobot::getWorld()
+PWorld *VSSRobot::getWorld()
 {
     return physics;
 }
 
-int CRobot::getID()
+int VSSRobot::getID()
 {
     return m_rob_id - 1;
 }
@@ -144,7 +158,7 @@ void normalizeVector(dReal &x, dReal &y, dReal &z)
     z /= d;
 }
 
-void CRobot::step()
+void VSSRobot::step()
 {
     if (!on)
     {
@@ -156,12 +170,12 @@ void CRobot::step()
     last_state = on;
 }
 
-void CRobot::resetSpeeds()
+void VSSRobot::resetSpeeds()
 {
     wheels[0]->desiredAngularSpeed = wheels[1]->desiredAngularSpeed = 0;
 }
 
-void CRobot::resetRobot()
+void VSSRobot::resetRobot()
 {
     resetSpeeds();
     dBodySetLinearVel(chassis->body, 0, 0, 0);
@@ -177,7 +191,7 @@ void CRobot::resetRobot()
     setDir(m_dir);
 }
 
-void CRobot::getXY(dReal &x, dReal &y)
+void VSSRobot::getXY(dReal &x, dReal &y)
 {
     dReal xx, yy, zz;
     chassis->getBodyPosition(xx, yy, zz);
@@ -185,7 +199,7 @@ void CRobot::getXY(dReal &x, dReal &y)
     y = yy;
 }
 
-dReal CRobot::getDir(dReal &k)
+dReal VSSRobot::getDir(dReal &k)
 {
     dReal x, y, z;
     chassis->getBodyDirection(x, y, z, k);
@@ -195,7 +209,7 @@ dReal CRobot::getDir(dReal &k)
     return (y > 0) ? absAng : 360-absAng;
 }
 
-void CRobot::setXY(dReal x, dReal y)
+void VSSRobot::setXY(dReal x, dReal y)
 {
     dReal xx, yy, zz, kx, ky, kz;
     dReal height = ROBOT_START_Z();
@@ -208,7 +222,7 @@ void CRobot::setXY(dReal x, dReal y)
     }
 }
 
-void CRobot::setDir(dReal ang)
+void VSSRobot::setDir(dReal ang)
 {
     ang *= M_PI / 180.0f;
     chassis->setBodyRotation(0, 0, 1, ang);
@@ -234,20 +248,20 @@ void CRobot::setDir(dReal ang)
     }
 }
 
-void CRobot::setWheelDesiredAngularSpeed(int i, dReal s)
+void VSSRobot::setWheelDesiredAngularSpeed(int i, dReal s)
 {
     if (!((i >= 2) || (i < 0)))
         wheels[i]->desiredAngularSpeed = s;
 }
 
-dReal CRobot::getSpeed(int i)
+dReal VSSRobot::getSpeed(int i)
 {
     if ((i >= 2) || (i < 0))
         return -1;
     return wheels[i]->desiredAngularSpeed;
 }
 
-void CRobot::incSpeed(int i, dReal v)
+void VSSRobot::incSpeed(int i, dReal v)
 {
     if (!((i >= 2) || (i < 0)))
         wheels[i]->desiredAngularSpeed += v;

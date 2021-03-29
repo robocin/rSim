@@ -37,9 +37,8 @@ SSLRobot::Wheel::Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2)
     this->cyl->setRotation(-sin(ang), cos(ang), 0, M_PI * 0.5);
     this->cyl->setBodyRotation(-sin(ang), cos(ang), 0, M_PI * 0.5, true);    //set local rotation matrix
     this->cyl->setBodyPosition(centerx - x, centery - y, centerz - z, true); //set local position vector
-    this->cyl->space = this->rob->space;
 
-    this->rob->physics->addObject(this->cyl);
+    this->rob->physics->addWheelObject(this->cyl);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, nullptr);
 
@@ -53,12 +52,18 @@ SSLRobot::Wheel::Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2)
     dJointSetAMotorNumAxes(this->motor, 1);
     dJointSetAMotorAxis(this->motor, 0, 1, cos(ang), sin(ang), 0);
     dJointSetAMotorParam(this->motor, dParamFMax, SSLConfig::Robot().getWheelMotorMaxTorque());
+    this->maxAngularSpeed = (SSLConfig::Robot().getWheelMotorMaxRPM() * 2 * M_PI) / 60;
     this->desiredAngularSpeed = 0;
+}
+
+SSLRobot::Wheel::~Wheel() {
+    delete this->cyl;
 }
 
 void SSLRobot::Wheel::step()
 {
-    dJointSetAMotorParam(this->motor, dParamVel, this->desiredAngularSpeed);
+    auto sent_speed = std::max(std::min(this->desiredAngularSpeed, this->maxAngularSpeed), -this->maxAngularSpeed);
+    dJointSetAMotorParam(this->motor, dParamVel, sent_speed);
     dJointSetAMotorParam(this->motor, dParamFMax, SSLConfig::Robot().getWheelMotorMaxTorque());
 }
 
@@ -70,9 +75,9 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
     dReal y = this->rob->_y;
     dReal z = this->rob->_z;
 
-    dReal centerX = x + (SSLConfig::Robot().getDistanceCenterKicker() + SSLConfig::Robot().getKickerThickness());
+    dReal centerX = x + (SSLConfig::Robot().getDistanceCenterKicker() - SSLConfig::Robot().getKickerThickness()*0.5);
     dReal centerY = y;
-    dReal centerZ = z - (SSLConfig::Robot().getHeight()) * 0.5f + SSLConfig::Robot().getWheelRadius() - SSLConfig::Robot().getBottomHeight() + SSLConfig::Robot().getKickerZ();
+    dReal centerZ = z - (SSLConfig::Robot().getHeight()) * 0.5f  - SSLConfig::Robot().getBottomHeight() + SSLConfig::Robot().getKickerZ() + SSLConfig::Robot().getKickerHeight() * 0.5;
     
     this->box = new PBox(
         centerX, centerY, centerZ, 
@@ -80,9 +85,8 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
         SSLConfig::Robot().getKickerHeight(),SSLConfig::Robot().getKickerMass()
         );
     this->box->setBodyPosition(centerX - x, centerY - y, centerZ - z, true);
-    this->box->space = this->rob->space;
 
-    this->rob->physics->addObject(this->box);
+    this->rob->physics->addKickerObject(this->box);
 
     this->joint = dJointCreateHinge(this->rob->physics->world, 0);
     dJointAttach(this->joint,this->rob->chassis->body,this->box->body);
@@ -97,6 +101,10 @@ SSLRobot::Kicker::Kicker(SSLRobot* robot) : holdingBall(false)
 
     this->dribblerOn = false;
     this->kickerState = NO_KICK;
+}
+
+SSLRobot::Kicker::~Kicker() {
+    delete this->box;
 }
 
 void SSLRobot::Kicker::step()
@@ -168,7 +176,7 @@ void SSLRobot::Kicker::kick(dReal kickSpeedX, dReal kickSpeedZ)
 
     if (isTouchingBall())
     {
-        dReal dlen = dx*dx + dy*dy + dz*dz; // TODO NAO ENTENDI
+        dReal dlen = dx*dx + dy*dy + dz*dz;
         dlen = sqrt(dlen);
 
         vx = dx*kickSpeedX/dlen;
@@ -231,30 +239,24 @@ SSLRobot::SSLRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     this->_dir = dir;
     this->rob_id = robot_id;
 
-    this->space = physics->space;
-
-    this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass() * 0.99f);
-    this->chassis->space = this->space;
-    this->physics->addObject(chassis);
-
-    this->dummy = new PBall(this->_x, this->_y, this->_z, SSLConfig::Robot().getDistanceCenterKicker(), SSLConfig::Robot().getBodyMass()*0.01f);
-    this->dummy->space = this->space;
-    this->physics->addObject(this->dummy);
-
-    this->dummy_to_chassis = dJointCreateFixed(this->physics->world,0);
-    dJointAttach(this->dummy_to_chassis, this->chassis->body, this->dummy->body);
+    this->chassis = new PCylinder(this->_x, this->_y, this->_z, SSLConfig::Robot().getRadius(), SSLConfig::Robot().getHeight(), SSLConfig::Robot().getBodyMass());
+    this->physics->addChassisObject(chassis);
 
     this->kicker = new Kicker(this);
 
-    wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
-    wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
-    wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
-    wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel4Angle(), SSLConfig::Robot().getWheel4Angle());
+    this->wheels[0] = new Wheel(this, 0, SSLConfig::Robot().getWheel0Angle(), SSLConfig::Robot().getWheel0Angle());
+    this->wheels[1] = new Wheel(this, 1, SSLConfig::Robot().getWheel1Angle(), SSLConfig::Robot().getWheel1Angle());
+    this->wheels[2] = new Wheel(this, 2, SSLConfig::Robot().getWheel2Angle(), SSLConfig::Robot().getWheel2Angle());
+    this->wheels[3] = new Wheel(this, 3, SSLConfig::Robot().getWheel3Angle(), SSLConfig::Robot().getWheel3Angle());
 
     setDir(this->_dir);
 }
 
-SSLRobot::~SSLRobot() = default;
+SSLRobot::~SSLRobot() {
+    delete this->chassis;
+    delete this->kicker;
+    for (auto &wheel : this->wheels) delete(wheel);
+}
 
 PBall *SSLRobot::getBall()
 {
@@ -326,7 +328,6 @@ void SSLRobot::setXY(dReal x, dReal y)
     dReal height = ROBOT_START_Z();
     this->chassis->getBodyPosition(xx, yy, zz);
     this->chassis->setBodyPosition(x, y, height);
-    this->dummy->setBodyPosition(x,y,height);
     this->kicker->box->getBodyPosition(kx,ky,kz);
     this->kicker->box->setBodyPosition(kx-xx+x,ky-yy+y,kz-zz+height);
 
@@ -345,7 +346,6 @@ void SSLRobot::setDir(dReal ang)
 
     this->chassis->setBodyRotation(0, 0, 1, ang);
     this->kicker->box->setBodyRotation(0,0,1,ang);
-    this->dummy->setBodyRotation(0,0,1,ang);
     
     this->chassis->getBodyPosition(cPos[0], cPos[1], cPos[2], false);
     this->chassis->getBodyRotation(cRot, false);
@@ -377,31 +377,16 @@ void SSLRobot::setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw)
 {
     // Calculate Motor Speeds
     dReal _DEG2RAD = M_PI / 180.0;
-    dReal motorAlpha[4] = {SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD, SSLConfig::Robot().getWheel4Angle() * _DEG2RAD};
+    dReal motorAlpha[4] = {SSLConfig::Robot().getWheel0Angle() * _DEG2RAD, SSLConfig::Robot().getWheel1Angle() * _DEG2RAD, SSLConfig::Robot().getWheel2Angle() * _DEG2RAD, SSLConfig::Robot().getWheel3Angle() * _DEG2RAD};
 
-    // TODO checar qual a unidade desse valor calculado
-    dReal dw1 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
-    dReal dw2 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
-    dReal dw3 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
-    dReal dw4 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getWheelRadius() * vw) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))) );
+    // Convert local robot speed to rad/s
+    dReal dw0 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))) );
+    dReal dw1 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))) );
+    dReal dw2 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))) );
+    dReal dw3 =  (1.0 / SSLConfig::Robot().getWheelRadius()) * (( (SSLConfig::Robot().getRadius() * vw) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))) );
 
-    setWheelDesiredAngularSpeed(0 , dw1);
-    setWheelDesiredAngularSpeed(1 , dw2);
-    setWheelDesiredAngularSpeed(2 , dw3);
-    setWheelDesiredAngularSpeed(3 , dw4);
-}
-
-void SSLRobot::setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw)
-{
-    dReal k, angle;
-    dReal localVx, localVy;
-    dReal _DEG2RAD = M_PI / 180.0;
-
-    angle = getDir(k);
-    angle = angle * _DEG2RAD;
-
-    localVx = vx * cos(angle) + vy * sin(angle);
-    localVy = -vx * sin(angle) + vy * cos(angle);
-
-    setDesiredSpeedLocal(localVx, localVy, vw);
+    setWheelDesiredAngularSpeed(0 , dw0);
+    setWheelDesiredAngularSpeed(1 , dw1);
+    setWheelDesiredAngularSpeed(2 , dw2);
+    setWheelDesiredAngularSpeed(3 , dw3);
 }

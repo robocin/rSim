@@ -42,19 +42,18 @@ public:
     dReal _dir;
     dSpaceID space;
     PObject *chassis;
-    PBall* dummy;
-    dJointID dummy_to_chassis;
 
     class Wheel
     {
     public:
         int id;
         Wheel(SSLRobot *robot, int _id, dReal ang, dReal ang2);
+        ~Wheel();
         void step();
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
-        dReal desiredAngularSpeed; // Degrees/s
+        dReal desiredAngularSpeed, maxAngularSpeed; // rad/s
         SSLRobot *rob;
     } * wheels[4]{};
     class Kicker
@@ -66,6 +65,7 @@ public:
         bool holdingBall;
       public:
         Kicker(SSLRobot* robot);
+        ~Kicker();
         void step();
         void kick(dReal kickSpeedX, dReal kickSpeedZ);
         void setDribbler(bool dribbler);
@@ -86,7 +86,6 @@ public:
     ~SSLRobot();
     void step();
     void setDesiredSpeedLocal(dReal vx, dReal vy, dReal vw);
-    void setDesiredSpeedGlobal(dReal vx, dReal vy, dReal vw);
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
     void incSpeed(int i, dReal v);

@@ -15,11 +15,11 @@ extern "C"
         actions.clear();
         for (int i = 0; i < world->field.getRobotsCount(); i++)
         {
-            double *a = new double[6];
-            for(int j = 0; j < 6; j++) a[j] = act[i*6 + j];
+            double *a = new double[8];
+            for(int j = 0; j < 8; j++) a[j] = act[i*8 + j];
             actions.push_back(a);
         }
-        world->step(world->getTimeStep(), actions);
+        world->step(actions);
     }
     void getState(SSLWorld *world, double *state_data)
     {
@@ -32,13 +32,5 @@ extern "C"
         const std::vector<double> params = world->getFieldParams();
         const double *params_features = params.data();
         memcpy(params_data, params_features, params.size() * sizeof(double));
-    }
-    void replace(SSLWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace(ball_data, pos_blue_data, pos_yellow_data);
-    }
-    void replace_with_vel(SSLWorld *world, double *ball_data, double *pos_blue_data, double *pos_yellow_data)
-    {
-        world->replace_with_vel(ball_data, pos_blue_data, pos_yellow_data);
     }
 }

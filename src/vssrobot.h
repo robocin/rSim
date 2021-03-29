@@ -27,7 +27,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #define ROBOT_GRAY 0.4
 
-class CRobot
+class VSSRobot
 {
     PWorld *physics;
     PBall *m_ball;
@@ -49,29 +49,31 @@ public:
     {
     public:
         int id;
-        Wheel(CRobot *robot, int _id, dReal ang, dReal ang2);
+        Wheel(VSSRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
+        ~Wheel();
         dJointID joint;
         dJointID motor;
         PCylinder *cyl;
-        dReal desiredAngularSpeed; // Degrees/s
-        CRobot *rob;
+        dReal desiredAngularSpeed, maxAngularSpeed; // rad/s
+        VSSRobot *rob;
     } * wheels[2]{};
 
     class RBall
     {
     public:
         int id;
-        RBall(CRobot *robot, int _id, dReal ang, dReal ang2);
+        RBall(VSSRobot *robot, int _id, dReal ang, dReal ang2);
         void step();
+        ~RBall();
         dJointID joint;
         PBall *pBall;
-        CRobot *rob;
+        VSSRobot *rob;
     } * balls[4]{};
 
-    CRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
+    VSSRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
            int rob_id, int dir, bool turn_on);
-    ~CRobot();
+    ~VSSRobot();
     void step();
     void setWheelDesiredAngularSpeed(int i, dReal s); //i = 0,1,2,3
     void setSpeed(dReal vx, dReal vy, dReal vw);
