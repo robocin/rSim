@@ -401,9 +401,9 @@ const std::vector<double> &SSLWorld::getState()
         this->state.push_back(robotDir);
         if (lastState.size() > 0)
         {
-            this->state.push_back((robotX - lastState[5 + (7 * i) + 0]) / this->timeStep);
-            this->state.push_back((robotY - lastState[5 + (7 * i) + 1]) / this->timeStep);
-            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (7 * i) + 2]) / this->timeStep);
+            this->state.push_back((robotX - lastState[5 + (11 * i) + 0]) / this->timeStep);
+            this->state.push_back((robotY - lastState[5 + (11 * i) + 1]) / this->timeStep);
+            this->state.push_back(smallestAngleDiff(robotDir, lastState[5 + (11 * i) + 2]) / this->timeStep);
         }
         else
         {
