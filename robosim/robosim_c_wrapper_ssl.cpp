@@ -20,6 +20,7 @@ extern "C"
             actions.push_back(a);
         }
         world->step(actions);
+        for (auto a : actions) delete a;
     }
     void getState(SSLWorld *world, double *state_data)
     {
