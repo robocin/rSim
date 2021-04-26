@@ -133,7 +133,7 @@ namespace VSSConfig
         double Height = 0.056;
         double BottomHeight = 0.002;
         double WheelRadius = 0.026;
-        double WheelThickness = 0.005;
+        double WheelThickness = 0.0025;
         int Wheel0Angle = 90;
         int Wheel1Angle = 270;
         double BodyMass = 0.120;
@@ -141,7 +141,7 @@ namespace VSSConfig
         double WheelTangentFriction = 0.8;
         double WheelPerpendicularFriction = 1;
         double WheelMotorMaxTorque = 0.0725;
-        double WheelMotorMaxRPM = 630.0;
+        double WheelMotorMaxRPM = 440.0;
         double casterWheelsRadius = 0.002;
         double casterWheelsMass = 0.001;
 
