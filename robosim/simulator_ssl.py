@@ -192,9 +192,11 @@ class SimulatorSSL():
             Returns
             -------
             dict
-                field_width, field_length,
-                penalty_width, penalty_length,
-                goal_width
+                length, width, penalty_length, penalty_width, goal_width, 
+                goal_depth, ball_radius, rbt_distance_center_kicker,
+                rbt_kicker_thickness, rbt_kicker_width, rbt_wheel0_angle,
+                rbt_wheel1_angle, rbt_wheel2_angle, rbt_wheel3_angle,
+                rbt_radius, rbt_wheel_radius, rbt_motor_max_rpm
         '''
         params = np.zeros(17, dtype=np.float64)
         keys = ['length', 'width', 'penalty_length', 'penalty_width',
