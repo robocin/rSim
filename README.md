@@ -1,4 +1,4 @@
-# RoboSim
+# rSim
 
 Robot soccer simulator based on [FiraSim](https://github.com/fira-simurosot/FIRASim) and [GrSim](https://github.com/RoboCup-SSL/grSim).
 
