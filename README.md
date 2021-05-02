@@ -8,7 +8,7 @@ Simulates games from LARC Very Small Size and RoboCup Small Size leagues.
 Debian:
 ```shell
 $apt-get update
-$apt-get install cmake qt-default libode-dev
+$apt-get install cmake qt5-default libode-dev
 $pip install numpy
 ```
 
