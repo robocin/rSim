@@ -1,8 +1,0 @@
-bin
-build
-.vscode
-lib/
-*.so
-*.a
-*__pycache__
-*.egg-info
