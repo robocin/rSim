@@ -29,8 +29,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "utils.h"
 #include <unordered_map>
 
-#define WALL_COUNT 16
-#define MAX_ROBOT_COUNT 12 //don't change
+#define VSS_WALL_COUNT 16
+#define VSS_MAX_ROBOT_COUNT 12 //don't change
 
 class VSSWorld
 {
@@ -45,8 +45,8 @@ public:
     PWorld *physics;
     PBall *ball;
     PGround *ground;
-    PFixedBox *walls[WALL_COUNT]{};
-    VSSRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    PFixedBox *walls[VSS_WALL_COUNT]{};
+    VSSRobot *robots[VSS_MAX_ROBOT_COUNT * 2]{};
 
     VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);

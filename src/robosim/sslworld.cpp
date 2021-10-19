@@ -23,11 +23,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <ctime>
 #include <math.h>
 
-#define WHEEL_COUNT 2
 
-SSLWorld *_world;
-
-bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
+bool sslWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     //s->id2 is ground
     const dReal *r; //wheels rotation matrix
@@ -66,7 +63,7 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     return true;
 }
 
-bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
+bool sslBallCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     auto body = dGeomGetBody(o2);
     const dReal *posBall = dBodyGetPosition(body);
@@ -112,7 +109,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->stateSize = 5 + nRobotsBlue * 7 + nRobotsYellow * 7;
     this->state.reserve(this->stateSize);
     this->timeStep = timeStep;
-    _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(ballPos[0], ballPos[1], SSLConfig::World().getBallRadius(), SSLConfig::World().getBallRadius(), SSLConfig::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
@@ -135,7 +131,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double y = robotPos[1];
         double dir = robotPos[2];
         this->robots[k] = new SSLRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            this->physics, this->ball, x, y, SSL_ROBOT_START_Z(),
             k + 1, dir);
     }
     for (int k = 0; k < this->field.getRobotsYellowCount(); k++)
@@ -146,7 +142,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double y = robotPos[1];
         double dir = robotPos[2];
         robots[k + this->field.getRobotsBlueCount()] = new SSLRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            this->physics, this->ball, x, y, SSL_ROBOT_START_Z(),
             k + 1, dir);
     }
 
@@ -181,7 +177,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
         // Create surface between ball and chassis
         PSurface* ballChassis = this->physics->createOneWaySurface(this->robots[k]->chassis, this->ball);
-        ballChassis->callback = ballCallBack;
+        ballChassis->callback = sslBallCallBack;
 
         this->physics->createOneWaySurface(this->ball, this->robots[k]->kicker->box)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
@@ -189,7 +185,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             PSurface *w_g = this->physics->createOneWaySurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
-            w_g->callback = wheelCallBack;
+            w_g->callback = sslWheelCallBack;
         }
         for (int j = k + 1; j < this->field.getRobotsCount(); j++)
         {

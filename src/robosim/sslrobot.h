@@ -100,6 +100,6 @@ public:
     PWorld *getWorld();
 };
 
-#define ROBOT_START_Z() (SSLConfig::Robot().getHeight() * 0.5 + SSLConfig::Robot().getBottomHeight())
+#define SSL_ROBOT_START_Z() (SSLConfig::Robot().getHeight() * 0.5 + SSLConfig::Robot().getBottomHeight())
 
 #endif // SSLROBOT_H

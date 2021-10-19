@@ -90,6 +90,6 @@ public:
     PWorld *getWorld();
 };
 
-#define ROBOT_START_Z() (VSSConfig::Robot().getHeight() * 0.5 + VSSConfig::Robot().getBottomHeight())
+#define VSS_ROBOT_START_Z() (VSSConfig::Robot().getHeight() * 0.5 + VSSConfig::Robot().getBottomHeight())
 
 #endif // ROBOT_H

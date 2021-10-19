@@ -21,10 +21,14 @@ set(python_module_name robosim)
 
 file(GLOB SRC_FILES src/robosim/*.cpp)
 file(GLOB HEADER_FILES src/robosim/*.h)
+file(GLOB P_SRC_FILES src/robosim/physics/*.cpp)
+file(GLOB P_HEADER_FILES src/robosim/physics/*.h)
 
 pybind11_add_module(${python_module_name} MODULE
         ${SRC_FILES}
         ${HEADER_FILES}
+        ${P_SRC_FILES}
+        ${P_HEADER_FILES}
   )
 
 find_package(Qt5 COMPONENTS Core Network REQUIRED)

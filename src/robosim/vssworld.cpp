@@ -24,11 +24,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <utility>
 #include <math.h>
 
-#define WHEEL_COUNT 2
 
-VSSWorld *_world;
-
-bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
+bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     //s->id2 is ground
     const dReal *r; //wheels rotation matrix
@@ -75,7 +72,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->stateSize = 5 + nRobotsBlue * 6 + nRobotsYellow * 6;
     this->state.reserve(this->stateSize);
     this->timeStep = timeStep;
-    _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(ballPos[0], ballPos[1], VSSConfig::World().getBallRadius(), VSSConfig::World().getBallRadius(), VSSConfig::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
@@ -96,7 +92,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double y = robotPos[1];
         double dir = robotPos[2];
         this->robots[k] = new VSSRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            this->physics, this->ball, x, y, VSS_ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
     for (int k = 0; k < this->field.getRobotsYellowCount(); k++)
@@ -107,7 +103,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double y = robotPos[1];
         double dir = robotPos[2];
         this->robots[k + this->field.getRobotsBlueCount()] = new VSSRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            this->physics, this->ball, x, y, VSS_ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
     this->physics->initAllObjects();
@@ -141,7 +137,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             PSurface *w_g = this->physics->createSurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
-            w_g->callback = wheelCallBack;
+            w_g->callback = vssWheelCallBack;
         }
         for (auto &b : robots[k]->balls)
         {
@@ -149,7 +145,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             PSurface *w_g = this->physics->createSurface(b->pBall, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
-            w_g->callback = wheelCallBack;
+            w_g->callback = vssWheelCallBack;
         }
         for (int j = k + 1; j < this->field.getRobotsCount(); j++)
         {

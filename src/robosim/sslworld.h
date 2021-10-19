@@ -29,8 +29,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "utils.h"
 #include <unordered_map>
 
-#define WALL_COUNT 10
-#define MAX_ROBOT_COUNT 22 //don't change
+#define SSL_WALL_COUNT 10
+#define SSL_MAX_ROBOT_COUNT 22 //don't change
 
 class SSLWorld
 {
@@ -44,8 +44,8 @@ public:
     PWorld *physics;
     PBall *ball;
     PGround *ground;
-    PFixedBox *walls[WALL_COUNT]{};
-    SSLRobot *robots[MAX_ROBOT_COUNT * 2]{};
+    PFixedBox *walls[SSL_WALL_COUNT]{};
+    SSLRobot *robots[SSL_MAX_ROBOT_COUNT * 2]{};
     SSLConfig::Field field = SSLConfig::Field();
 
     SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
