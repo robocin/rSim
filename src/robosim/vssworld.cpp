@@ -21,6 +21,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include <cstdlib>
 #include <ctime>
+#include <utility>
 #include <math.h>
 
 #define WHEEL_COUNT 2
@@ -66,9 +67,8 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
 }
 
 VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
+             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
 {
-    this->field.setFieldType(fieldType);
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
@@ -81,7 +81,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
                                this->field.getFieldLineWidth());
-
     initWalls();
 
     this->physics->addGroundObject(this->ground);
@@ -92,25 +91,25 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
-        float x = blueRobotsPos[k * 3];
-        float y = blueRobotsPos[(k * 3) + 1];
-        float dir = blueRobotsPos[(k * 3) + 2];
+        std::vector<double> robotPos = blueRobotsPos[k];
+        double x = robotPos[0];
+        double y = robotPos[1];
+        double dir = robotPos[2];
         robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
-    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
+    for (int k = 0; k < this->field.getRobotsYellowCount(); k++)
     {
         bool turn_on = true;
-        int i = k - this->field.getRobotsBlueCount();
-        float x = yellowRobotsPos[i * 3];
-        float y = yellowRobotsPos[(i * 3) + 1];
-        float dir = yellowRobotsPos[(i * 3) + 2];
-        robots[k] = new VSSRobot(
+        std::vector<double> robotPos = yellowRobotsPos[k];
+        double x = robotPos[0];
+        double y = robotPos[1];
+        double dir = robotPos[2];
+        robots[k + this->field.getRobotsBlueCount()] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
-
     this->physics->initAllObjects();
 
     //Surfaces
@@ -164,7 +163,6 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (int i = 0; i < 30; i++)
     this->physics->step(this->timeStep * 0.1, this->fullSpeed);
     replace(ballPos, blueRobotsPos, yellowRobotsPos);
-
 }
 
 VSSWorld::~VSSWorld()
@@ -259,10 +257,10 @@ int VSSWorld::robotIndex(unsigned int robot, int team)
     return robot + team * this->field.getRobotsBlueCount();
 }
 
-void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
+void VSSWorld::step(std::vector<std::vector<double>> actions)
 {
 
-    setActions(actions);
+    setActions(std::move(actions));
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
@@ -295,43 +293,39 @@ void VSSWorld::step(std::vector<std::tuple<double, double>> actions)
 
 }
 
-void VSSWorld::setActions(std::vector<std::tuple<double, double>> actions)
+void VSSWorld::setActions(std::vector<std::vector<double>> actions)
 {
     int id = 0;
-    for (int i = 0; i < this->field.getRobotsBlueCount(); i++)
+    for (int i = 0; i < this->field.getRobotsCount(); i++)
     {
-        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
-    }
-    for (int i = this->field.getRobotsBlueCount(); i < this->field.getRobotsCount(); i++)
-    {
-        robots[i]->setWheelDesiredAngularSpeed(0, -1 * std::get<0>(actions[i]));
-        robots[i]->setWheelDesiredAngularSpeed(1, std::get<1>(actions[i]));
+        std::vector<double> rbtAction = actions[i];
+        robots[i]->setWheelDesiredAngularSpeed(0, -1 * rbtAction[0]);
+        robots[i]->setWheelDesiredAngularSpeed(1, rbtAction[1]);
     }
 }
 
-const std::vector<double> VSSWorld::getFieldParams()
+const std::unordered_map<std::string, double> VSSWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
-    field.clear();
-    field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldWidth());
-    field.push_back(this->field.getFieldPenaltyDepth());
-    field.push_back(this->field.getFieldPenaltyWidth());
-    field.push_back(this->field.getGoalWidth());
-    field.push_back(this->field.getGoalDepth());
-    field.push_back(VSSConfig::World().getBallRadius());
-    field.push_back(-1.);
-    field.push_back(-1.);
-    field.push_back(-1.);
-    field.push_back(VSSConfig::Robot().getWheel0Angle());
-    field.push_back(VSSConfig::Robot().getWheel1Angle());
-    field.push_back(-1.);
-    field.push_back(-1.);
-    field.push_back(VSSConfig::Robot().getRadius());
-    field.push_back(VSSConfig::Robot().getWheelRadius());
-    field.push_back(VSSConfig::Robot().getWheelMotorMaxRPM());
-    return field;
+    std::unordered_map<std::string, double> fieldParams;
+
+    fieldParams["length"] = this->field.getFieldLength();
+    fieldParams["width"] = this->field.getFieldWidth();
+    fieldParams["penalty_length"] = this->field.getFieldPenaltyDepth();
+    fieldParams["penalty_width"] = this->field.getFieldPenaltyWidth();
+    fieldParams["goal_width"] = this->field.getGoalWidth();
+    fieldParams["goal_depth"] = this->field.getGoalDepth();
+    fieldParams["ball_radius"] = VSSConfig::World().getBallRadius();
+    fieldParams["rbt_distance_center_kicker"] = -1.;
+    fieldParams["rbt_kicker_thickness"] = -1.;
+    fieldParams["rbt_kicker_width"] = -1.;
+    fieldParams["rbt_wheel0_angle"] = VSSConfig::Robot().getWheel0Angle();
+    fieldParams["rbt_wheel1_angle"] = VSSConfig::Robot().getWheel1Angle();
+    fieldParams["rbt_wheel2_angle"] = -1.;
+    fieldParams["rbt_wheel3_angle"] = -1.;
+    fieldParams["rbt_radius"] = VSSConfig::Robot().getRadius();
+    fieldParams["rbt_wheel_radius"] = VSSConfig::Robot().getWheelRadius();
+    fieldParams["rbt_motor_max_rpm"] = VSSConfig::Robot().getWheelMotorMaxRPM();
+    return fieldParams;
 }
 
 const std::vector<double> &VSSWorld::getState()
@@ -400,26 +394,30 @@ const std::vector<double> &VSSWorld::getState()
     return this->state;
 }
 
-void VSSWorld::replace(double *ball, double *posBlue, double *posYellow)
+void VSSWorld::replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
 {
     dReal xx, yy, zz;
     this->ball->getBodyPosition(xx, yy, zz);
-    this->ball->setBodyPosition(ball[0], ball[1], zz);
-    dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
+    this->ball->setBodyPosition(ballPos[0], ballPos[1], zz);
+    dBodySetLinearVel(this->ball->body, ballPos[2], ballPos[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
-    
+
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
+        std::vector<double> robotPos = blueRobotsPos[i];
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(posBlue[(i*3)], posBlue[(i*3) + 1]);
-        this->robots[i]->setDir(posBlue[(i*3) + 2]);
+        this->robots[i]->setXY(robotPos[0], robotPos[1]);
+        this->robots[i]->setDir(robotPos[2]);
     }
-    
-    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
+
+    for (int32_t i  = 0; i < this->field.getRobotsYellowCount(); i++)
     {
-        int i = k - this->field.getRobotsBlueCount();
+        bool turn_on = true;
+        int k = i + this->field.getRobotsBlueCount();
+        std::vector<double> robotPos = yellowRobotsPos[i];
         this->robots[k]->resetRobot();
-        this->robots[k]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
-        this->robots[k]->setDir(posYellow[(i*3) + 2]);
+        this->robots[k]->setXY(robotPos[0], robotPos[1]);
+        this->robots[k]->setDir(robotPos[2]);
     }
+
 }
