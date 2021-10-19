@@ -8,12 +8,12 @@ except ImportError:
     raise
 
 setup(
-    name="robosim-pybind11",
-    version="1.2.3",
+    name="rc-robosim",
+    version="0.0.1",
     description="a minimal example package (with pybind11)",
-    author='Pablo Hernandez-Cerdan',
-    license="MIT",
+    author='Felipe Martins',
     packages=['robosim'],
     package_dir={'': 'src'},
-    cmake_install_dir='src/robosim'
+    url="https://github.com/robocin/rSim",
+    author_email="fbm2@cin.ufpe.br"
 )
