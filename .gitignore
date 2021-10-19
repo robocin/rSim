@@ -2,3 +2,7 @@
 .idea/
 
 cmake-build-debug/
+
+_skbuild/
+
+src/robosim_pybind11.egg-info/
