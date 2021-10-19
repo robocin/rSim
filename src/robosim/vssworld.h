@@ -46,15 +46,12 @@ public:
     PBall *ball;
     PGround *ground;
     PFixedBox *walls[WALL_COUNT]{};
-    dReal cursor_x{}, cursor_y{}, cursor_z{};
-    dReal cursor_radius{};
     VSSRobot *robots[MAX_ROBOT_COUNT * 2]{};
-    dReal last_speed = 0.0;
 
     VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     ~VSSWorld();
-    void step(std::vector<std::vector<double>>);
+    void step(std::vector<std::vector<double>> actions);
     void replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }

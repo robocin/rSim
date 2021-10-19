@@ -95,7 +95,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double x = robotPos[0];
         double y = robotPos[1];
         double dir = robotPos[2];
-        robots[k] = new VSSRobot(
+        this->robots[k] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
@@ -106,7 +106,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
         double x = robotPos[0];
         double y = robotPos[1];
         double dir = robotPos[2];
-        robots[k + this->field.getRobotsBlueCount()] = new VSSRobot(
+        this->robots[k + this->field.getRobotsBlueCount()] = new VSSRobot(
             this->physics, this->ball, x, y, ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
@@ -184,7 +184,6 @@ void VSSWorld::initWalls()
     const double siz_x = 2.0 * pos_x;
     const double siz_y = 2.0 * pos_y;
     const double siz_z = 0.4;
-    const double tone = 1.0;
 
     const double gthick = this->field.getWallThickness();
     const double gpos_x = (this->field.getFieldLength() + gthick) / 2.0 + this->field.getGoalDepth();
@@ -288,14 +287,13 @@ void VSSWorld::step(std::vector<std::vector<double>> actions)
             dBodySetLinearVel(this->ball->body, 0, 0, 0);
         }
 
-        this->physics->step(this->timeStep * 0.2, fullSpeed);
+        this->physics->step(this->timeStep * 0.2, this->fullSpeed);
     }
 
 }
 
 void VSSWorld::setActions(std::vector<std::vector<double>> actions)
 {
-    int id = 0;
     for (int i = 0; i < this->field.getRobotsCount(); i++)
     {
         std::vector<double> rbtAction = actions[i];
@@ -412,7 +410,6 @@ void VSSWorld::replace(std::vector<double> ballPos, std::vector<std::vector<doub
 
     for (int32_t i  = 0; i < this->field.getRobotsYellowCount(); i++)
     {
-        bool turn_on = true;
         int k = i + this->field.getRobotsBlueCount();
         std::vector<double> robotPos = yellowRobotsPos[i];
         this->robots[k]->resetRobot();

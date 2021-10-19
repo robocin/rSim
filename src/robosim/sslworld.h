@@ -27,6 +27,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 
 #include "sslrobot.h"
 #include "utils.h"
+#include <unordered_map>
 
 #define WALL_COUNT 10
 #define MAX_ROBOT_COUNT 22 //don't change
@@ -48,17 +49,16 @@ public:
     SSLConfig::Field field = SSLConfig::Field();
 
     SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
+             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     ~SSLWorld();
-    void step(std::vector<double*> actions);
-    void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
+    void step(std::vector<std::vector<double>> actions);
+    void replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
-    const std::vector<double> getFieldParams();
+    const std::unordered_map<std::string, double> getFieldParams();
     const std::vector<double> &getState();
-
-    void setActions(std::vector<double*> actions);
+    void setActions(std::vector<std::vector<double>> actions);
 };
 
 #endif // SSLWorld_H
