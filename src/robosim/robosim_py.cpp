@@ -66,7 +66,7 @@ struct SSL {
 };
 
 
-PYBIND11_MODULE(robosim, m) {
+PYBIND11_MODULE(_robosim, m) {
     py::class_<VSS>(m, "VSS")
             .def(py::init<int, int, int, int, vd, vvd, vvd>())
             .def("step", &VSS::step)

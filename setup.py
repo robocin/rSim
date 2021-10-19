@@ -9,11 +9,12 @@ except ImportError:
 
 setup(
     name="rc-robosim",
-    version="0.0.1",
-    description="a minimal example package (with pybind11)",
+    url="https://github.com/robocin/rSim",
+    version="0.0.7",
+    description="SSL and VSS robot soccer simulator",
     author='Felipe Martins',
+    author_email="fbm2@cin.ufpe.br",
     packages=['robosim'],
     package_dir={'': 'src'},
-    url="https://github.com/robocin/rSim",
-    author_email="fbm2@cin.ufpe.br"
+    cmake_install_dir='src/robosim'
 )

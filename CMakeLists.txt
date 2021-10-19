@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.12)
 
 project(robosim)
 set(CMAKE_CXX_STANDARD 11)
@@ -17,7 +17,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-set(python_module_name robosim)
+set(python_module_name _robosim)
 
 file(GLOB SRC_FILES src/robosim/*.cpp)
 file(GLOB HEADER_FILES src/robosim/*.h)
