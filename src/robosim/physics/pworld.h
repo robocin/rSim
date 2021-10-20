@@ -19,17 +19,16 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #ifndef PWORLD_H
 #define PWORLD_H
 
+#include <vector>
 #include "pobject.h"
-#include <QMap>
-#include <QVector>
 
 class PSurface;
 class PWorld
 {
 private:
     dJointGroupID contactgroup;
-    QVector<PObject *> objects;
-    QVector<PSurface *> surfaces;
+    std::vector<PObject *> objects;
+    std::vector<PSurface *> surfaces;
     dReal delta_time;
     int **sur_matrix;
     int objects_count;

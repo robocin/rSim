@@ -31,13 +31,11 @@ pybind11_add_module(${python_module_name} MODULE
         ${P_HEADER_FILES}
   )
 
-find_package(Qt5 COMPONENTS Core Network REQUIRED)
 find_package(ODE REQUIRED)
 include_directories(${ODE_INCLUDE_DIRS})
 
 
 #target_link_libraries(${python_module_name} PUBLIC MyLib)
-target_link_libraries(${python_module_name} PUBLIC Qt5::Core Qt5::Network)
 target_link_libraries(${python_module_name} PUBLIC  ${ODE_LIBRARIES})
 
 install(TARGETS ${python_module_name} DESTINATION .)
