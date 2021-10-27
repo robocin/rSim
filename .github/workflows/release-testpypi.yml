@@ -16,13 +16,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           ref: ${{ github.event.inputs.tag }}
 
       - name: manylinux2010_x86_64 Docker build action
         uses: ./.github/action/ # Uses an action in the root directory
 
       - name: Publish distribution 📦 to Test PyPI
-        if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
