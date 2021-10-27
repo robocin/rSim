@@ -10,7 +10,6 @@ except ImportError:
 setup(
     name="rc-robosim",
     url="https://github.com/robocin/rSim",
-    version="0.0.8a0",
     description="SSL and VSS robot soccer simulator",
     author='Felipe Martins',
     author_email="fbm2@cin.ufpe.br",
