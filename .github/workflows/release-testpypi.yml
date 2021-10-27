@@ -1,6 +1,7 @@
 name: Build and publish tag on Test PyPI
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       tag:
@@ -22,6 +23,7 @@ jobs:
         uses: ./.github/action/ # Uses an action in the root directory
 
       - name: Publish distribution 📦 to Test PyPI
+        if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
