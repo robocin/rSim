@@ -8,23 +8,25 @@ on:
         required: true
 
 jobs:
-  build_ubuntu:
+  publish_ubuntu:
+    name: Publishing package on linux manywheels
     runs-on: ubuntu-latest
-    name: Building package on linux manywheels
+
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.tag }}
+
       - name: manylinux2010_x86_64 Docker build action
         uses: ./.github/action/ # Uses an action in the root directory
+
       - name: Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+
   # # TODO Build and publish on Windows and MacOS
   # build_windows:
   #   runs-on: windows-latest
