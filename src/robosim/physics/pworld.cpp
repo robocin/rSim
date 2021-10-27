@@ -122,7 +122,7 @@ void PWorld::handleCollisions(dGeomID o1, dGeomID o2)
 
 int PWorld::addObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -130,14 +130,14 @@ int PWorld::addObject(PObject* o)
         o->space = this->space;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     this->ball = o;
     return id;
 }
 
 int PWorld::addBallObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -145,14 +145,14 @@ int PWorld::addBallObject(PObject* o)
         o->space = this->space;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     this->ball = o;
     return id;
 }
 
 int PWorld::addGroundObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -160,14 +160,14 @@ int PWorld::addGroundObject(PObject* o)
         o->space = this->space;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     this->ground = o;
     return id;
 }
 
 int PWorld::addWallObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -175,13 +175,13 @@ int PWorld::addWallObject(PObject* o)
         o->space = this->spaceWall;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     return id;
 }
 
 int PWorld::addWheelObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -189,13 +189,13 @@ int PWorld::addWheelObject(PObject* o)
         o->space = this->spaceWheel;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     return id;
 }
 
 int PWorld::addChassisObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -203,13 +203,13 @@ int PWorld::addChassisObject(PObject* o)
         o->space = this->spaceChassis;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     return id;
 }
 
 int PWorld::addKickerObject(PObject* o)
 {
-    int id = this->objects.count();
+    int id = this->objects.size();
     o->id = id;
     if (o->world == nullptr)
         o->world = this->world;
@@ -217,13 +217,13 @@ int PWorld::addKickerObject(PObject* o)
         o->space = this->spaceKicker;
     o->init();
     dGeomSetData(o->geom, (void *)(&(o->id)));
-    this->objects.append(o);
+    this->objects.push_back(o);
     return id;
 }
 
 void PWorld::initAllObjects()
 {
-    objects_count = this->objects.count();
+    objects_count = this->objects.size();
     int c = objects_count;
     bool flag = false;
     if (sur_matrix != nullptr)
@@ -242,7 +242,7 @@ void PWorld::initAllObjects()
     }
     if (flag)
     {
-        for (int i = 0; i < surfaces.count(); i++)
+        for (int i = 0; i < surfaces.size(); i++)
             sur_matrix[(*(int *)(dGeomGetData(surfaces[i]->id1)))][*((int *)(dGeomGetData(surfaces[i]->id2)))] =
                 sur_matrix[(*(int *)(dGeomGetData(surfaces[i]->id2)))][*((int *)(dGeomGetData(surfaces[i]->id1)))] = i;
     }
@@ -253,9 +253,9 @@ PSurface *PWorld::createSurface(PObject *o1, PObject *o2)
     auto *s = new PSurface();
     s->id1 = o1->geom;
     s->id2 = o2->geom;
-    this->surfaces.append(s);
+    this->surfaces.push_back(s);
     this->sur_matrix[o1->id][o2->id] =
-        this->sur_matrix[o2->id][o1->id] = this->surfaces.count() - 1;
+        this->sur_matrix[o2->id][o1->id] = this->surfaces.size() - 1;
     return s;
 }
 
@@ -264,14 +264,14 @@ PSurface* PWorld::createOneWaySurface(PObject* o1,PObject* o2)
     PSurface *s = new PSurface();
     s->id1 = o1->geom;
     s->id2 = o2->geom;
-    this->surfaces.append(s);
-    this->sur_matrix[o1->id][o2->id] = this->surfaces.count() - 1;
+    this->surfaces.push_back(s);
+    this->sur_matrix[o1->id][o2->id] = this->surfaces.size() - 1;
     return s;
 }
 
 PSurface *PWorld::findSurface(PObject *o1, PObject *o2)
 {
-    for (int i = 0; i < surfaces.count(); i++)
+    for (int i = 0; i < surfaces.size(); i++)
     {
         if (surfaces[i]->isIt(o1->geom, o2->geom))
             return (surfaces[i]);

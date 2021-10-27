@@ -16,8 +16,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef VSSWORLD_H
-#define VSSWORLD_H
+#ifndef SSLWORLD_H
+#define SSLWORLD_H
 
 
 #include "physics/pworld.h"
@@ -25,13 +25,14 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pground.h"
 #include "physics/pfixedbox.h"
 
-#include "vssrobot.h"
+#include "sslrobot.h"
 #include "utils.h"
+#include <unordered_map>
 
-#define WALL_COUNT 16
-#define MAX_ROBOT_COUNT 12 //don't change
+#define SSL_WALL_COUNT 10
+#define SSL_MAX_ROBOT_COUNT 22 //don't change
 
-class VSSWorld
+class SSLWorld
 {
 private:
     double timeStep;
@@ -39,29 +40,25 @@ private:
     std::vector<double> state;
 
 public:
-    VSSConfig::Field field = VSSConfig::Field();
     bool fullSpeed = false;
     PWorld *physics;
     PBall *ball;
     PGround *ground;
-    PFixedBox *walls[WALL_COUNT]{};
-    dReal cursor_x{}, cursor_y{}, cursor_z{};
-    dReal cursor_radius{};
-    VSSRobot *robots[MAX_ROBOT_COUNT * 2]{};
-    dReal last_speed = 0.0;
+    PFixedBox *walls[SSL_WALL_COUNT]{};
+    SSLRobot *robots[SSL_MAX_ROBOT_COUNT * 2]{};
+    SSLConfig::Field field = SSLConfig::Field();
 
-    VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos);
-    ~VSSWorld();
-    void step(std::vector<std::tuple<double, double>> actions);
-    void replace(double *ball_pos, double *pos_blue, double *pos_yellow);
+    SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
+             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
+    ~SSLWorld();
+    void step(std::vector<std::vector<double>> actions);
+    void replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
-    const std::vector<double> getFieldParams();
+    const std::unordered_map<std::string, double> getFieldParams();
     const std::vector<double> &getState();
-    int robotIndex(unsigned int robot, int team);
-    void setActions(std::vector<std::tuple<double, double>> actions);
+    void setActions(std::vector<std::vector<double>> actions);
 };
 
-#endif // World_H
+#endif // SSLWorld_H

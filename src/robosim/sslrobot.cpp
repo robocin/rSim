@@ -325,7 +325,7 @@ dReal SSLRobot::getDir(dReal &k)
 void SSLRobot::setXY(dReal x, dReal y)
 {
     dReal xx, yy, zz, kx, ky, kz;
-    dReal height = ROBOT_START_Z();
+    dReal height = SSL_ROBOT_START_Z();
     this->chassis->getBodyPosition(xx, yy, zz);
     this->chassis->setBodyPosition(x, y, height);
     this->kicker->box->getBodyPosition(kx,ky,kz);

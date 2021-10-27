@@ -23,11 +23,8 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <ctime>
 #include <math.h>
 
-#define WHEEL_COUNT 2
 
-SSLWorld *_world;
-
-bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
+bool sslWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     //s->id2 is ground
     const dReal *r; //wheels rotation matrix
@@ -66,7 +63,7 @@ bool wheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count
     return true;
 }
 
-bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
+bool sslBallCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
     auto body = dGeomGetBody(o2);
     const dReal *posBall = dBodyGetPosition(body);
@@ -102,7 +99,7 @@ bool ballCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*
 }
 
 SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             double *ballPos, double *blueRobotsPos, double *yellowRobotsPos)
+                   std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
 {
     // fieldType = 0 for Div A, fieldType = 1 for Div B
     this->field.setFieldType(fieldType);
@@ -112,7 +109,6 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->stateSize = 5 + nRobotsBlue * 7 + nRobotsYellow * 7;
     this->state.reserve(this->stateSize);
     this->timeStep = timeStep;
-    _world = this;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
     this->ball = new PBall(ballPos[0], ballPos[1], SSLConfig::World().getBallRadius(), SSLConfig::World().getBallRadius(), SSLConfig::World().getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
@@ -130,22 +126,23 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (int k = 0; k < this->field.getRobotsBlueCount(); k++)
     {
         bool turn_on = true;
-        float x = blueRobotsPos[k * 3];
-        float y = blueRobotsPos[(k * 3) + 1];
-        float dir = blueRobotsPos[(k * 3) + 2];
+        std::vector<double> robotPos = blueRobotsPos[k];
+        double x = robotPos[0];
+        double y = robotPos[1];
+        double dir = robotPos[2];
         this->robots[k] = new SSLRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+            this->physics, this->ball, x, y, SSL_ROBOT_START_Z(),
             k + 1, dir);
     }
-    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
+    for (int k = 0; k < this->field.getRobotsYellowCount(); k++)
     {
         bool turn_on = true;
-        int i = k - this->field.getRobotsBlueCount();
-        float x = yellowRobotsPos[i * 3];
-        float y = yellowRobotsPos[(i * 3) + 1];
-        float dir = yellowRobotsPos[(i * 3) + 2];
-        this->robots[k] = new SSLRobot(
-            this->physics, this->ball, x, y, ROBOT_START_Z(),
+        std::vector<double> robotPos = yellowRobotsPos[k];
+        double x = robotPos[0];
+        double y = robotPos[1];
+        double dir = robotPos[2];
+        robots[k + this->field.getRobotsBlueCount()] = new SSLRobot(
+            this->physics, this->ball, x, y, SSL_ROBOT_START_Z(),
             k + 1, dir);
     }
 
@@ -180,7 +177,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
 
         // Create surface between ball and chassis
         PSurface* ballChassis = this->physics->createOneWaySurface(this->robots[k]->chassis, this->ball);
-        ballChassis->callback = ballCallBack;
+        ballChassis->callback = sslBallCallBack;
 
         this->physics->createOneWaySurface(this->ball, this->robots[k]->kicker->box)->surface = ballwithkicker.surface;
         for (auto &wheel : this->robots[k]->wheels)
@@ -188,7 +185,7 @@ SSLWorld::SSLWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             PSurface *w_g = this->physics->createOneWaySurface(wheel->cyl, this->ground);
             w_g->surface = wheelswithground.surface;
             w_g->usefdir1 = true;
-            w_g->callback = wheelCallBack;
+            w_g->callback = sslWheelCallBack;
         }
         for (int j = k + 1; j < this->field.getRobotsCount(); j++)
         {
@@ -267,9 +264,10 @@ void SSLWorld::initWalls()
 }
 
 
-void SSLWorld::step(std::vector<double*> actions)
+void SSLWorld::step(std::vector<std::vector<double>> actions)
 {
-    setActions(actions);
+
+    setActions(std::move(actions));
 
     for (int k = 0; k < this->field.getRobotsCount(); k++)
     {
@@ -304,50 +302,48 @@ void SSLWorld::step(std::vector<double*> actions)
 
 }
 
-void SSLWorld::setActions(std::vector<double*> actions)
+void SSLWorld::setActions(std::vector<std::vector<double>> actions)
 {
-    int i = 0;
-
-    for (double* action : actions) 
+    for (int i = 0; i < this->field.getRobotsCount(); i++)
     {
-        if (action[0] > 0) {
-            this->robots[i]->setWheelDesiredAngularSpeed(0, action[1]);
-            this->robots[i]->setWheelDesiredAngularSpeed(1, action[2]);
-            this->robots[i]->setWheelDesiredAngularSpeed(2, action[3]);
-            this->robots[i]->setWheelDesiredAngularSpeed(3, action[4]);
+        std::vector<double> rbtAction = actions[i];
+        if (rbtAction[0] > 0) {
+            this->robots[i]->setWheelDesiredAngularSpeed(0, rbtAction[1]);
+            this->robots[i]->setWheelDesiredAngularSpeed(1, rbtAction[2]);
+            this->robots[i]->setWheelDesiredAngularSpeed(2, rbtAction[3]);
+            this->robots[i]->setWheelDesiredAngularSpeed(3, rbtAction[4]);
         } 
-        else this->robots[i]->setDesiredSpeedLocal(action[1], action[2], action[3]);
-        if (action[5] > 0 || action[6] > 0) {
-            this->robots[i]->kicker->kick(action[5], action[6]);
+        else this->robots[i]->setDesiredSpeedLocal(rbtAction[1], rbtAction[2], rbtAction[3]);
+        if (rbtAction[5] > 0 || rbtAction[6] > 0) {
+            this->robots[i]->kicker->kick(rbtAction[5], rbtAction[6]);
         }
-        if (action[7] > 0) this->robots[i]->kicker->setDribbler(true);
-
-        i++;
+        if (rbtAction[7] > 0) this->robots[i]->kicker->setDribbler(true);
     }
 }
 
-const std::vector<double> SSLWorld::getFieldParams()
+const std::unordered_map<std::string, double> SSLWorld::getFieldParams()
 {
-    std::vector<double> field = std::vector<double>(static_cast<std::size_t>(17));
-    field.clear();
-    field.push_back(this->field.getFieldLength());
-    field.push_back(this->field.getFieldWidth());
-    field.push_back(this->field.getFieldPenaltyDepth());
-    field.push_back(this->field.getFieldPenaltyWidth());
-    field.push_back(this->field.getGoalWidth());
-    field.push_back(this->field.getGoalDepth());
-    field.push_back(SSLConfig::World().getBallRadius());
-    field.push_back(SSLConfig::Robot().getDistanceCenterKicker());
-    field.push_back(SSLConfig::Robot().getKickerThickness());
-    field.push_back(SSLConfig::Robot().getKickerWidth());
-    field.push_back(SSLConfig::Robot().getWheel0Angle());
-    field.push_back(SSLConfig::Robot().getWheel1Angle());
-    field.push_back(SSLConfig::Robot().getWheel2Angle());
-    field.push_back(SSLConfig::Robot().getWheel3Angle());
-    field.push_back(SSLConfig::Robot().getRadius());
-    field.push_back(SSLConfig::Robot().getWheelRadius());
-    field.push_back(SSLConfig::Robot().getWheelMotorMaxRPM());
-    return field;
+    std::unordered_map<std::string, double> fieldParams;
+
+    fieldParams["length"] = this->field.getFieldLength();
+    fieldParams["width"] = this->field.getFieldWidth();
+    fieldParams["penalty_length"] = this->field.getFieldPenaltyDepth();
+    fieldParams["penalty_width"] = this->field.getFieldPenaltyWidth();
+    fieldParams["goal_width"] = this->field.getGoalWidth();
+    fieldParams["goal_depth"] = this->field.getGoalDepth();
+    fieldParams["ball_radius"] = SSLConfig::World().getBallRadius();
+    fieldParams["rbt_distance_center_kicker"] = SSLConfig::Robot().getDistanceCenterKicker();
+    fieldParams["rbt_kicker_thickness"] = SSLConfig::Robot().getKickerThickness();
+    fieldParams["rbt_kicker_width"] = SSLConfig::Robot().getKickerWidth();
+    fieldParams["rbt_wheel0_angle"] = SSLConfig::Robot().getWheel0Angle();
+    fieldParams["rbt_wheel1_angle"] = SSLConfig::Robot().getWheel1Angle();
+    fieldParams["rbt_wheel2_angle"] = SSLConfig::Robot().getWheel2Angle();
+    fieldParams["rbt_wheel3_angle"] = SSLConfig::Robot().getWheel3Angle();
+    fieldParams["rbt_radius"] = SSLConfig::Robot().getRadius();
+    fieldParams["rbt_wheel_radius"] = SSLConfig::Robot().getWheelRadius();
+    fieldParams["rbt_motor_max_rpm"] = SSLConfig::Robot().getWheelMotorMaxRPM();
+
+    return fieldParams;
 }
 
 const std::vector<double> &SSLWorld::getState()
@@ -423,26 +419,28 @@ const std::vector<double> &SSLWorld::getState()
     return this->state;
 }
 
-void SSLWorld::replace(double *ball, double *posBlue, double *posYellow)
+void SSLWorld::replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
 {
     dReal xx, yy, zz;
     this->ball->getBodyPosition(xx, yy, zz);
-    this->ball->setBodyPosition(ball[0], ball[1], zz);
-    dBodySetLinearVel(this->ball->body, ball[2], ball[3], 0);
+    this->ball->setBodyPosition(ballPos[0], ballPos[1], zz);
+    dBodySetLinearVel(this->ball->body, ballPos[2], ballPos[3], 0);
     dBodySetAngularVel(this->ball->body, 0, 0, 0);
 
     for (uint32_t i = 0; i < this->field.getRobotsBlueCount(); i++)
     {
+        std::vector<double> robotPos = blueRobotsPos[i];
         this->robots[i]->resetRobot();
-        this->robots[i]->setXY(posBlue[(i*3)], posBlue[(i*3) + 1]);
-        this->robots[i]->setDir(posBlue[(i*3) + 2]);
+        this->robots[i]->setXY(robotPos[0], robotPos[1]);
+        this->robots[i]->setDir(robotPos[2]);
     }
 
-    for (int k = this->field.getRobotsBlueCount(); k < this->field.getRobotsCount(); k++)
+    for (int32_t i  = 0; i < this->field.getRobotsYellowCount(); i++)
     {
-        int i = k - this->field.getRobotsBlueCount();
+        int k = i + this->field.getRobotsBlueCount();
+        std::vector<double> robotPos = yellowRobotsPos[i];
         this->robots[k]->resetRobot();
-        this->robots[k]->setXY(posYellow[(i*3)], posYellow[(i*3) + 1]);
-        this->robots[k]->setDir(posYellow[(i*3) + 2]);
+        this->robots[k]->setXY(robotPos[0], robotPos[1]);
+        this->robots[k]->setDir(robotPos[2]);
     }
 }

@@ -212,7 +212,7 @@ dReal VSSRobot::getDir(dReal &k)
 void VSSRobot::setXY(dReal x, dReal y)
 {
     dReal xx, yy, zz, kx, ky, kz;
-    dReal height = ROBOT_START_Z();
+    dReal height = VSS_ROBOT_START_Z();
     chassis->getBodyPosition(xx, yy, zz);
     chassis->setBodyPosition(x, y, height);
     for (auto &wheel : wheels)

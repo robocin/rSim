@@ -1,8 +1,8 @@
-bin
-build
-.vscode
-lib/
-*.so
-*.a
-*__pycache__
-*.egg-info
+
+.idea/
+
+cmake-build-debug/
+
+_skbuild/
+
+src/robosim_pybind11.egg-info/

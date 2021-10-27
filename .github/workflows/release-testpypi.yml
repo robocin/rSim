@@ -1,0 +1,49 @@
+name: Build and publish tag on Test PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish'
+        required: true
+
+jobs:
+  publish_ubuntu:
+    name: Publishing package on linux manywheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
+
+      - name: manylinux2010_x86_64 Docker build action
+        uses: ./.github/action/ # Uses an action in the root directory
+
+      - name: Publish distribution 📦 to Test PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+
+  # # TODO Build and publish on Windows and MacOS
+  # build_windows:
+  #   runs-on: windows-latest
+  #   name: Building package on windows
+  #   steps:
+  #       - name: Checkout
+  #         uses: actions/checkout@v2
+  #         with:
+  #           ref: ${{ github.event.inputs.tag }}
+  #     - name: Clone ODE 0.16.2
+  #       run: git clone --depth 1 --branch 0.16.2 https://bitbucket.org/odedevs/ode.git
+  #     - name: Run cmake on ode
+  #       run: |
+  #         mkdir ode-build
+  #         cd ode-build
+  #         cmake ../ode -DCMAKE_BUILD_TYPE=Release -DODE_WITH_DEMOS=OFF -DODE_WITH_LIBCCD=ON
+  #     - name: Install ODE
+  #       working-directory: ${{ github.workspace }}/ode-build/
+  #       run: cmake --build . --target INSTALL --config Release

@@ -1,0 +1,6 @@
+# action.yml
+name: 'World'
+description: 'Build docker and run entrypoint script'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
