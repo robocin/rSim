@@ -1,11 +1,12 @@
 name: Build and publish tag on PyPI
+
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag to publish'
         required: true
-        default: 'vX.X.X'
+
 jobs:
   build_ubuntu:
     runs-on: ubuntu-latest
