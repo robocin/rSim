@@ -66,6 +66,7 @@ bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_co
 VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
              std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
 {
+    this->field.setFieldType(fieldType);
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
     this->field.setRobotsBlueCount(nRobotsBlue);
     this->field.setRobotsYellowCount(nRobotsYellow);
