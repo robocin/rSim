@@ -1,7 +1,6 @@
 name: Build and publish tag on PyPI
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       tag:
