@@ -1,28 +1,38 @@
-on: [push]
-
+name: Build and publish tag on Test PyPI
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish'
+        required: true
+        default: 'vX.X.X'
 jobs:
   build_ubuntu:
     runs-on: ubuntu-latest
-    name: Building package on linux
+    name: Building package on linux manywheels
     steps:
       # To use this repository's private action,
       # you must check out the repository
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
       - name: manylinux2010_x86_64 Docker build action
         uses: ./.github/action/ # Uses an action in the root directory
-      - name: Print files in workspace
-        run: ls -la
-      - name: Print files in dist
-        run: |
-          cd dist
-          ls -la
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
+  # # TODO Build and publish on Windows and MacOS
   # build_windows:
   #   runs-on: windows-latest
   #   name: Building package on windows
   #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  #       - name: Checkout
+  #         uses: actions/checkout@v2
+  #         with:
+  #           ref: ${{ github.event.inputs.tag }}
   #     - name: Clone ODE 0.16.2
   #       run: git clone --depth 1 --branch 0.16.2 https://bitbucket.org/odedevs/ode.git
   #     - name: Run cmake on ode
