@@ -1,0 +1,35 @@
+on: [push]
+
+jobs:
+  build_ubuntu:
+    runs-on: ubuntu-latest
+    name: Building package on linux
+    steps:
+      # To use this repository's private action,
+      # you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: manylinux2010_x86_64 Docker build action
+        uses: ./.github/action/ # Uses an action in the root directory
+      - name: Print files in workspace
+        run: ls -la
+      - name: Print files in dist
+        run: |
+          cd dist
+          ls -la
+  # build_windows:
+  #   runs-on: windows-latest
+  #   name: Building package on windows
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Clone ODE 0.16.2
+  #       run: git clone --depth 1 --branch 0.16.2 https://bitbucket.org/odedevs/ode.git
+  #     - name: Run cmake on ode
+  #       run: |
+  #         mkdir ode-build
+  #         cd ode-build
+  #         cmake ../ode -DCMAKE_BUILD_TYPE=Release -DODE_WITH_DEMOS=OFF -DODE_WITH_LIBCCD=ON
+  #     - name: Install ODE
+  #       working-directory: ${{ github.workspace }}/ode-build/
+  #       run: cmake --build . --target INSTALL --config Release
