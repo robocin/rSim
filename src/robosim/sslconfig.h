@@ -30,6 +30,10 @@ namespace SSLConfig
         double goalDepth = 0.18;
         double goalWidth = 1.8;
         double goalHeight = 0.16;
+        double xMax = fieldLength + fieldMargin;
+        double yMax = fieldWidth + fieldMargin;
+        double xMin = -xMax;
+        double yMin = -yMax;
         void setFieldLineWidth(double value) { this->fieldLineWidth = value; }
         void setFieldLength(double value) { this->fieldLength = value; }
         void setFieldWidth(double value) { this->fieldWidth = value; }
@@ -45,6 +49,8 @@ namespace SSLConfig
         void setGoalDepth(double value) { this->goalDepth = value; }
         void setGoalWidth(double value) { this->goalWidth = value; }
         void setGoalHeight(double value) { this->goalHeight = value; }
+        void setFieldLimits();
+        void setFieldLimits(double xMin, double xMax, double yMin, double yMax);
 
     public:
         int getRobotsCount() { return this->robotsCount; }
@@ -65,6 +71,10 @@ namespace SSLConfig
         double getGoalDepth() { return this->goalDepth; }
         double getGoalWidth() { return this->goalWidth; }
         double getGoalHeight() { return this->goalHeight; }
+        double getFieldxMax() { return this->xMax; }
+        double getFieldyMax() { return this->yMax; }
+        double getFieldxMin() { return this->xMin; }
+        double getFieldyMin() { return this->yMin; }
         int getFieldType() { return this->fieldType; }
         void setRobotsCount(int value) { this->robotsCount = value; }
         void setRobotsBlueCount(int value) { this->robotsBlueCount = value; }
@@ -84,6 +94,7 @@ namespace SSLConfig
                 setFieldPenaltyDepth(1.80);
                 setFieldPenaltyPoint(8.00);
                 setGoalWidth(1.80);
+                setFieldLimits();
                 break;
             case 1: // Division B
                 setRobotsCount(12);
@@ -95,6 +106,7 @@ namespace SSLConfig
                 setFieldPenaltyDepth(1.00);
                 setFieldPenaltyPoint(6.00);
                 setGoalWidth(1.00);
+                setFieldLimits();
                 break;
             case 2: // Hardware challenge
                 setRobotsCount(12);
@@ -106,7 +118,21 @@ namespace SSLConfig
                 setFieldPenaltyDepth(0.80);
                 setFieldPenaltyPoint(6.00);
                 setGoalWidth(0.70);
+                setFieldLimits();
                 break;
+            case 3: // RobôCin Positive-Half Field
+                setRobotsCount(12);
+                setRobotsBlueCount(6);
+                setRobotsYellowCount(6);
+                setFieldLength(7.80);
+                setFieldWidth(5.40);
+                setFieldPenaltyWidth(1.80);
+                setFieldPenaltyDepth(0.90);
+                setFieldPenaltyPoint(6.00);
+                setGoalWidth(1.00);
+                setFieldLimits(-0.3, 4.2, -3, 3);
+                break;                
+
             default:
                 break;
             }

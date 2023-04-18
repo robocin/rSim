@@ -213,12 +213,13 @@ SSLWorld::~SSLWorld()
 void SSLWorld::initWalls()
 {
     const double thick = this->field.getWallThickness();
-    const double increment = this->field.getFieldMargin() + this->field.getFieldRefereeMargin() + thick / 2;
-    const double pos_x = this->field.getFieldLength() / 2.0 + increment;
-    const double pos_y = this->field.getFieldWidth() / 2.0 + increment;
+    const double pos_x = this->field.getFieldxMax() + this->field.getFieldRefereeMargin() + thick/2;
+    const double pos_y = this->field.getFieldyMax() + this->field.getFieldRefereeMargin() + thick/2;
+    const double neg_x = this->field.getFieldxMin() - this->field.getFieldRefereeMargin() - thick/2;
+    const double neg_y = this->field.getFieldyMin() - this->field.getFieldRefereeMargin() - thick/2;
     const double pos_z = 0.0;
-    const double siz_x = 2.0 * pos_x;
-    const double siz_y = 2.0 * pos_y;
+    const double siz_x = pos_x - neg_x;
+    const double siz_y = pos_y - neg_y;
     const double siz_z = 0.4;
 
     const double gthick = this->field.getGoalThickness();
@@ -233,13 +234,13 @@ void SSLWorld::initWalls()
     this->walls[0] = new PFixedBox(thick/2, pos_y, pos_z,
                              siz_x, thick, siz_z);
 
-    this->walls[1] = new PFixedBox(-thick/2, -pos_y, pos_z,
+    this->walls[1] = new PFixedBox(-thick/2, neg_y, pos_z,
                              siz_x, thick, siz_z);
     
     this->walls[2] = new PFixedBox(pos_x, -thick/2, pos_z,
                              thick, siz_y, siz_z);
 
-    this->walls[3] = new PFixedBox(-pos_x, thick/2, pos_z,
+    this->walls[3] = new PFixedBox(neg_x, thick/2, pos_z,
                              thick, siz_y, siz_z);
 
     // Goal walls
