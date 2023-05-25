@@ -22,12 +22,22 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <cstdlib>
 #include <cstdint>
 #include <ctime>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <math.h>
 
+VSSConfig::World* _worldParams = nullptr;
+VSSConfig::Robot* _robotParams = nullptr;
 
 bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
 {
+    VSSConfig::World wp = VSSConfig::World();
+    VSSConfig::World& world_params = (_worldParams == nullptr) ? *_worldParams : wp;
+
+    VSSConfig::Robot rp = VSSConfig::Robot();
+    VSSConfig::Robot& robot_params = (_robotParams == nullptr) ? *_robotParams : rp;
+
     //s->id2 is ground
     const dReal *r; //wheels rotation matrix
     //const dReal* p; //wheels rotation matrix
@@ -49,8 +59,8 @@ bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_co
     }
 
     surface->surface.mode = dContactFDir1 | dContactMu2 | dContactApprox1 | dContactSoftCFM;
-    surface->surface.mu = fric(VSSConfig::Robot().getWheelPerpendicularFriction());
-    surface->surface.mu2 = fric(VSSConfig::Robot().getWheelTangentFriction());
+    surface->surface.mu = fric(robot_params.getWheelPerpendicularFriction());
+    surface->surface.mu2 = fric(robot_params.getWheelTangentFriction());
     surface->surface.soft_cfm = 0.002;
 
     dVector3 v = {0, 0, 1, 1};
@@ -65,7 +75,7 @@ bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_co
 }
 
 VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos)
+             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos, std::unordered_map<std::string, double> &params)
 {
     this->field.setFieldType(fieldType);
     this->field.setRobotsCount(nRobotsBlue + nRobotsYellow);
@@ -75,7 +85,7 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     this->state.reserve(this->stateSize);
     this->timeStep = timeStep;
     this->physics = new PWorld(this->timeStep, 9.81f, this->field.getRobotsCount());
-    this->ball = new PBall(ballPos[0], ballPos[1], VSSConfig::World().getBallRadius(), VSSConfig::World().getBallRadius(), VSSConfig::World().getBallMass());
+    this->ball = new PBall(ballPos[0], ballPos[1], this->worldParams.getBallRadius(), this->worldParams.getBallRadius(), this->worldParams.getBallMass());
     this->ground = new PGround(this->field.getFieldRad(), this->field.getFieldLength(), this->field.getFieldWidth(),
                                this->field.getFieldPenaltyDepth(), this->field.getFieldPenaltyWidth(), this->field.getFieldPenaltyPoint(),
                                this->field.getFieldLineWidth());
@@ -108,14 +118,15 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
             this->physics, this->ball, x, y, VSS_ROBOT_START_Z(),
             k + 1, dir, turn_on);
     }
+    this->setFieldParams(params);
     this->physics->initAllObjects();
 
     //Surfaces
     PSurface ballwithwall;
     ballwithwall.surface.mode = dContactBounce | dContactApprox1; // | dContactSlip1;
     ballwithwall.surface.mu = 1;                                  //fric(cfg->ballfriction());
-    ballwithwall.surface.bounce = VSSConfig::World().getBallBounce();
-    ballwithwall.surface.bounce_vel = VSSConfig::World().getBallBounceVel();
+    ballwithwall.surface.bounce = this->worldParams.getBallBounce();
+    ballwithwall.surface.bounce_vel = this->worldParams.getBallBounceVel();
     ballwithwall.surface.slip1 = 0; //cfg->ballslip();
 
     PSurface wheelswithground;
@@ -161,6 +172,70 @@ VSSWorld::VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double tim
     for (int i = 0; i < 30; i++)
     this->physics->step(this->timeStep * 0.1, this->fullSpeed);
     replace(ballPos, blueRobotsPos, yellowRobotsPos);
+}
+
+void VSSWorld::setFieldParams(std::unordered_map<std::string,double> &params){
+    this->worldParams = VSSConfig::World();
+    this->robotParams = VSSConfig::Robot();
+
+    _worldParams = &this->worldParams;
+    _robotParams = &this->robotParams;
+    
+    if(params.count("robot_height")){
+        this->robotParams.setHeight(params["robot_height"]);
+    }
+
+    if(params.count("robot_body_mass")){
+        this->robotParams.setBodyMass(params["robot_body_mass"]);
+    }
+
+    if(params.count("robot_wheel_radius")){
+        this->robotParams.setWheelRadius(params["robot_wheel_radius"]);
+    }
+
+    if(params.count("robot_wheel_mass")){
+        this->robotParams.setWheelMass(params["robot_wheel_mass"]);
+    }
+
+    if(params.count("robot_wheel_motor_max_rpm")){
+        this->robotParams.setWheelMotorMaxRPM(params["robot_wheel_motor_max_rpm"]);
+    }
+
+    if(params.count("robot_wheel_perpendicular_friction")){
+        this->robotParams.setWheelPerpendicularFriction(params["robot_wheel_perpendicular_friction"]);
+    }
+
+    if(params.count("robot_wheel_tangent_friction")){
+        this->robotParams.setWheelTangentFriction(params["robot_wheel_tangent_friction"]);
+    }
+
+    if(params.count("ball_radius")){
+        this->worldParams.setBallRadius(params["ball_radius"]);
+    }
+
+    if(params.count("gravity")){
+        this->worldParams.setGravity(params["gravity"]);
+    }
+
+    if(params.count("ball_mass")){
+        this->worldParams.setBallMass(params["ball_mass"]);
+    }
+
+    if(params.count("ball_friction")){
+        this->worldParams.setBallFriction(params["ball_friction"]);
+    }
+
+    if(params.count("ball_bounce")){
+        this->worldParams.setBallBounce(params["ball_bounce"]);
+    }
+
+    if(params.count("ball_slip")){
+        this->worldParams.setBallSlip(params["ball_slip"]);
+    }
+
+    if(params.count("desired_fps")){
+        this->worldParams.setDesiredFPS(params["desired_fps"]);
+    }
 }
 
 VSSWorld::~VSSWorld()
@@ -271,12 +346,12 @@ void VSSWorld::step(std::vector<std::vector<double>> actions)
         dReal ballSpeed = ballvel[0] * ballvel[0] + ballvel[1] * ballvel[1] + ballvel[2] * ballvel[2];
         ballSpeed = sqrt(ballSpeed);
         if (ballSpeed > 0.01) {
-            dReal fk = VSSConfig::World().getBallFriction() * VSSConfig::World().getBallMass() * VSSConfig::World().getGravity();
+            dReal fk = this->worldParams.getBallFriction() * this->worldParams.getBallMass() * this->worldParams.getGravity();
             dReal ballfx = -fk * ballvel[0] / ballSpeed;
             dReal ballfy = -fk * ballvel[1] / ballSpeed;
             dReal ballfz = -fk * ballvel[2] / ballSpeed;
-            dReal balltx = -ballfy * VSSConfig::World().getBallRadius();
-            dReal ballty = ballfx * VSSConfig::World().getBallRadius();
+            dReal balltx = -ballfy * this->worldParams.getBallRadius();
+            dReal ballty = ballfx * this->worldParams.getBallRadius();
             dReal balltz = 0;
             dBodyAddTorque(this->ball->body,balltx,ballty,balltz);
             dBodyAddForce(this->ball->body,ballfx,ballfy,ballfz);
@@ -310,17 +385,17 @@ const std::unordered_map<std::string, double> VSSWorld::getFieldParams()
     fieldParams["penalty_width"] = this->field.getFieldPenaltyWidth();
     fieldParams["goal_width"] = this->field.getGoalWidth();
     fieldParams["goal_depth"] = this->field.getGoalDepth();
-    fieldParams["ball_radius"] = VSSConfig::World().getBallRadius();
+    fieldParams["ball_radius"] = this->worldParams.getBallRadius();
     fieldParams["rbt_distance_center_kicker"] = -1.;
     fieldParams["rbt_kicker_thickness"] = -1.;
     fieldParams["rbt_kicker_width"] = -1.;
-    fieldParams["rbt_wheel0_angle"] = VSSConfig::Robot().getWheel0Angle();
-    fieldParams["rbt_wheel1_angle"] = VSSConfig::Robot().getWheel1Angle();
+    fieldParams["rbt_wheel0_angle"] = this->robotParams.getWheel0Angle();
+    fieldParams["rbt_wheel1_angle"] = this->robotParams.getWheel1Angle();
     fieldParams["rbt_wheel2_angle"] = -1.;
     fieldParams["rbt_wheel3_angle"] = -1.;
-    fieldParams["rbt_radius"] = VSSConfig::Robot().getRadius();
-    fieldParams["rbt_wheel_radius"] = VSSConfig::Robot().getWheelRadius();
-    fieldParams["rbt_motor_max_rpm"] = VSSConfig::Robot().getWheelMotorMaxRPM();
+    fieldParams["rbt_radius"] = this->robotParams.getRadius();
+    fieldParams["rbt_wheel_radius"] = this->robotParams.getWheelRadius();
+    fieldParams["rbt_motor_max_rpm"] = this->robotParams.getWheelMotorMaxRPM();
     return fieldParams;
 }
 
@@ -363,7 +438,7 @@ const std::vector<double> &VSSWorld::getState()
         robotVel = dBodyGetLinearVel(this->robots[i]->chassis->body);
         robotVelDir = dBodyGetAngularVel(this->robots[i]->chassis->body);
         // reset when the robot has turned over
-        if (VSSConfig::World().getResetTurnOver() && robotK < 0.9)
+        if (this->worldParams.getResetTurnOver() && robotK < 0.9)
         {
             std::cout << "turnover " << robotK << '\n';
             this->robots[i]->resetRobot();

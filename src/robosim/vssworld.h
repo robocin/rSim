@@ -25,8 +25,10 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "physics/pground.h"
 #include "physics/pfixedbox.h"
 
+#include "vssconfig.h"
 #include "vssrobot.h"
 #include "utils.h"
+#include <string>
 #include <unordered_map>
 
 #define VSS_WALL_COUNT 16
@@ -37,6 +39,8 @@ class VSSWorld
 private:
     double timeStep;
     int stateSize;
+    VSSConfig::World worldParams = VSSConfig::World();
+    VSSConfig::Robot robotParams = VSSConfig::Robot();
     std::vector<double> state;
 
 public:
@@ -49,13 +53,14 @@ public:
     VSSRobot *robots[VSS_MAX_ROBOT_COUNT * 2]{};
 
     VSSWorld(int fieldType, int nRobotsBlue, int nRobotsYellow, double timeStep,
-             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
+             std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos, std::unordered_map<std::string, double> &params);
     ~VSSWorld();
     void step(std::vector<std::vector<double>> actions);
     void replace(std::vector<double> ballPos, std::vector<std::vector<double>> blueRobotsPos, std::vector<std::vector<double>> yellowRobotsPos);
     void initWalls();
     int getNumRobotsBlue() { return this->field.getRobotsBlueCount(); }
     int getNumRobotsYellow() { return this->field.getRobotsYellowCount(); }
+    void setFieldParams(std::unordered_map<std::string, double> &params);
     const std::unordered_map<std::string, double> getFieldParams();
     const std::vector<double> &getState();
     int robotIndex(unsigned int robot, int team);

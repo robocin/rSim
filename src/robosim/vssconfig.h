@@ -114,13 +114,28 @@ namespace VSSConfig
 
     public:
         double getBallRadius() { return this->BallRadius; }
+        void setBallRadius(double val){ this->BallRadius = val;}
+
         int getDesiredFPS() { return this->DesiredFPS; }
+        void setDesiredFPS(double val){ this->DesiredFPS = val;}
+
         double getGravity() { return this->Gravity; }
+        void setGravity(double val){ this->Gravity = val;}
+
         bool getResetTurnOver() { return this->ResetTurnOver; }
+
         double getBallMass() { return this->BallMass; }
+        void setBallMass(double val){ this->BallMass = val;}
+
         double getBallFriction() { return this->BallFriction; }
+        void setBallFriction(double val){ this->BallFriction = val;}
+
         int getBallSlip() { return this->BallSlip; }
+        void setBallSlip(double val){ this->BallSlip = val;}
+
         double getBallBounce() { return this->BallBounce; }
+        void setBallBounce(double val){ this->BallBounce = val;}
+
         double getBallBounceVel() { return this->BallBounceVel; }
         double getBallLinearDamp() { return this->BallLinearDamp; }
         double getBallAngularDamp() { return this->BallAngularDamp; }
@@ -147,18 +162,37 @@ namespace VSSConfig
 
     public:
         double getRadius() { return this->Radius; }
+        void setRadius(double val) { this->Radius = val; }
+
         double getHeight() { return this->Height; }
+        void setHeight(double val) { this->Height = val; }
+        
         double getBottomHeight() { return this->BottomHeight; }
+
         double getWheelRadius() { return this->WheelRadius; }
+        void setWheelRadius(double val) { this->WheelRadius = val; }
+
         double getWheelThickness() { return this->WheelThickness; }
         int getWheel0Angle() { return this->Wheel0Angle; }
         int getWheel1Angle() { return this->Wheel1Angle; }
+
         double getBodyMass() { return this->BodyMass; }
+        void setBodyMass(double val) { this->BodyMass = val; }
+
         double getWheelMass() { return this->WheelMass; }
+        void setWheelMass(double val) { this->WheelMass = val; }
+
         double getWheelTangentFriction() { return this->WheelTangentFriction; }
+        void setWheelTangentFriction(double val) { this->WheelTangentFriction = val; }
+
         double getWheelPerpendicularFriction() { return this->WheelPerpendicularFriction; }
+        void setWheelPerpendicularFriction(double val) { this->WheelPerpendicularFriction = val; }
+
         double getWheelMotorMaxTorque() { return this->WheelMotorMaxTorque; }
+
         double getWheelMotorMaxRPM() { return this->WheelMotorMaxRPM; }
+        void setWheelMotorMaxRPM(double val) { this->WheelMotorMaxRPM = val; }
+
         double getCasterWheelsRadius() { return this->casterWheelsRadius; }
         double getCasterWheelsMass() { return this->casterWheelsMass; }
 
