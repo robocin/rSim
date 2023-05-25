@@ -3,6 +3,16 @@
 
 cmake-build-debug/
 
+build/
+
+.cache/
+
+src/rc_robosim.egg-info/
+
+__pycache__/
+
+compile_commands.json
+
 _skbuild/
 
 src/robosim_pybind11.egg-info/
