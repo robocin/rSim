@@ -20,6 +20,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include "sslconfig.h"
 
 #include <cstdlib>
+#include <cstdint>
 #include <ctime>
 #include <math.h>
 

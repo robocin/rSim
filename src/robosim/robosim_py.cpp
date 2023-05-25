@@ -1,5 +1,6 @@
 #include <iostream>
 #include <utility>
+#include <cstdint>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "vssworld.h"
