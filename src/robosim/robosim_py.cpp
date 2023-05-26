@@ -29,10 +29,10 @@ struct VSS {
 
     vd getState() const { return m_world->getState(); }
 
-    void reset(const vd &ballPos, const vvd &blueRobotsPos, const vvd &yellowRobotsPos) {
+    void reset(const vd &ballPos, const vvd &blueRobotsPos, const vvd &yellowRobotsPos, std::unordered_map<std::string, double> params) {
         delete m_world;
         m_world = new VSSWorld(m_fieldType, m_nRobotsBlue, m_nRobotsYellow, m_timeStep_ms / 1000.0,
-                               ballPos, blueRobotsPos, yellowRobotsPos, m_params);
+                               ballPos, blueRobotsPos, yellowRobotsPos, params);
     }
 
     std::unordered_map<std::string, double> getFieldParams() const { return m_world->getFieldParams(); }
