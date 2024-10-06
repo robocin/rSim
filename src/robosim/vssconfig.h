@@ -136,9 +136,12 @@ namespace VSSConfig
         double WheelThickness = 0.0025;
         int Wheel0Angle = 90;
         int Wheel1Angle = 270;
-        double BodyMass = 0.120;
-        double WheelMass = 0.015;
-        double WheelTangentFriction = 0.8;
+        // mudou
+        double BodyMass = 0.296;
+        // mudou
+        double WheelMass = 0.021;
+        // ja estava proximo
+        double WheelTangentFriction = 0.8413767350560942;
         double WheelPerpendicularFriction = 1;
         double WheelMotorMaxTorque = 0.0725;
         double WheelMotorMaxRPM = 440.0;
