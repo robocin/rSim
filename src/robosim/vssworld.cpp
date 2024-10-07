@@ -23,6 +23,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <ctime>
 #include <utility>
 #include <math.h>
+#include <cstdint>
 
 
 bool vssWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)

@@ -22,6 +22,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 #include <cstdlib>
 #include <ctime>
 #include <math.h>
+#include <cstdint>
 
 
 bool sslWheelCallBack(dGeomID o1, dGeomID o2, PSurface *surface, int /*robots_count*/)
