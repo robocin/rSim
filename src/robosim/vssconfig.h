@@ -143,10 +143,20 @@ namespace VSSConfig
         // ja estava proximo
         double WheelTangentFriction = 0.8413767350560942;
         double WheelPerpendicularFriction = 1;
-        double WheelMotorMaxTorque = 0.0725;
-        double WheelMotorMaxRPM = 440.0;
-        double casterWheelsRadius = 0.002;
         double casterWheelsMass = 0.001;
+        double casterWheelsRadius = 0.002;
+        
+        // FAULHABER 2224U006SR 6V VALUES
+        // Motor RPM (Rated speed for continuous operation) = 6350 RPM
+        // Motor-Wheel Gear Ratio = 5:1
+        // Wheel Max RPM = 6350 / 5 = 1270 RPM 
+
+        double WheelMotorMaxTorque = 0.0211; // 21.1 mNm -> (unidade: Nm) - Stall Torque
+        double WheelMotorMaxRPM = 1270.0; // 1270 RPM -> (unidade: RPM)
+
+        // POLOLU 50:1 6V VALUES [DEPRECATED]
+        // double WheelMotorMaxTorque = 0.0725; // 72.57 mNm -> (unidade: Nm) - Stall Torque
+        // double WheelMotorMaxRPM = 440.0; // 490 RPM -> (unidade: RPM) - Speed at max efficiency
 
     public:
         double getRadius() { return this->Radius; }
