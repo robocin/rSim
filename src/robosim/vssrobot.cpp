@@ -113,6 +113,13 @@ VSSRobot::VSSRobot(PWorld *world, PBall *ball, dReal x, dReal y, dReal z,
     m_dir = dir;
     m_rob_id = rob_id;
 
+    std::cout << "--- Robot Config ---" << std::endl;
+    std::cout << "Body Mass: " << VSSConfig::Robot().getBodyMass() << std::endl;
+    std::cout << "Wheel Motor Max Torque: " << VSSConfig::Robot().getWheelMotorMaxTorque() << std::endl;
+    std::cout << "Wheel Motor Max RPM: " << VSSConfig::Robot().getWheelMotorMaxRPM() << std::endl;
+    std::cout << "Wheel Tangent Friction: " << VSSConfig::Robot().getWheelTangentFriction() << std::endl;
+    std::cout << "---" << std::endl;
+
     space = physics->space;
 
     chassis = new PBox(x, y, z, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getRadius() * 2, VSSConfig::Robot().getHeight(), VSSConfig::Robot().getBodyMass() * 0.99f);
